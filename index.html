@@ -3,12 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Biblia Pro - Integración Total</title>
+    <title>Biblia Pro</title>
     
-    <meta name="mobile-web-app-capable" content="yes">
+    <!-- iOS Meta Tags para "Add to Home Screen" -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Biblia Pro">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- Iconos Premium para iPhone -->
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3389/3389081.png">
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3389/3389081.png">
     
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -39,10 +44,25 @@
     </script>
 
     <style>
-        body { margin: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+        :root {
+            --sat: env(safe-area-inset-top);
+            --sab: env(safe-area-inset-bottom);
+        }
+
+        body { 
+            margin: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            -webkit-tap-highlight-color: transparent;
+            overscroll-behavior-y: none; /* Previene el bounce de Safari */
+        }
+
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
+        /* Ajustes para iPhone Notch/Dynamic Island */
+        .safe-top { padding-top: var(--sat); }
+        .safe-bottom { padding-bottom: var(--sab); }
+
         .highlight-yellow { background-color: #fef9c3; border-left: 5px solid #facc15; } 
         .highlight-green { background-color: #dcfce7; border-left: 5px solid #4ade80; }
         .highlight-blue { background-color: #dbeafe; border-left: 5px solid #60a5fa; }
@@ -58,7 +78,7 @@
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 8px; background: rgba(0,0,0,0.1); border-radius: 4px; }
     </style>
 </head>
-<body class="bg-white text-slate-900 h-screen overflow-hidden transition-colors duration-300">
+<body class="bg-white text-slate-900 h-[100dvh] overflow-hidden transition-colors duration-300">
     <div id="root" class="h-full flex justify-center w-full"></div>
 
     <script type="text/babel">
@@ -100,7 +120,7 @@
         };
 
         // --- BASE DE DATOS LOCAL ---
-        const DB_NAME = 'BiblePro_Final_Stable_V700';
+        const DB_NAME = 'BiblePro_Stable_V1000';
         const db = {
             init: () => new Promise(res => {
                 const req = indexedDB.open(DB_NAME, 1);
@@ -114,25 +134,29 @@
             }),
             get: (store, key) => new Promise(async res => {
                 const inst = await db.init();
+                if(!inst) return res(null);
                 const tx = inst.transaction(store, 'readonly');
                 const req = tx.objectStore(store).get(key);
                 req.onsuccess = () => res(req.result);
+                req.onerror = () => res(null);
             }),
             set: (store, key, val) => new Promise(async res => {
                 const inst = await db.init();
+                if(!inst) return res(null);
                 const tx = inst.transaction(store, 'readwrite');
                 tx.objectStore(store).put(val, key);
-                res();
+                tx.oncomplete = () => res();
+                tx.onerror = () => res();
             })
         };
 
-        // BIBLIA EMPOTRADA (LIBROS CORE)
+        // BIBLIA INICIAL (Muestra básica)
         const CORE_BOOKS = ['Génesis', 'Salmos', 'Juan', 'Romanos'];
         const CORE_DATA = {
             'Génesis': { 1: ["En el principio creó Dios los cielos y la tierra.", "Y la tierra estaba desordenada y vacía...", "Y dijo Dios: Sea la luz; y fue la luz."] },
             'Salmos': { 1: ["Bienaventurado el varón que no anduvo en consejo de malos.", "Sino que en la ley de Jehová está su delicia."], 23: ["Jehová es mi pastor; nada me faltará.", "En lugares de delicados pastos me hará descansar.", "Confortará mi alma..."] },
             'Juan': { 1: ["En el principio era el Verbo, y el Verbo era con Dios, y el Verbo era Dios."], 3: ["Había un hombre de los fariseos que se llamaba Nicodemo.", "Respondió Jesús: De cierto te digo, que el que no naciere de nuevo, no puede ver el reino de Dios."] },
-            'Romanos': { 8: ["Ahora, pues, ninguna condenación hay para los que están en Cristo Jesús."] }
+            'Romanos': { 8: ["Ahora, pues, ninguna condensación hay para los que están en Cristo Jesús."] }
         };
 
         const INITIAL_PLANS = [
@@ -150,7 +174,8 @@
             const [darkMode, setDarkMode] = useState(false);
             const [currentChapter, setCurrentChapter] = useState({book: 'Juan', chapter: 3});
             const [ready, setReady] = useState(false);
-
+            
+            const [dlStatus, setDlStatus] = useState({ downloading: false, progress: 0, label: "", error: null });
             const [activeV, setActiveV] = useState(null);
             const [aiLoading, setAiLoading] = useState(false);
             const [aiVersePanel, setAiVersePanel] = useState(null);
@@ -160,14 +185,11 @@
             const [searchQ, setSearchQ] = useState("");
             const [searchRes, setSearchRes] = useState([]);
             const [noteInput, setNoteInput] = useState("");
-            const [editingNote, setEditingNote] = useState({ vId: null, noteId: null, text: "" });
 
-            // CARGA INICIAL
             useEffect(() => {
                 const load = async () => {
-                    const saved = await db.get('appData', 'full_config_v20');
-                    const full = await db.get('bibleStore', 'full_text_v20');
-                    
+                    const saved = await db.get('appData', 'full_config_v22');
+                    const full = await db.get('bibleStore', 'full_text_v22');
                     if (saved) {
                         setAnnotations(saved.annotations || {});
                         setFavorites(saved.favorites || []);
@@ -175,54 +197,54 @@
                         setFontSize(saved.fontSize || 20);
                         setDarkMode(saved.darkMode || false);
                     }
-
-                    if (full) {
-                        setBible(full);
-                    } else {
-                        // Sincronización automática de fondo
-                        fetch('https://raw.githubusercontent.com/thiagobodruk/bible/master/json/es_rvr09.json')
-                            .then(r => r.json())
-                            .then(async data => {
-                                const bks = []; const cont = {};
-                                data.forEach(b => {
-                                    bks.push(b.name); cont[b.name] = {};
-                                    b.chapters.forEach((v, idx) => cont[b.name][idx+1] = v);
-                                });
-                                const finalData = { books: bks, content: cont };
-                                await db.set('bibleStore', 'full_text_v20', finalData);
-                                setBible(finalData);
-                            }).catch(() => {});
-                    }
+                    if (full) setBible(full);
                     setReady(true);
                 };
                 load();
             }, []);
 
-            // GUARDADO GLOBAL PERSISTENTE
             useEffect(() => {
                 if (ready) {
-                    db.set('appData', 'full_config_v20', { annotations, favorites, readStatus, fontSize, darkMode });
+                    db.set('appData', 'full_config_v22', { annotations, favorites, readStatus, fontSize, darkMode });
                     document.body.classList.toggle('dark', darkMode);
                 }
             }, [ready, annotations, favorites, readStatus, fontSize, darkMode]);
 
-            const handleToggleVerse = (vId) => {
-                if (activeV !== vId) {
-                    setAiVersePanel(null); // LIMPIEZA AUTOMÁTICA
-                    setActiveV(vId);
-                } else {
-                    setActiveV(null);
-                    setAiVersePanel(null);
+            const downloadFullBible = async () => {
+                setDlStatus({ downloading: true, progress: 5, label: "Iniciando descarga...", error: null });
+                try {
+                    const URL = 'https://raw.githubusercontent.com/thiagobodruk/bible/master/json/es_rvr09.json';
+                    const response = await fetch(URL);
+                    if (!response.ok) throw new Error(`Status: ${response.status}`);
+                    const data = await response.json();
+                    
+                    setDlStatus({ downloading: true, progress: 50, label: "Procesando textos...", error: null });
+                    const bks = []; const cont = {};
+                    data.forEach(b => {
+                        bks.push(b.name); 
+                        cont[b.name] = {};
+                        b.chapters.forEach((vArray, idx) => { cont[b.name][idx + 1] = vArray; });
+                    });
+
+                    const finalData = { books: bks, content: cont };
+                    await db.set('bibleStore', 'full_text_v22', finalData);
+                    setBible(finalData);
+                    setDlStatus({ downloading: false, progress: 100, label: "Instalación completa", error: null });
+                    setTimeout(() => setView('nav'), 1000);
+                } catch (error) {
+                    setDlStatus({ downloading: false, progress: 0, label: "Error", error: error.message });
                 }
+            };
+
+            const handleToggleVerse = (vId) => {
+                if (activeV !== vId) { setAiVersePanel(null); setActiveV(vId); }
+                else { setActiveV(null); setAiVersePanel(null); }
             };
 
             const toggleFav = (vId, text, ref) => {
                 const already = favorites.some(f => f.id === vId);
-                if (already) {
-                    setFavorites(prev => prev.filter(f => f.id !== vId));
-                } else {
-                    setFavorites(prev => [...prev, { id: vId, text, ref }]);
-                }
+                if (already) setFavorites(prev => prev.filter(f => f.id !== vId));
+                else setFavorites(prev => [...prev, { id: vId, text, ref }]);
             };
 
             const handleSearch = () => {
@@ -248,7 +270,7 @@
                         <i className={`fa-solid ${icon} text-[13px] text-${color}-600`}></i>
                         <span className="font-black text-[11px] uppercase tracking-widest text-${color}-800 opacity-60">{title}</span>
                     </div>
-                    <p className="text-[19px] leading-snug text-justify font-medium opacity-95">{text}</p>
+                    <p className="text-[18px] leading-snug text-justify font-medium opacity-95">{text}</p>
                 </div>
             );
 
@@ -257,82 +279,75 @@
             return (
                 <div className={`flex flex-col h-full w-full md:max-w-3xl shadow-2xl overflow-hidden transition-all relative mx-auto ${darkMode ? 'bg-slate-900 border-slate-700 text-slate-100' : 'bg-white border-slate-100 text-slate-800'}`}>
                     
-                    {/* NAV HEADER COMPACTO */}
-                    <header className={`${darkMode ? 'bg-emerald-950' : 'bg-emerald-600'} text-white p-2 shadow-md z-30 shrink-0`}>
-                        <div className="flex justify-between items-center px-2 mb-1.5">
-                            <h1 className="font-black text-xs tracking-tighter opacity-70 uppercase">PRO</h1>
-                            <div className="flex gap-0.5">
+                    {/* NAV HEADER OPTIMIZADO PARA IPHONE 15 (Dynamic Island Safe) */}
+                    <header className={`safe-top ${darkMode ? 'bg-emerald-950' : 'bg-emerald-600'} text-white shadow-md z-30 shrink-0`}>
+                        <div className="flex justify-between items-center px-4 pt-4 pb-2">
+                            <h1 className="font-black text-[10px] tracking-widest opacity-80 uppercase">Biblia Pro</h1>
+                            <div className="flex gap-1">
                                 {[{v:'search',i:'fa-magnifying-glass'},{v:'assistant',i:'fa-robot'},{v:'plans',i:'fa-calendar-check'},{v:'favorites',i:'fa-star'},{v:'settings',i:'fa-gear'}].map(b => (
-                                    <button key={b.v} onClick={() => setView(b.v)} className={`w-9 h-9 flex items-center justify-center rounded-full transition-all ${view===b.v?'bg-white/20':''}`}><i className={`fa-solid ${b.i} text-lg`}></i></button>
+                                    <button key={b.v} onClick={() => setView(b.v)} className={`w-9 h-9 flex items-center justify-center rounded-full transition-all ${view===b.v?'bg-white/20':''}`}><i className={`fa-solid ${b.i} text-[18px]`}></i></button>
                                 ))}
-                                <button onClick={() => setDarkMode(!darkMode)} className="w-9 h-9 flex items-center justify-center rounded-full transition-all"><i className={`fa-solid ${darkMode?'fa-sun':'fa-moon'} text-lg`}></i></button>
+                                <button onClick={() => setDarkMode(!darkMode)} className="w-9 h-9 flex items-center justify-center rounded-full transition-all"><i className={`fa-solid ${darkMode?'fa-sun':'fa-moon'} text-[18px]`}></i></button>
                             </div>
                         </div>
-                        <button onClick={() => setView('nav')} className="w-full text-left px-4 py-1.5 rounded-lg font-bold text-[16px] bg-white text-emerald-900 shadow-inner flex justify-between items-center active:scale-95 transition-all">
-                            <span>{currentChapter.book} • Cap. {currentChapter.chapter}</span>
-                            <i className="fa-solid fa-chevron-down text-[12px] opacity-40"></i>
-                        </button>
+                        <div className="px-3 pb-3">
+                            <button onClick={() => setView('nav')} className="w-full text-left px-4 py-3 rounded-2xl font-bold text-[17px] bg-white text-emerald-900 shadow-inner flex justify-between items-center active:scale-[0.98] transition-all">
+                                <span>{currentChapter.book} <span className="opacity-40 ml-1">Cap. {currentChapter.chapter}</span></span>
+                                <i className="fa-solid fa-chevron-down text-[12px] opacity-40"></i>
+                            </button>
+                        </div>
                     </header>
 
-                    <main className="flex-grow overflow-y-auto no-scrollbar p-0 pb-16 relative">
+                    <main className="flex-grow overflow-y-auto no-scrollbar p-0 safe-bottom relative">
                         
                         {view === 'reading' && (
-                            <div className="animate-fade-in max-w-full">
-                                <div className="flex justify-between items-center mt-3 mb-4 border-b border-emerald-500/10 pb-1.5 px-4">
-                                    <h2 className="text-2xl font-serif italic text-emerald-600 dark:text-emerald-400">{currentChapter.book} {currentChapter.chapter}</h2>
-                                    <button onClick={() => setReadStatus(p => ({ ...p, [`${currentChapter.book}-${currentChapter.chapter}`]: !p[`${currentChapter.book}-${currentChapter.chapter}`] }))} className={`text-2xl ${readStatus[`${currentChapter.book}-${currentChapter.chapter}`] ? 'text-emerald-500' : 'text-slate-200'}`}><i className="fa-solid fa-circle-check"></i></button>
+                            <div className="animate-fade-in max-w-full pb-20">
+                                <div className="flex justify-between items-center mt-6 mb-4 border-b border-emerald-500/10 pb-3 px-6">
+                                    <h2 className="text-3xl font-serif italic text-emerald-600 dark:text-emerald-400">{currentChapter.book} {currentChapter.chapter}</h2>
+                                    <button onClick={() => setReadStatus(p => ({ ...p, [`${currentChapter.book}-${currentChapter.chapter}`]: !p[`${currentChapter.book}-${currentChapter.chapter}`] }))} className={`text-3xl ${readStatus[`${currentChapter.book}-${currentChapter.chapter}`] ? 'text-emerald-500' : 'text-slate-200'}`}><i className="fa-solid fa-circle-check"></i></button>
                                 </div>
 
-                                <div className="space-y-0 px-0">
+                                <div className="space-y-0">
                                     {(bible.content[currentChapter.book]?.[currentChapter.chapter] || []).map((txt, i) => {
                                         const vId = `${currentChapter.book}-${currentChapter.chapter}-${i+1}`;
                                         const meta = annotations[vId] || {};
                                         const isFav = favorites.some(f => f.id === vId);
                                         return (
-                                            <div key={vId} className={`px-4 py-2 rounded-none transition-all ${meta.color ? `highlight-${meta.color}` : 'hover:bg-slate-50 dark:hover:bg-slate-800/10'}`}>
-                                                <div className="flex gap-4">
-                                                    <span className="text-[16px] font-black text-emerald-500/50 mt-1.5 w-6 shrink-0 text-right select-none">{i+1}</span>
+                                            <div key={vId} className={`px-6 py-3 transition-all ${meta.color ? `highlight-${meta.color}` : 'hover:bg-slate-50 dark:hover:bg-slate-800/10'}`}>
+                                                <div className="flex gap-5">
+                                                    <span className="text-[14px] font-black text-emerald-500/40 mt-1.5 w-6 shrink-0 text-right select-none">{i+1}</span>
                                                     <div className="flex-grow min-w-0">
-                                                        <p style={{ fontSize: fontSize, lineHeight: 1.45 }} onClick={() => handleToggleVerse(vId)} className="cursor-pointer select-none font-medium text-justify">{txt}</p>
+                                                        <p style={{ fontSize: fontSize, lineHeight: 1.5 }} onClick={() => handleToggleVerse(vId)} className="cursor-pointer select-none font-medium text-justify">{txt}</p>
                                                         
                                                         {meta.notes?.map(n => (
-                                                            <div key={n.id} className="mt-2 text-[16px] bg-amber-50 dark:bg-amber-900/10 p-3 rounded border-l-2 border-amber-400 italic flex flex-col shadow-sm">
-                                                                {editingNote.noteId === n.id ? (
-                                                                    <div className="flex flex-col gap-1.5">
-                                                                        <textarea value={editingNote.text} onChange={e => setEditingNote({...editingNote, text: e.target.value})} className="w-full bg-white dark:bg-slate-800 p-2 rounded border text-[17px] not-italic outline-none" rows="2" />
-                                                                        <div className="flex justify-end gap-2"><button onClick={() => setEditingNote({vId:null, noteId:null, text:""})} className="text-[12px] font-bold uppercase opacity-50">Cerrar</button><button onClick={() => { const cur = annotations[vId]; setAnnotations({ ...annotations, [vId]: { ...cur, notes: cur.notes.map(note => note.id === editingNote.noteId ? { ...note, text: editingNote.text } : note) } }); setEditingNote({ vId: null, noteId: null, text: "" }); }} className="px-4 py-1 text-[12px] font-bold uppercase bg-emerald-600 text-white rounded">Guardar</button></div>
-                                                                    </div>
-                                                                ) : (
-                                                                    <div className="flex justify-between items-start group">
-                                                                        <span className="opacity-90 leading-snug pr-4">{n.text}</span>
-                                                                        <div className="flex gap-3 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => setEditingNote({ vId, noteId: n.id, text: n.text })} className="text-slate-400"><i className="fa-solid fa-pen text-[14px]"></i></button><button onClick={() => setAnnotations({...annotations, [vId]: {...meta, notes: meta.notes.filter(x=>x.id!==n.id)}})} className="text-rose-400"><i className="fa-solid fa-trash-can text-[14px]"></i></button></div>
-                                                                    </div>
-                                                                )}
+                                                            <div key={n.id} className="mt-3 text-[16px] bg-amber-50 dark:bg-amber-900/10 p-4 rounded-2xl border-l-2 border-amber-400 italic flex flex-col shadow-sm">
+                                                                <div className="flex justify-between items-start group">
+                                                                    <span className="opacity-90 leading-snug pr-4">{n.text}</span>
+                                                                    <button onClick={() => setAnnotations({...annotations, [vId]: {...meta, notes: meta.notes.filter(x=>x.id!==n.id)}})} className="text-rose-400 opacity-60"><i className="fa-solid fa-trash-can text-[14px]"></i></button>
+                                                                </div>
                                                             </div>
                                                         ))}
 
                                                         {activeV === vId && (
-                                                            <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 animate-slide-up relative">
-                                                                <button onClick={() => setActiveV(null)} className="absolute -top-3 -right-2 text-slate-300 p-2"><i className="fa-solid fa-xmark text-sm"></i></button>
-                                                                <div className="flex justify-between items-center mb-3 px-1">
-                                                                    <div className="flex gap-2.5">
+                                                            <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 animate-slide-up relative">
+                                                                <div className="flex justify-between items-center mb-4">
+                                                                    <div className="flex gap-3">
                                                                         {['yellow', 'green', 'blue', 'red'].map(c => (
-                                                                            <button key={c} onClick={() => setAnnotations({...annotations, [vId]: {...meta, color: meta.color === c ? null : c}})} className={`w-8 h-8 rounded-full highlight-${c} border border-white/50 shadow-md active:scale-90 transition-transform`}></button>
+                                                                            <button key={c} onClick={() => setAnnotations({...annotations, [vId]: {...meta, color: meta.color === c ? null : c}})} className={`w-9 h-9 rounded-full highlight-${c} border-2 border-white shadow-md active:scale-90 transition-transform`}></button>
                                                                         ))}
                                                                     </div>
-                                                                    <div className="flex gap-5 items-center">
+                                                                    <div className="flex gap-4 items-center">
                                                                         <button onClick={() => toggleFav(vId, txt, `${currentChapter.book} ${currentChapter.chapter}:${i+1}`)} className={isFav ? 'text-yellow-500' : 'text-slate-300'}><i className="fa-solid fa-star text-2xl"></i></button>
-                                                                        <button onClick={() => { setAiLoading(true); setAiVersePanel(null); setTimeout(() => { setAiVersePanel({ teologo: synthesizeAnalysis(txt, "teologo"), historiador: synthesizeAnalysis(txt, "historiador"), pastor: synthesizeAnalysis(txt, "pastor") }); setAiLoading(false); }, 400); }} className="bg-emerald-600 text-white px-4 py-2 rounded-xl text-[14px] font-black shadow-lg active:scale-95 transition-all flex items-center gap-2"><i className="fa-solid fa-brain text-[13px]"></i> ESTUDIO IA</button>
+                                                                        <button onClick={() => { setAiLoading(true); setAiVersePanel(null); setTimeout(() => { setAiVersePanel({ teologo: synthesizeAnalysis(txt, "teologo"), historiador: synthesizeAnalysis(txt, "historiador"), pastor: synthesizeAnalysis(txt, "pastor") }); setAiLoading(false); }, 400); }} className="bg-emerald-600 text-white px-5 py-2.5 rounded-2xl text-[14px] font-black shadow-lg active:scale-95 transition-all flex items-center gap-2"><i className="fa-solid fa-brain"></i> ESTUDIO</button>
                                                                     </div>
                                                                 </div>
-                                                                <div className="flex gap-2 mb-2 px-1">
-                                                                    <input value={noteInput} onChange={e => setNoteInput(e.target.value)} placeholder="Nota reflexiva..." className="flex-grow p-2.5 text-[17px] rounded-lg border dark:bg-slate-800 dark:border-slate-700 outline-none" />
-                                                                    <button onClick={() => { if(!noteInput) return; const cur = annotations[vId] || {}; setAnnotations({...annotations, [vId]: { ...cur, notes: [...(cur.notes || []), { id: Date.now(), text: noteInput }] } }); setNoteInput(""); }} className="bg-slate-100 dark:bg-slate-700 px-5 rounded-lg text-[14px] font-black uppercase shadow-sm">OK</button>
+                                                                <div className="flex gap-2 mb-2">
+                                                                    <input value={noteInput} onChange={e => setNoteInput(e.target.value)} placeholder="Escribir reflexión..." className="flex-grow p-3.5 text-[17px] rounded-2xl border dark:bg-slate-800 dark:border-slate-700 outline-none" />
+                                                                    <button onClick={() => { if(!noteInput) return; const cur = annotations[vId] || {}; setAnnotations({...annotations, [vId]: { ...cur, notes: [...(cur.notes || []), { id: Date.now(), text: noteInput }] } }); setNoteInput(""); }} className="bg-slate-100 dark:bg-slate-700 px-6 rounded-2xl font-black uppercase shadow-sm">OK</button>
                                                                 </div>
-                                                                {aiLoading && <div className="p-3 text-center text-emerald-500 animate-pulse font-black text-[14px] tracking-widest uppercase px-4">Escudriñando verdades...</div>}
+                                                                {aiLoading && <div className="p-4 text-center text-emerald-500 animate-pulse font-black text-xs tracking-widest uppercase">Escudriñando...</div>}
                                                                 {aiVersePanel && (
-                                                                    <div className="mt-3 animate-fade-in bg-white dark:bg-slate-800 p-4 rounded-3xl relative border dark:border-slate-700 shadow-2xl mx-1">
-                                                                        <button onClick={() => setAiVersePanel(null)} className="absolute top-2 right-2 p-2 text-slate-300"><i className="fa-solid fa-xmark text-lg"></i></button>
+                                                                    <div className="mt-4 bg-white dark:bg-slate-800 p-5 rounded-[2.5rem] relative border dark:border-slate-700 shadow-2xl">
                                                                         <div className="grid grid-cols-1 gap-1">
                                                                             <ExpertItem icon="fa-scroll" title="Teología" text={aiVersePanel.teologo} color="blue" />
                                                                             <ExpertItem icon="fa-landmark" title="Historia" text={aiVersePanel.historiador} color="amber" />
@@ -351,27 +366,127 @@
                             </div>
                         )}
 
-                        {/* SECCIONES ADICIONALES */}
-                        {view === 'assistant' && (
-                            <div className="animate-fade-in max-w-full px-5 pt-3 pb-20">
-                                <div className="flex justify-between items-center mb-5 border-b border-slate-100 dark:border-slate-800 pb-2">
-                                    <h2 className="text-base font-black text-emerald-600 uppercase tracking-widest uppercase">Asistente IA</h2>
-                                    <button onClick={() => setView('reading')} className="p-1 text-slate-300 hover:text-rose-500 transition-colors"><i className="fa-solid fa-xmark text-3xl"></i></button>
+                        {view === 'nav' && (
+                            <div className="animate-fade-in max-w-full px-6 pt-6 pb-32">
+                                <div className="flex justify-between items-end mb-6 border-b border-slate-100 dark:border-slate-800 pb-3">
+                                    <div>
+                                        <h2 className="text-xl font-black text-emerald-600 uppercase tracking-widest">Biblioteca</h2>
+                                        <p className="text-[11px] opacity-50 font-bold uppercase">{bible.books.length} Libros en Memoria</p>
+                                    </div>
+                                    <button onClick={() => setView('reading')} className="p-1 text-slate-300"><i className="fa-solid fa-xmark text-4xl"></i></button>
                                 </div>
-                                <div className="space-y-4">
-                                    <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                    {bible.books.map(b => (
+                                        <button key={b} onClick={() => { setCurrentChapter({book:b, chapter:1}); setView('reading'); }} className={`p-5 rounded-[1.5rem] border-2 font-black text-[14px] text-left active:scale-[0.96] transition-all overflow-hidden whitespace-nowrap overflow-ellipsis ${currentChapter.book === b ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-200' : 'border-slate-50 dark:border-slate-800 dark:bg-slate-800 shadow-sm'}`}>
+                                            <span>{b}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                                {bible.books.length < 10 && (
+                                    <div className="mt-12 p-8 rounded-[2.5rem] bg-emerald-50 dark:bg-emerald-950/40 border-2 border-dashed border-emerald-200 dark:border-emerald-800 text-center">
+                                        <i className="fa-solid fa-cloud-arrow-down text-4xl text-emerald-500 mb-4"></i>
+                                        <h3 className="font-black text-lg text-emerald-800 dark:text-emerald-400 mb-2">Instalar Biblia Completa</h3>
+                                        <p className="text-sm opacity-60 mb-6">Descarga los 66 libros para lectura offline.</p>
+                                        <button onClick={() => setView('versions')} className="bg-emerald-600 text-white px-8 py-3 rounded-2xl font-black text-xs uppercase shadow-xl">Comenzar Descarga</button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {view === 'versions' && (
+                            <div className="animate-fade-in max-w-full px-6 pt-6 pb-32">
+                                <div className="flex justify-between items-center mb-8 border-b border-slate-100 dark:border-slate-800 pb-3">
+                                    <h2 className="text-base font-black text-emerald-600 uppercase tracking-widest">Descargas</h2>
+                                    <button onClick={() => setView('settings')} className="text-slate-300"><i className="fa-solid fa-xmark text-4xl"></i></button>
+                                </div>
+                                <div className="p-8 bg-white dark:bg-slate-800 rounded-[2.5rem] border dark:border-slate-700 shadow-xl">
+                                    <div className="flex justify-between items-start mb-6">
+                                        <div>
+                                            <h3 className="font-black text-xl">Reina Valera 1909</h3>
+                                            <p className="text-xs opacity-50 font-bold uppercase tracking-tighter">Español • Antiguo y Nuevo Testamento</p>
+                                        </div>
+                                        <i className="fa-solid fa-earth-americas text-emerald-500 text-2xl"></i>
+                                    </div>
+                                    
+                                    {dlStatus.downloading ? (
+                                        <div className="space-y-4">
+                                            <div className="flex justify-between text-[11px] font-black uppercase opacity-60">
+                                                <span>{dlStatus.label}</span>
+                                                <span>{dlStatus.progress}%</span>
+                                            </div>
+                                            <div className="w-full h-4 bg-slate-100 dark:bg-slate-900 rounded-full overflow-hidden border dark:border-slate-800">
+                                                <div style={{ width: `${dlStatus.progress}%` }} className="h-full bg-emerald-500 transition-all duration-300"></div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            {dlStatus.error && (
+                                                <div className="mb-6 p-4 bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 rounded-2xl text-xs border border-rose-100 dark:border-rose-900 flex gap-4 items-center animate-shake">
+                                                    <i className="fa-solid fa-circle-exclamation text-xl shrink-0"></i>
+                                                    <span><strong>Error:</strong> {dlStatus.error}. Verifica tu conexión Wi-Fi.</span>
+                                                </div>
+                                            )}
+                                            <button 
+                                                onClick={downloadFullBible} 
+                                                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-5 rounded-[1.5rem] font-black text-sm uppercase shadow-2xl transition-all active:scale-[0.96] flex items-center justify-center gap-4"
+                                            >
+                                                <i className="fa-solid fa-download"></i>
+                                                {bible.books.length > 5 ? 'Actualizar Versión' : 'Descargar e Instalar'}
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {view === 'settings' && (
+                            <div className="animate-fade-in max-w-full px-6 pt-6 pb-32">
+                                <div className="flex justify-between items-center mb-8 border-b border-slate-100 dark:border-slate-800 pb-3">
+                                    <h2 className="text-base font-black text-emerald-600 uppercase tracking-widest">Ajustes</h2>
+                                    <button onClick={() => setView('reading')} className="text-slate-300"><i className="fa-solid fa-xmark text-4xl"></i></button>
+                                </div>
+                                <div className="space-y-6">
+                                    <div className="p-8 rounded-[2.5rem] border-2 dark:bg-slate-800 bg-white shadow-lg">
+                                        <div className="flex justify-between mb-6 items-center">
+                                            <span className="text-[13px] font-black uppercase opacity-40">Escala de Texto</span>
+                                            <span className="text-emerald-600 font-black text-2xl">{fontSize}px</span>
+                                        </div>
+                                        <input type="range" min="14" max="44" value={fontSize} onChange={e => setFontSize(parseInt(e.target.value))} className="w-full" />
+                                    </div>
+                                    
+                                    <button onClick={() => setView('versions')} className={`w-full p-7 ${bible.books.length > 5 ? 'bg-slate-100 dark:bg-slate-800' : 'bg-emerald-600 text-white animate-pulse'} rounded-[2rem] font-black text-[14px] uppercase shadow-xl flex justify-between items-center`}>
+                                        <span>Gestión de Versiones</span>
+                                        <i className="fa-solid fa-cloud-arrow-down"></i>
+                                    </button>
+
+                                    <button onClick={() => { const b = new Blob([JSON.stringify({bible, annotations, favorites, readStatus, fontSize})], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'biblia_pro_backup.json'; a.click(); }} className="w-full p-7 bg-slate-100 dark:bg-slate-800 rounded-[2rem] font-black text-[14px] uppercase shadow-sm flex justify-between items-center border dark:border-slate-700">
+                                        <span>Exportar Backup</span>
+                                        <i className="fa-solid fa-file-export opacity-50"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* SEARCH & ASSISTANT (Compatibilidad iOS) */}
+                        {view === 'assistant' && (
+                            <div className="animate-fade-in px-6 pt-6 pb-32">
+                                <div className="flex justify-between items-center mb-8 pb-3 border-b border-slate-100 dark:border-slate-800">
+                                    <h2 className="text-base font-black text-emerald-600 uppercase tracking-widest">Asistente</h2>
+                                    <button onClick={() => setView('reading')} className="text-slate-300"><i className="fa-solid fa-xmark text-4xl"></i></button>
+                                </div>
+                                <div className="space-y-6">
+                                    <div className="flex bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl">
                                         {['teologo','historiador','pastor'].map(r => (
-                                            <button key={r} onClick={() => { setAsstRole(r); setAsstResponse(""); }} className={`flex-1 py-2 rounded-lg font-bold text-[11px] uppercase tracking-widest transition-all ${asstRole === r ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-md' : 'text-slate-400'}`}>{r}</button>
+                                            <button key={r} onClick={() => { setAsstRole(r); setAsstResponse(""); }} className={`flex-1 py-3 rounded-xl font-bold text-[11px] uppercase tracking-widest transition-all ${asstRole === r ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-md' : 'text-slate-400'}`}>{r}</button>
                                         ))}
                                     </div>
                                     <div className="relative">
-                                        <textarea value={asstQuery} onChange={e => setAsstQuery(e.target.value)} placeholder={`Pregunta al experto ${asstRole}...`} className="w-full p-5 rounded-3xl outline-none border-2 dark:bg-slate-800 dark:border-slate-700 dark:text-white min-h-[160px] text-[21px] shadow-sm" />
-                                        <button onClick={() => { if(!asstQuery.trim()) return; setAiLoading(true); setAsstResponse(""); setTimeout(() => { setAsstResponse(synthesizeAnalysis(asstQuery, asstRole)); setAiLoading(false); }, 600); }} className="absolute bottom-4 right-4 w-14 h-14 bg-emerald-600 text-white rounded-xl flex items-center justify-center shadow-xl active:scale-90 transition-all"><i className={aiLoading ? "fa-solid fa-circle-notch fa-spin text-2xl" : "fa-solid fa-paper-plane text-2xl"}></i></button>
+                                        <textarea value={asstQuery} onChange={e => setAsstQuery(e.target.value)} placeholder={`Pregunta al experto...`} className="w-full p-6 rounded-[2rem] outline-none border-2 dark:bg-slate-800 dark:border-slate-700 dark:text-white min-h-[180px] text-[20px] shadow-sm" />
+                                        <button onClick={() => { if(!asstQuery.trim()) return; setAiLoading(true); setAsstResponse(""); setTimeout(() => { setAsstResponse(synthesizeAnalysis(asstQuery, asstRole)); setAiLoading(false); }, 600); }} className="absolute bottom-5 right-5 w-16 h-16 bg-emerald-600 text-white rounded-[1.5rem] flex items-center justify-center shadow-2xl active:scale-90 transition-all"><i className={aiLoading ? "fa-solid fa-circle-notch fa-spin text-2xl" : "fa-solid fa-paper-plane text-2xl"}></i></button>
                                     </div>
                                     {asstResponse && (
-                                        <div className="p-7 bg-white dark:bg-slate-800 rounded-[40px] shadow-2xl border border-slate-100 dark:border-slate-700 relative animate-fade-in mb-10">
-                                            <button onClick={() => setAsstResponse("")} className="absolute top-5 right-5 text-slate-300"><i className="fa-solid fa-xmark"></i></button>
-                                            <p className="text-[21px] leading-relaxed text-justify opacity-95 font-medium">{asstResponse}</p>
+                                        <div className="p-8 bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-2xl border border-emerald-100 dark:border-slate-700 relative animate-fade-in">
+                                            <p className="text-[20px] leading-relaxed text-justify font-medium opacity-90">{asstResponse}</p>
                                         </div>
                                     )}
                                 </div>
@@ -379,21 +494,21 @@
                         )}
 
                         {view === 'search' && (
-                            <div className="animate-fade-in max-w-full px-5 pt-3 pb-20">
-                                <div className="flex justify-between items-center mb-5 border-b border-slate-100 dark:border-slate-800 pb-2">
-                                    <h2 className="text-base font-black text-emerald-600 uppercase tracking-widest uppercase">Buscador</h2>
-                                    <button onClick={() => setView('reading')} className="p-1 text-slate-300 hover:text-rose-500 transition-colors"><i className="fa-solid fa-xmark text-3xl"></i></button>
+                            <div className="animate-fade-in px-6 pt-6 pb-32">
+                                <div className="flex justify-between items-center mb-8 pb-3 border-b border-slate-100 dark:border-slate-800">
+                                    <h2 className="text-base font-black text-emerald-600 uppercase tracking-widest">Buscador</h2>
+                                    <button onClick={() => setView('reading')} className="text-slate-300"><i className="fa-solid fa-xmark text-4xl"></i></button>
                                 </div>
-                                <div className="space-y-4">
-                                    <div className="flex gap-2">
-                                        <input value={searchQ} onChange={e => setSearchQ(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSearch()} placeholder="Buscar palabra clave..." className="flex-grow p-3 text-[18px] rounded-xl border-2 dark:bg-slate-800 dark:border-slate-700 outline-none" />
-                                        <button onClick={handleSearch} className="bg-emerald-600 text-white px-5 rounded-xl shadow-md"><i className="fa-solid fa-magnifying-glass text-lg"></i></button>
+                                <div className="space-y-6">
+                                    <div className="flex gap-3">
+                                        <input value={searchQ} onChange={e => setSearchQ(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSearch()} placeholder="¿Qué estás buscando?" className="flex-grow p-4 text-[19px] rounded-2xl border-2 dark:bg-slate-800 dark:border-slate-700 outline-none" />
+                                        <button onClick={handleSearch} className="bg-emerald-600 text-white px-6 rounded-2xl shadow-xl"><i className="fa-solid fa-magnifying-glass text-xl"></i></button>
                                     </div>
-                                    <div className="space-y-2">
+                                    <div className="space-y-3">
                                         {searchRes.map((r, i) => (
-                                            <div key={i} onClick={() => { setCurrentChapter({book:r.b, chapter:r.c}); setView('reading'); }} className="p-4 rounded-xl border dark:border-slate-700 bg-white dark:bg-slate-800 cursor-pointer hover:border-emerald-500 transition-all shadow-sm active:scale-95">
+                                            <div key={i} onClick={() => { setCurrentChapter({book:r.b, chapter:r.c}); setView('reading'); }} className="p-5 rounded-[1.5rem] border dark:border-slate-700 bg-white dark:bg-slate-800 cursor-pointer shadow-sm active:scale-[0.98] transition-all">
                                                 <span className="text-[11px] font-black text-emerald-600 uppercase tracking-widest">{r.b} {r.c}:{r.v}</span>
-                                                <p className="text-[18px] opacity-80 italic line-clamp-2">"{r.t}"</p>
+                                                <p className="text-[18px] opacity-80 italic line-clamp-3 mt-1">"{r.t}"</p>
                                             </div>
                                         ))}
                                     </div>
@@ -401,94 +516,6 @@
                             </div>
                         )}
 
-                        {view === 'plans' && (
-                            <div className="animate-fade-in max-w-full px-5 pt-3 pb-20">
-                                <div className="flex justify-between items-center mb-5 border-b border-slate-100 dark:border-slate-800 pb-2">
-                                    <h2 className="text-base font-black text-emerald-600 uppercase tracking-widest uppercase">Planes de Lectura</h2>
-                                    <button onClick={() => setView('reading')} className="p-1 text-slate-300 hover:text-rose-500 transition-colors"><i className="fa-solid fa-xmark text-3xl"></i></button>
-                                </div>
-                                <div className="space-y-5">
-                                    {INITIAL_PLANS.map(p => {
-                                        const doneCount = p.days.filter(d => readStatus[`${d.b}-${d.c}`]).length;
-                                        const progress = Math.round((doneCount / p.days.length) * 100);
-                                        return (
-                                            <div key={p.id} className="p-5 bg-slate-50 dark:bg-slate-800/40 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm">
-                                                <div className="flex justify-between items-center mb-2">
-                                                    <h3 className="font-black text-base text-emerald-700 dark:text-emerald-400">{p.title}</h3>
-                                                    <span className="text-[13px] font-black bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-full">{progress}%</span>
-                                                </div>
-                                                <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden mb-4"><div style={{width: `${progress}%`}} className="h-full bg-emerald-500 transition-all duration-1000"></div></div>
-                                                <div className="grid grid-cols-1 gap-2">
-                                                    {p.days.map((d, idx) => {
-                                                        const isDone = readStatus[`${d.b}-${d.c}`];
-                                                        return (
-                                                            <button key={idx} onClick={() => { setCurrentChapter({book:d.b, chapter:d.c}); setView('reading'); }} className={`flex justify-between items-center p-3 rounded-xl border text-[14px] font-bold transition-all active:scale-95 ${isDone ? 'bg-emerald-50 border-emerald-100 text-emerald-700 dark:bg-emerald-900/20' : 'bg-white border-slate-100 dark:bg-slate-800 dark:border-slate-700 opacity-80'}`}>
-                                                                <span>Día {idx+1}: {d.b} {d.c}</span>
-                                                                {isDone ? <i className="fa-solid fa-circle-check text-emerald-500 text-xl"></i> : <i className="fa-regular fa-circle text-slate-300 text-xl"></i>}
-                                                            </button>
-                                                        );
-                                                    })}
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        )}
-
-                        {view === 'favorites' && (
-                            <div className="animate-fade-in max-w-full px-5 pt-3 pb-20">
-                                <div className="flex justify-between items-center mb-5 border-b border-slate-100 dark:border-slate-800 pb-2">
-                                    <h2 className="text-base font-black text-emerald-600 uppercase tracking-widest uppercase">Favoritos</h2>
-                                    <button onClick={() => setView('reading')} className="p-1 text-slate-300 hover:text-rose-500 transition-colors"><i className="fa-solid fa-xmark text-3xl"></i></button>
-                                </div>
-                                <div className="space-y-4">
-                                    {favorites.length === 0 && <p className="text-center py-20 opacity-40 italic text-[18px]">Sin versículos guardados.</p>}
-                                    {favorites.map(f => (
-                                        <div key={f.id} className="p-5 rounded-3xl border dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm relative active:scale-95 transition-all mb-2">
-                                            <div className="flex justify-between items-center mb-2">
-                                                <span onClick={() => { const p = f.id.split('-'); setCurrentChapter({book:p[0], chapter:parseInt(p[1])}); setView('reading'); }} className="text-[12px] font-black text-emerald-600 underline cursor-pointer tracking-widest uppercase">{f.ref}</span>
-                                                <button onClick={() => setFavorites(prev => prev.filter(x=>x.id!==f.id))} className="text-rose-400 p-2"><i className="fa-solid fa-trash-can text-lg"></i></button>
-                                            </div>
-                                            <p className="text-[19px] italic opacity-90 leading-relaxed font-medium">"{f.text}"</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {view === 'nav' && (
-                            <div className="animate-fade-in max-w-full px-5 pt-3 pb-20">
-                                <div className="flex justify-between items-center mb-5 border-b border-slate-100 dark:border-slate-800 pb-2">
-                                    <h2 className="text-base font-black text-emerald-600 uppercase tracking-widest uppercase">Biblioteca</h2>
-                                    <button onClick={() => setView('reading')} className="p-1 text-slate-300 hover:text-rose-500 transition-colors"><i className="fa-solid fa-xmark text-3xl"></i></button>
-                                </div>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                                    {bible.books.map(b => (
-                                        <button key={b} onClick={() => { setCurrentChapter({book:b, chapter:1}); setView('reading'); }} className={`p-5 rounded-xl border-2 font-black text-sm text-left active:scale-95 transition-all ${currentChapter.book === b ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-200' : 'border-slate-50 dark:border-slate-800 dark:bg-slate-800'}`}><span>{b}</span></button>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {view === 'settings' && (
-                            <div className="animate-fade-in max-w-full px-5 pt-3 pb-20">
-                                <div className="flex justify-between items-center mb-5 border-b border-slate-100 dark:border-slate-800 pb-2">
-                                    <h2 className="text-base font-black text-emerald-600 uppercase tracking-widest uppercase">Ajustes</h2>
-                                    <button onClick={() => setView('reading')} className="p-1 text-slate-300 hover:text-rose-500 transition-colors"><i className="fa-solid fa-xmark text-3xl"></i></button>
-                                </div>
-                                <div className="space-y-8">
-                                    <div className="p-8 rounded-[40px] border-2 dark:bg-slate-800 bg-white shadow-lg">
-                                        <div className="flex justify-between mb-5 items-center">
-                                            <span className="text-[13px] font-black uppercase tracking-wider opacity-40">Escala de Lectura</span>
-                                            <span className="text-emerald-600 font-black text-2xl">{fontSize}px</span>
-                                        </div>
-                                        <input type="range" min="14" max="44" value={fontSize} onChange={e => setFontSize(parseInt(e.target.value))} className="w-full" />
-                                    </div>
-                                    <button onClick={() => { const b = new Blob([JSON.stringify({bible, annotations, favorites, readStatus, fontSize})], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'biblia_backup.json'; a.click(); }} className="w-full p-6 bg-slate-100 dark:bg-slate-800 rounded-2xl font-black text-[13px] uppercase shadow-sm">Exportar Backup Local</button>
-                                </div>
-                            </div>
-                        )}
                     </main>
                 </div>
             );
