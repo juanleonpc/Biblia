@@ -3,19 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Biblia Interactiva</title>
+    <title>Biblia Interactiva Pro</title>
     
-    <!-- Configuración PWA para iPhone y Android -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Biblia">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3389/3389081.png">
     
-    <!-- Manifiesto como Data URI para mantener el archivo único -->
-    <link rel="manifest" href='data:application/manifest+json,{"name":"Biblia Interactiva","short_name":"Biblia","start_url":".","display":"standalone","background_color":"#ffffff","theme_color":"#10b981","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/3389/3389081.png","sizes":"512x512","type":"image/png"}]}'>
-
-    <!-- Librerías Base -->
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -27,19 +21,14 @@
             darkMode: 'class',
             theme: {
                 extend: {
-                    colors: {
-                        slate: { 950: '#020617' }
-                    },
+                    colors: { slate: { 950: '#020617' } },
                     animation: {
-                        'bounce-slow': 'bounce 3s infinite',
-                        'flash': 'flash 1.5s ease-out',
-                        'spin-slow': 'spin 3s linear infinite',
+                        'fade-in': 'fadeIn 0.2s ease-out forwards',
+                        'slide-up': 'slideUp 0.3s ease-out forwards',
                     },
                     keyframes: {
-                        flash: {
-                            '0%, 100%': { backgroundColor: 'transparent' },
-                            '50%': { backgroundColor: 'rgba(16, 185, 129, 0.2)' },
-                        }
+                        fadeIn: { '0%': { opacity: 0 }, '100%': { opacity: 1 } },
+                        slideUp: { '0%': { transform: 'translateY(10px)', opacity: 0 }, '100%': { transform: 'translateY(0)', opacity: 1 } }
                     }
                 }
             }
@@ -47,1006 +36,615 @@
     </script>
 
     <style>
-        body { margin: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
-        .loading-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background-color: #f8fafc; color: #475569; }
+        body { margin: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #10b981; cursor: pointer; margin-top: -6px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); transition: transform 0.1s; }
-        input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: rgba(0,0,0,0.1); border-radius: 2px; }
-        .dark input[type=range]::-webkit-slider-runnable-track { background: rgba(255,255,255,0.2); }
-
-        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .highlight-yellow { background-color: #fef9c3; border-left: 3px solid #facc15; } 
-        .highlight-green { background-color: #dcfce7; border-left: 3px solid #4ade80; }
-        .highlight-blue { background-color: #dbeafe; border-left: 3px solid #60a5fa; }
-        .highlight-red { background-color: #fee2e2; border-left: 3px solid #f87171; }
-        
-        .reading-active { background-color: #ffedd5 !important; border-left: 3px solid #f97316 !important; transition: all 0.3s; }
+        .highlight-yellow { background-color: #fef9c3; border-left: 4px solid #facc15; } 
+        .highlight-green { background-color: #dcfce7; border-left: 4px solid #4ade80; }
+        .highlight-blue { background-color: #dbeafe; border-left: 4px solid #60a5fa; }
+        .highlight-red { background-color: #fee2e2; border-left: 4px solid #f87171; }
+        .reading-active { background-color: #ffedd5 !important; border-left: 4px solid #f97316 !important; }
 
         .dark .highlight-yellow { background-color: #422006; border-left-color: #eab308; color: #fef08a; }
         .dark .highlight-green { background-color: #052e16; border-left-color: #22c55e; color: #bbf7d0; }
         .dark .highlight-blue { background-color: #172554; border-left-color: #3b82f6; color: #bfdbfe; }
         .dark .highlight-red { background-color: #450a0a; border-left-color: #ef4444; color: #fecaca; }
-        .dark .reading-active { background-color: #431407 !important; border-left-color: #f97316 !important; color: #ffedd5; }
+        .dark .reading-active { background-color: #431407 !important; color: #ffedd5; }
         
-        .animate-target-verse { animation: flash 2s ease-in-out; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* Altura base para la virtualización. Clave para el cálculo de scroll offset */
-        .verse-virtual-row { min-height: 60px; } 
+        input[type=range] { -webkit-appearance: none; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #10b981; cursor: pointer; margin-top: -6px; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; background: rgba(0,0,0,0.1); border-radius: 2px; }
     </style>
 </head>
 <body class="bg-gray-50 text-slate-800 h-screen overflow-hidden transition-colors duration-300">
-    
-    <div id="root" class="h-full flex justify-center w-full">
-        <div class="loading-screen">
-            <h2 class="text-2xl font-bold mb-2">Biblia Interactiva</h2>
-            <p class="text-sm opacity-70">Iniciando Base de Datos...</p>
-        </div>
-    </div>
+    <div id="root" class="h-full flex justify-center w-full"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef, useMemo, Component } = React;
+        const { useState, useEffect, useRef } = React;
 
-        // --- IDB HELPER (NATIVE INDEXEDDB WRAPPER) ---
-        const DB_CONFIG = { name: 'BibleAppDB', version: 1, store: 'appData' };
-        
-        const dbHelper = {
-            db: null,
-            init: () => new Promise((resolve, reject) => {
+        // --- MOTOR IA INTERNO ---
+        const apiKey = ""; 
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+        async function callAI(prompt, systemInstruction = "Eres un erudito bÃ­blico. Responde de forma profunda y clara. Usa Markdown.") {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        systemInstruction: { parts: [{ text: systemInstruction }] }
+                    })
+                });
+                const data = await response.json();
+                return data.candidates?.[0]?.content?.parts?.[0]?.text || "No se pudo obtener respuesta.";
+            } catch (e) { return "Error de conexiÃ³n con el motor de IA."; }
+        }
+
+        // --- BASE DE DATOS ---
+        const DB_CONFIG = { name: 'BibleFinalDB', version: 3, store: 'appData' };
+        const db = {
+            instance: null,
+            init: () => new Promise(res => {
                 const req = indexedDB.open(DB_CONFIG.name, DB_CONFIG.version);
-                req.onupgradeneeded = (e) => {
-                    const db = e.target.result;
-                    if (!db.objectStoreNames.contains(DB_CONFIG.store)) {
-                        db.createObjectStore(DB_CONFIG.store);
-                    }
+                req.onupgradeneeded = e => {
+                    const database = e.target.result;
+                    if (!database.objectStoreNames.contains(DB_CONFIG.store)) database.createObjectStore(DB_CONFIG.store);
                 };
-                req.onsuccess = (e) => { dbHelper.db = e.target.result; resolve(); };
-                req.onerror = (e) => reject(e.target.error);
+                req.onsuccess = e => { db.instance = e.target.result; res(); };
             }),
-            get: (key) => new Promise((resolve, reject) => {
-                if (!dbHelper.db) return reject("DB not initialized");
-                const tx = dbHelper.db.transaction(DB_CONFIG.store, 'readonly');
-                const req = tx.objectStore(DB_CONFIG.store).get(key);
-                req.onsuccess = () => resolve(req.result);
-                req.onerror = () => reject(req.error);
+            get: k => new Promise(res => {
+                const tx = db.instance.transaction(DB_CONFIG.store, 'readonly');
+                const req = tx.objectStore(DB_CONFIG.store).get(k);
+                req.onsuccess = () => res(req.result);
             }),
-            set: (key, val) => new Promise((resolve, reject) => {
-                if (!dbHelper.db) return reject("DB not initialized");
-                const tx = dbHelper.db.transaction(DB_CONFIG.store, 'readwrite');
-                const req = tx.objectStore(DB_CONFIG.store).put(val, key);
-                req.onsuccess = () => resolve();
-                req.onerror = () => reject(req.error);
+            set: (k, v) => new Promise(res => {
+                const tx = db.instance.transaction(DB_CONFIG.store, 'readwrite');
+                const req = tx.objectStore(DB_CONFIG.store).put(v, k);
+                req.onsuccess = () => res();
             })
         };
 
-        // --- ERROR BOUNDARY ---
-        class ErrorBoundary extends Component {
-            constructor(props) { super(props); this.state = { hasError: false, error: null }; }
-            static getDerivedStateFromError(error) { return { hasError: true, error }; }
-            render() {
-                if (this.state.hasError) {
-                    return (
-                        <div className="p-8 text-center h-screen flex flex-col justify-center items-center bg-red-50 text-red-900">
-                            <i className="fa-solid fa-triangle-exclamation text-4xl mb-4 text-red-500"></i>
-                            <h2 className="text-xl font-bold mb-2">Algo salió mal</h2>
-                            <p className="mb-4 text-sm opacity-80 max-w-md">{this.state.error?.message}</p>
-                            <div className="flex gap-2">
-                                <button onClick={() => window.location.reload()} className="bg-indigo-600 text-white px-4 py-2 rounded shadow hover:bg-indigo-700 transition">Recargar</button>
-                                <button onClick={async () => { 
-                                    if(confirm("Esto borrará tus datos locales para recuperar la app. ¿Seguro?")) {
-                                        localStorage.clear(); 
-                                        const req = indexedDB.deleteDatabase(DB_CONFIG.name);
-                                        req.onsuccess = () => window.location.reload();
-                                    }
-                                }} className="bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700 transition">Reset Total</button>
-                            </div>
-                        </div>
-                    );
-                }
-                return this.props.children;
-            }
-        }
-        
-        const predefinedPlans = [
-            { id: 'intro_faith', title: 'Básicos de la Fe', desc: '3 días fundamentales.', icon: 'fa-seedling', days: [{ book: 'Juan', chapter: 1 }, { book: 'Juan', chapter: 3 }, { book: 'Romanos', chapter: 8 }] },
-            { id: 'psalms_wisdom', title: 'Salmos de Paz', desc: 'Sabiduría para el alma.', icon: 'fa-dove', days: [{ book: 'Salmos', chapter: 1 }, { book: 'Salmos', chapter: 23 }] },
-            { id: 'genesis_start', title: 'El Comienzo', desc: 'La historia de la creación.', icon: 'fa-earth-americas', days: [{ book: 'Génesis', chapter: 1 }, { book: 'Génesis', chapter: 2 }] },
-            { id: 'proverbs_wisdom', title: 'Sabiduría Diaria', desc: 'Consejos para la vida práctica.', icon: 'fa-lightbulb', days: [{ book: 'Proverbios', chapter: 1 }, { book: 'Proverbios', chapter: 3 }, { book: 'Proverbios', chapter: 31 }] },
-            { id: 'gospel_mark', title: 'Vida de Jesús', desc: 'El ministerio rápido de Cristo.', icon: 'fa-hands-praying', days: [{ book: 'Marcos', chapter: 1 }, { book: 'Marcos', chapter: 2 }, { book: 'Marcos', chapter: 16 }] },
-            { id: 'paul_letters', title: 'Cartas de Pablo', desc: 'Instrucciones para la iglesia.', icon: 'fa-scroll', days: [{ book: 'Gálatas', chapter: 5 }, { book: 'Efesios', chapter: 6 }, { book: 'Filipenses', chapter: 4 }] },
-            { id: 'prophets_hope', title: 'Profecías de Esperanza', desc: 'Promesas del Mesías.', icon: 'fa-eye', days: [{ book: 'Isaías', chapter: 53 }, { book: 'Isaías', chapter: 60 }] },
-            { id: 'history_israel', title: 'Héroes de la Fe', desc: 'Historia del pueblo de Dios.', icon: 'fa-shield-halved', days: [{ book: 'Josué', chapter: 1 }, { book: 'Jueces', chapter: 6 }] }
-        ];
-
-        async function callGeminiAPI(promptText, userKey, isJson = false) {
-            if (!userKey) return new Promise(resolve => setTimeout(() => resolve("Modo Simulación: Para usar la IA real, ve a Ajustes y añade tu API Key de Gemini."), 800));
-            
-            const apiKey = userKey; 
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            const payload = { contents: [{ parts: [{ text: promptText }] }] };
-            let response = null;
-            let attempts = 0;
-            const maxRetries = 3;
-
-            while (attempts < maxRetries) {
-                try {
-                    const fetchResponse = await fetch(apiUrl, {
-                        method: 'POST', 
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    
-                    if (fetchResponse.ok) {
-                        response = fetchResponse;
-                        break; 
-                    } else if (fetchResponse.status === 429 || fetchResponse.status >= 500) {
-                        attempts++;
-                        if (attempts < maxRetries) {
-                            const delay = Math.pow(2, attempts) * 1000;
-                            await new Promise(resolve => setTimeout(resolve, delay));
-                        } else {
-                            throw new Error(`API Error ${fetchResponse.status} after ${maxRetries} attempts.`);
-                        }
-                    } else {
-                        throw new Error(`API Error: ${fetchResponse.statusText}`);
-                    }
-                } catch (error) {
-                    attempts++;
-                    if (attempts >= maxRetries) {
-                        return isJson ? "[]" : `Error de conexión: ${error.message}`;
-                    }
-                    const delay = Math.pow(2, attempts) * 1000; 
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                }
-            }
-            
-            if (response) {
-                try {
-                    const data = await response.json();
-                    return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-                } catch (error) {
-                    return isJson ? "[]" : `Error al procesar la respuesta: ${error.message}`;
-                }
-            }
-            
-            return isJson ? "[]" : "Error desconocido en la llamada a la API.";
-        }
-
-        const initialData = {
-            isDemo: true, 
-            versions: [{ id: 'custom', name: 'Mi Biblioteca' }],
-            books: ['Génesis', 'Éxodo', 'Salmos', 'Juan', 'Romanos'],
+        const initialBible = {
+            books: ['GÃ©nesis', 'Salmos', 'Juan', 'Romanos'],
             content: {
-                'Génesis': {
-                    1: ["En el principio creó Dios los cielos y la tierra.", "Y la tierra estaba desordenada y vacía...", "Y dijo Dios: Sea la luz; y fue la luz.", "Y vio Dios que la luz era buena...", "Y llamó Dios a la luz Día..."],
-                    2: ["Fueron, pues, acabados los cielos y la tierra...", "Y acabó Dios en el día séptimo la obra que hizo...", "Y bendijo Dios al día séptimo..."]
-                },
-                'Éxodo': {
-                    1: ["Estos son los nombres de los hijos de Israel...", "Rubén, Simeón, Leví y Judá;", "Isacar, Zabulón y Benjamín;", "Dan, Neftalí, Gad y Aser.", "Todas las personas..."],
-                    20: ["Y habló Dios todas estas palabras, diciendo:", "Yo soy Jehová tu Dios...", "No tendrás dioses ajenos...", "No te harás imagen..."]
-                },
-                'Salmos': {
-                    1: ["Bienaventurado el varón...", "Sino que en la ley de Jehová...", "Será como árbol plantado..."],
-                    23: ["Jehová es mi pastor; nada me faltará.", "En lugares de delicados pastos...", "Confortará mi alma...", "Aunque ande en valle de sombra..."]
-                },
-                'Juan': {
-                    1: ["En el principio era el Verbo...", "Este era en el principio con Dios.", "Todas las cosas por él fueron hechas...", "En él estaba la vida..."],
-                    3: ["Había un hombre de los fariseos...", "Este vino a Jesús de noche...", "Respondió Jesús y le dijo..."]
-                },
-                'Romanos': {
-                    8: ["Ahora, pues, ninguna condenación hay...", "Porque la ley del Espíritu...", "Porque lo que era imposible para la ley..."]
-                }
+                'GÃ©nesis': { 1: ["En el principio creÃ³ Dios los cielos y la tierra.", "Y la tierra estaba desordenada y vacÃ­a...", "Y dijo Dios: Sea la luz; y fue la luz."] },
+                'Salmos': { 1: ["Bienaventurado el varÃ³n...", "Sino que en la ley de JehovÃ¡...", "SerÃ¡ como Ã¡rbol plantado..."], 23: ["JehovÃ¡ es mi pastor; nada me faltarÃ¡.", "En lugares de delicados pastos me harÃ¡ descansar...", "ConfortarÃ¡ mi alma..."] },
+                'Juan': { 1: ["En el principio era el Verbo...", "Todas las cosas por Ã©l fueron hechas...", "En Ã©l estaba la vida..."], 3: ["HabÃ­a un hombre de los fariseos...", "RespondiÃ³ JesÃºs y le dijo..."] },
+                'Romanos': { 8: ["Ahora, pues, ninguna condenaciÃ³n hay...", "Porque la ley del EspÃ­ritu de vida..."] }
             }
         };
-        
-        const VERSE_HEIGHT_PX = 60; 
-        const OVERSCAN_COUNT = 5; 
+
+        const PREDEFINED_PLANS = [
+            { id: 'devotional_1', title: 'Fundamentos de Fe', desc: 'Aprende los pilares del cristianismo.', days: [{b:'Juan', c:1}, {b:'Juan', c:3}, {b:'Romanos', c:8}] },
+            { id: 'wisdom_1', title: 'Salmos de Esperanza', desc: 'Consuelo para momentos difÃ­ciles.', days: [{b:'Salmos', c:23}, {b:'Salmos', c:1}] }
+        ];
 
         function App() {
-            const [isLoadingDB, setIsLoadingDB] = useState(true);
-            const [bibleData, setBibleData] = useState(null);
+            const [ready, setReady] = useState(false);
+            const [view, setView] = useState('reading');
+            const [bible, setBible] = useState(null);
             const [annotations, setAnnotations] = useState({});
             const [favorites, setFavorites] = useState([]);
             const [readStatus, setReadStatus] = useState({});
-
-            const [scrollPosition, setScrollPosition] = useState(0);
-            const [containerHeight, setContainerHeight] = useState(0);
             
-            const [activePlanId, setActivePlanId] = useState(() => localStorage.getItem('activePlanId') || null);
-            const [fontSize, setFontSize] = useState(() => parseInt(localStorage.getItem('bibleFS')) || 18);
-            const [fontFamily, setFontFamily] = useState(() => localStorage.getItem('bibleFontFamily') || 'serif');
-            const [lineHeight, setLineHeight] = useState(() => parseFloat(localStorage.getItem('bibleLineHeight')) || 1.6);
-            const [textAlign, setTextAlign] = useState(() => localStorage.getItem('bibleTextAlign') || 'left');
-            const [apiKey, setApiKey] = useState(() => localStorage.getItem('geminiApiKey') || "");
-            const [inputApiKey, setInputApiKey] = useState(() => localStorage.getItem('geminiApiKey') || "");
-            const [apiKeySaved, setApiKeySaved] = useState(false);
-
-            const [darkMode, setDarkMode] = useState(() => localStorage.getItem('bibleDarkMode') === 'true');
-            const [voiceURI, setVoiceURI] = useState(() => localStorage.getItem('bibleVoiceURI') || "");
-            const [voiceRate, setVoiceRate] = useState(() => parseFloat(localStorage.getItem('bibleVoiceRate')) || 1.0);
-            
-            const [availableVoices, setAvailableVoices] = useState([]);
+            const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
+            const [fontSize, setFontSize] = useState(() => parseInt(localStorage.getItem('fontSize')) || 18);
             const [loadedSegments, setLoadedSegments] = useState([]);
-            const [scrollTargetId, setScrollTargetId] = useState(null);
-            const [view, setView] = useState('reading'); 
-            const [navStep, setNavStep] = useState('books'); 
-            const [navSelectedBook, setNavSelectedBook] = useState(null);
-            const [favSearch, setFavSearch] = useState("");
-            const [favFilterBook, setFavFilterBook] = useState("all");
-            const [favSort, setFavSort] = useState("recent");
-            const [copyFeedback, setCopyFeedback] = useState(null);
-            const [isReading, setIsReading] = useState(false);
-            const [readingVerseIndex, setReadingVerseIndex] = useState(null);
-            const synthRef = useRef(window.speechSynthesis);
-            const [planTab, setPlanTab] = useState('active');
-            const [importText, setImportText] = useState("");
-            const [importBook, setImportBook] = useState("");
-            const [importChapter, setImportChapter] = useState("");
-            const [searchQuery, setSearchQuery] = useState("");
-            const [searchResults, setSearchResults] = useState([]);
-            const [activeToolId, setActiveToolId] = useState(null);
-            const [inlineAiResp, setInlineAiResp] = useState("");
-            const [inlineLoad, setInlineLoad] = useState(false);
-            const [noteInput, setNoteInput] = useState(""); 
-            const [assistantResponse, setAssistantResponse] = useState(""); 
-            const [assistantPersona, setAssistantPersona] = useState('theologian'); 
-            const [generalAiLoad, setGeneralAiLoad] = useState(false);
-            const [userQ, setUserQ] = useState("");
-            const [isDownloading, setIsDownloading] = useState(false);
-            const mainScrollRef = useRef(null);
-            const searchInputRef = useRef(null);
+            
+            const [navStep, setNavStep] = useState('books');
+            const [navBook, setNavBook] = useState(null);
+            
+            const [activeV, setActiveV] = useState(null);
+            const [noteInput, setNoteInput] = useState("");
+            const [editingNote, setEditingNote] = useState({ vId: null, nId: null, text: "" });
+            
+            const [searchQ, setSearchQ] = useState("");
+            const [searchRes, setSearchRes] = useState([]);
+            
+            const [aiLoad, setAiLoad] = useState(false);
+            const [aiResp, setAiResp] = useState("");
+            
+            const [assistantPersona, setAssistantPersona] = useState('teologo'); 
+            const [assistantQuery, setAssistantQuery] = useState("");
+            const [assistantResponse, setAssistantResponse] = useState("");
+
+            const synth = useRef(window.speechSynthesis);
 
             useEffect(() => {
-                const initApp = async () => {
-                    try {
-                        await dbHelper.init();
-                        let dbData = await dbHelper.get('bibleData');
-                        let dbAnno = await dbHelper.get('annotations');
-                        let dbFav = await dbHelper.get('favorites');
-                        let dbRead = await dbHelper.get('readStatus');
-
-                        if (!dbData) {
-                            const lsData = localStorage.getItem('myBibleData_v5');
-                            const lsAnno = localStorage.getItem('myBibleAnnotations_v5');
-                            const lsFav = localStorage.getItem('bibleFav_v5');
-                            const lsRead = localStorage.getItem('bibleReadStatus_v5');
-
-                            dbData = lsData ? JSON.parse(lsData) : initialData;
-                            dbAnno = lsAnno ? JSON.parse(lsAnno) : {};
-                            dbFav = lsFav ? JSON.parse(lsFav) : [];
-                            dbRead = lsRead ? JSON.parse(lsRead) : {};
-
-                            await dbHelper.set('bibleData', dbData);
-                            await dbHelper.set('annotations', dbAnno);
-                            await dbHelper.set('favorites', dbFav);
-                            await dbHelper.set('readStatus', dbRead);
-
-                            localStorage.removeItem('myBibleData_v5');
-                            localStorage.removeItem('myBibleAnnotations_v5');
-                            localStorage.removeItem('bibleFav_v5');
-                            localStorage.removeItem('bibleReadStatus_v5');
-                        }
-
-                        if (dbAnno) {
-                            Object.keys(dbAnno).forEach(id => {
-                                if (dbAnno[id].note && typeof dbAnno[id].note === 'string') {
-                                    if (!dbAnno[id].notes || !Array.isArray(dbAnno[id].notes)) {
-                                        dbAnno[id].notes = [{ 
-                                            id: Date.now(), 
-                                            content: dbAnno[id].note, 
-                                            date: new Date().toISOString() 
-                                        }];
-                                    }
-                                    delete dbAnno[id].note;
-                                }
-                            });
-                        }
-
-                        setBibleData(dbData);
-                        setAnnotations(dbAnno || {});
-                        setFavorites(dbFav || []);
-                        setReadStatus(dbRead || {});
-                        
-                        const safeBook = (dbData.books && dbData.books.length > 0) ? dbData.books[0] : '';
-                        const safeChap = (safeBook && dbData.content && dbData.content[safeBook]) ? Object.keys(dbData.content[safeBook])[0] : 1;
-                        setLoadedSegments(safeBook ? [{ book: safeBook, chapter: parseInt(safeChap) }] : []);
-
-                    } catch (e) {
-                        console.error("Error DB Init:", e);
-                        setBibleData(initialData);
-                    } finally {
-                        setIsLoadingDB(false);
-                    }
-                };
-                initApp();
-            }, []);
-
-            useEffect(() => {
-                const mainElement = mainScrollRef.current;
-                if (!mainElement || view !== 'reading') return;
-                setContainerHeight(mainElement.clientHeight);
-                const handleScroll = () => {
-                    setScrollPosition(mainElement.scrollTop);
-                };
-                mainElement.addEventListener('scroll', handleScroll);
-                const resizeObserver = new ResizeObserver(entries => {
-                    if (entries[0]) setContainerHeight(entries[0].contentRect.height);
+                db.init().then(async () => {
+                    const b = await db.get('bible') || initialBible;
+                    const a = await db.get('annotations') || {};
+                    const f = await db.get('favorites') || [];
+                    const r = await db.get('readStatus') || {};
+                    setBible(b); setAnnotations(a); setFavorites(f); setReadStatus(r);
+                    setLoadedSegments([{ book: b.books[0], chapter: 1 }]);
+                    setReady(true);
                 });
-                resizeObserver.observe(mainElement);
-                return () => {
-                    mainElement.removeEventListener('scroll', handleScroll);
-                    resizeObserver.unobserve(mainElement);
-                };
-            }, [view]);
-
-            useEffect(() => { if (!isLoadingDB && bibleData) dbHelper.set('bibleData', bibleData); }, [bibleData, isLoadingDB]); 
-            useEffect(() => { if (!isLoadingDB) dbHelper.set('annotations', annotations); }, [annotations, isLoadingDB]);
-            useEffect(() => { if (!isLoadingDB) dbHelper.set('favorites', favorites); }, [favorites, isLoadingDB]);
-            useEffect(() => { if (!isLoadingDB) dbHelper.set('readStatus', readStatus); }, [readStatus, isLoadingDB]);
-            
-            useEffect(() => { localStorage.setItem('bibleFS', fontSize); }, [fontSize]);
-            useEffect(() => { localStorage.setItem('bibleFontFamily', fontFamily); }, [fontFamily]);
-            useEffect(() => { localStorage.setItem('bibleLineHeight', lineHeight); }, [lineHeight]);
-            useEffect(() => { localStorage.setItem('bibleTextAlign', textAlign); }, [textAlign]);
-            useEffect(() => { localStorage.setItem('geminiApiKey', apiKey); }, [apiKey]);
-            useEffect(() => { if(activePlanId) localStorage.setItem('activePlanId', activePlanId); else localStorage.removeItem('activePlanId'); }, [activePlanId]);
-            useEffect(() => { localStorage.setItem('bibleVoiceURI', voiceURI); }, [voiceURI]);
-            useEffect(() => { localStorage.setItem('bibleVoiceRate', voiceRate); }, [voiceRate]);
-            
-            useEffect(() => {
-                localStorage.setItem('bibleDarkMode', darkMode);
-                if (darkMode) { document.body.classList.add('dark', 'bg-slate-950', 'text-slate-100'); document.body.classList.remove('bg-gray-50', 'text-slate-800'); }
-                else { document.body.classList.remove('dark', 'bg-slate-950', 'text-slate-100'); document.body.classList.add('bg-gray-50', 'text-slate-800'); }
-            }, [darkMode]);
-            
-            useEffect(() => {
-                const loadVoices = () => {
-                    const voices = window.speechSynthesis.getVoices();
-                    const esVoices = voices.filter(v => v.lang.startsWith('es'));
-                    setAvailableVoices(esVoices.length > 0 ? esVoices : voices);
-                };
-                loadVoices();
-                if (window.speechSynthesis.onvoiceschanged !== undefined) window.speechSynthesis.onvoiceschanged = loadVoices;
             }, []);
-            
-            useEffect(() => { return () => { if(synthRef.current) synthRef.current.cancel(); } }, []);
-            useEffect(() => { stopReading(); return () => stopReading(); }, [loadedSegments]);
-            
+
             useEffect(() => {
-                if (view !== 'reading' || !scrollTargetId) return;
-                const checkElement = setInterval(() => {
-                    const el = document.getElementById(scrollTargetId);
-                    if (el && mainScrollRef.current) {
-                        clearInterval(checkElement);
-                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        el.classList.add('animate-target-verse');
-                        setTimeout(() => el.classList.remove('animate-target-verse'), 2000);
-                        setScrollTargetId(null);
-                    }
-                }, 50);
-                return () => clearInterval(checkElement);
-            }, [view, scrollTargetId, loadedSegments]);
+                if (!ready) return;
+                db.set('bible', bible); db.set('annotations', annotations);
+                db.set('favorites', favorites); db.set('readStatus', readStatus);
+                localStorage.setItem('darkMode', darkMode);
+                localStorage.setItem('fontSize', fontSize);
+                document.body.classList.toggle('dark', darkMode);
+            }, [bible, annotations, favorites, readStatus, darkMode, fontSize, ready]);
 
-            const getFontFamilyStyle = () => {
-                switch(fontFamily) {
-                    case 'sans': return 'Segoe UI, Roboto, Helvetica, Arial, sans-serif';
-                    case 'mono': return 'Courier New, monospace';
-                    default: return 'Georgia, Times New Roman, serif';
-                }
+            // Handlers
+            const analyzeVerse = async (txt, ref) => {
+                setAiLoad(true); setAiResp("");
+                const res = await callAI(`Analiza este versÃ­culo detalladamente: "${txt}" (${ref}). Proporciona Contexto HistÃ³rico, Significado TeolÃ³gico y AplicaciÃ³n en puntos concretos.`);
+                setAiResp(res); setAiLoad(false);
             };
 
-            const handleImportText = () => {
-                if(!importText.trim()) return;
-                const raw = importText.replace(/[\r\n]+/g, ' '); 
-                const split = raw.split(/(\d+(?:[\.:\)]\s|\s))/);
-                let v = [];
-                if (split.length > 2) { 
-                    for (let i = 1; i < split.length; i += 2) { 
-                        if(split[i+1]?.trim()) v.push(split[i+1].trim()); 
-                    } 
-                }
-                if (v.length === 0) v = importText.split(/\n/).filter(x => x.trim());
-                if (v.length === 0) { 
-                    console.error("Error: Texto inválido o no se pudieron extraer versículos."); 
-                    return; 
-                }
-                const tb = importBook.trim() || "Libro";
-                const tc = parseInt(importChapter) || 1;
-                let nd = { ...bibleData };
-                if (nd.isDemo) {
-                    nd = { versions: [{ id: 'custom', name: 'Mi Biblioteca' }], books: [], content: {}, isDemo: false };
-                    setFavorites([]); setAnnotations({}); setReadStatus({});
-                    console.log("Se ha detectado tu primera importación. Se han eliminado los datos de demostración.");
-                }
-                if (!nd.books.includes(tb)) { nd.books.push(tb); nd.content[tb] = {}; }
-                else if (!nd.content[tb]) { nd.content[tb] = {}; }
-                nd.content[tb][tc] = v;
-                setBibleData(nd); 
-                setLoadedSegments([{ book: tb, chapter: tc }]); 
-                setView('reading');
+            const toggleRead = (b, c) => {
+                const id = `${b}-${c}`;
+                setReadStatus(p => {
+                    const n = { ...p };
+                    if (n[id]) delete n[id]; else n[id] = new Date().toISOString();
+                    return n;
+                });
             };
 
-            const downloadFullBible = async () => {
-                if (!window.confirm("Esto descargará la Biblia completa Reina Valera 1909 (aprox 5MB). ¿Continuar?")) return;
-                setIsDownloading(true);
-                try {
-                    const res = await fetch('https://raw.githubusercontent.com/thiagobodruk/bible/master/json/es_rvr09.json');
-                    if (!res.ok) throw new Error("Error en la descarga de datos.");
-                    const data = await res.json();
-                    const newBooks = [];
-                    const newContent = {};
-                    data.forEach(bookObj => {
-                        const bookName = bookObj.name;
-                        newBooks.push(bookName);
-                        newContent[bookName] = {};
-                        bookObj.chapters.forEach((versesArray, index) => {
-                            newContent[bookName][index + 1] = versesArray;
+            const runSearch = () => {
+                const q = searchQ.toLowerCase();
+                const res = [];
+                bible.books.forEach(b => {
+                    Object.keys(bible.content[b] || {}).forEach(c => {
+                        bible.content[b][c].forEach((t, i) => {
+                            if (t.toLowerCase().includes(q)) res.push({ b, c, v: i+1, t });
                         });
                     });
-                    const newData = { isDemo: false, versions: [{ id: 'rv1909', name: 'Reina Valera 1909' }], books: newBooks, content: newContent };
-                    setBibleData(newData);
-                    setFavorites([]); setAnnotations({}); setReadStatus({});
-                    setLoadedSegments([{ book: newBooks[0], chapter: 1 }]);
-                    setView('reading');
-                } catch (err) {
-                    console.error("Error durante la instalación: " + err.message);
-                } finally {
-                    setIsDownloading(false);
-                }
-            };
-
-            const handleExportBackup = () => {
-                const blob = new Blob([JSON.stringify({ date: new Date().toISOString(), data: bibleData, annotations, favorites, readStatus })], { type: "application/json" });
-                const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `biblia_backup.json`; a.click();
-            };
-
-            const handleImportBackup = (e) => {
-                const f = e.target.files[0]; if(!f) return;
-                const r = new FileReader(); r.onload = (ev) => { 
-                    try { 
-                        const b = JSON.parse(ev.target.result); 
-                        if(b.data && window.confirm("¿Restaurar copia?")){ 
-                            setBibleData(b.data); 
-                            if(b.annotations) setAnnotations(b.annotations); 
-                            if(b.favorites) setFavorites(b.favorites); 
-                            if(b.readStatus) setReadStatus(b.readStatus); 
-                            setView('reading'); 
-                        } 
-                    } catch(err){ console.error("Error al leer backup."); } 
-                }; r.readAsText(f);
-            };
-
-            const playChapter = () => {
-                if (isReading) { stopReading(); return; }
-                if (loadedSegments.length === 0) return;
-                const curr = loadedSegments[loadedSegments.length-1];
-                const verses = bibleData.content[curr.book]?.[curr.chapter] || [];
-                if (!verses.length) return;
-                setIsReading(true); readRec(verses, 0);
-            };
-
-            const readRec = (v, i) => {
-                if(i>=v.length) { stopReading(); return; }
-                setReadingVerseIndex(i);
-                const el = document.getElementById(`v-${loadedSegments[0].book}-${loadedSegments[0].chapter}-${i+1}`);
-                if(el) el.scrollIntoView({behavior:'smooth', block:'center'});
-                const u = new SpeechSynthesisUtterance(v[i]);
-                if (voiceURI) { const selectedVoice = availableVoices.find(voice => voice.voiceURI === voiceURI); if (selectedVoice) u.voice = selectedVoice; }
-                u.rate = voiceRate;
-                u.onend = () => readRec(v, i+1);
-                u.onerror = () => stopReading();
-                synthRef.current.speak(u);
-            };
-
-            const stopReading = () => { if(synthRef.current) synthRef.current.cancel(); setIsReading(false); setReadingVerseIndex(null); };
-
-            const handleSearch = () => {
-                if (!searchQuery.trim()) return;
-                const r = []; const q = searchQuery.toLowerCase();
-                bibleData.books.forEach(b => { 
-                    if(bibleData.content[b]) {
-                        Object.keys(bibleData.content[b]).forEach(c => { 
-                            bibleData.content[b][c]?.forEach((t, i) => { 
-                                if (t.toLowerCase().includes(q)) r.push({ book: b, chapter: c, verse: i + 1, text: t }); 
-                            }); 
-                        }); 
-                    }
                 });
-                setSearchResults(r);
+                setSearchRes(res);
             };
 
-            const toggleFav = (txt, num, book, chap) => { const id = `${book}-${chap}-${num}`; const ex = favorites.find(f => f.id === id); if (ex) setFavorites(favorites.filter(f => f.id !== id)); else setFavorites([...favorites, { id, book, chapter: chap, verse: num, text: txt, date: new Date().toISOString() }]); };
-
-            const filteredFavorites = useMemo(() => {
-                let filtered = [...favorites];
-                if (favSearch) {
-                    const q = favSearch.toLowerCase();
-                    filtered = filtered.filter(f => f.text.toLowerCase().includes(q) || f.book.toLowerCase().includes(q));
-                }
-                if (favFilterBook !== 'all') filtered = filtered.filter(f => f.book === favFilterBook);
-                if (favSort === 'recent') filtered.reverse();
-                else if (favSort === 'biblical' && bibleData) {
-                    filtered.sort((a, b) => {
-                        const idxA = bibleData.books.indexOf(a.book);
-                        const idxB = bibleData.books.indexOf(b.book);
-                        if (idxA !== idxB) return idxA - idxB;
-                        if (a.chapter !== b.chapter) return a.chapter - b.chapter;
-                        return a.verse - b.verse;
-                    });
-                }
-                return filtered;
-            }, [favorites, favSearch, favFilterBook, favSort, bibleData]);
-
-            const uniqueFavBooks = useMemo(() => [...new Set(favorites.map(f => f.book))].sort(), [favorites]);
-
-            const copyToClipboard = (text, ref, id) => {
-                const fullText = `"${text}"\n- ${ref}`;
-                try {
-                    const textarea = document.createElement('textarea');
-                    textarea.value = fullText;
-                    document.body.appendChild(textarea);
-                    textarea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textarea);
-                    setCopyFeedback(id); 
-                    setTimeout(() => setCopyFeedback(null), 2000);
-                } catch (e) { console.error(e); }
-            };
-
-            const shareVerse = (text, ref) => {
-                const fullText = `"${text}"\n- ${ref}`;
-                if (navigator.share) navigator.share({ title: 'Versículo Bíblico', text: fullText }).catch(console.error);
-                else copyToClipboard(text, ref, null);
-            };
-
-            const goToVerse = (book, chapter, verse) => {
-                setLoadedSegments([{ book, chapter: parseInt(chapter) }]);
-                setScrollTargetId(`v-${book}-${chapter}-${verse}`);
-                setView('reading');
-            };
-
-            const getBookProgress = (b) => { if(!bibleData) return 0; const t = Object.keys(bibleData.content[b]||{}).length; if(!t)return 0; let c=0; Object.keys(bibleData.content[b]).forEach(ch=>{if(readStatus[`${b}-${ch}`]) c++}); return Math.round((c/t)*100); };
-            const getTotalProgress = () => { if(!bibleData) return 0; let t=0,r=0; bibleData.books.forEach(b=>{const ch=Object.keys(bibleData.content[b]||{}); t+=ch.length; ch.forEach(c=>{if(readStatus[`${b}-${c}`]) r++})}); return t===0?0:Math.round((r/t)*100); };
-            const checkPlanProgress = (id) => { const p = predefinedPlans.find(pl=>pl.id===id); if(!p) return 0; let r=0; p.days.forEach(d=>{if(readStatus[`${d.book}-${d.chapter}`]) r++}); return Math.round((r/p.days.length)*100); };
-            const startPlan = (id) => { setActivePlanId(id); setPlanTab('active'); };
-            const openImportForPlan = (b, c) => { setImportBook(b); setImportChapter(String(c)); setImportText(""); setView('import'); };
-            
-            const getReadingStreak = () => {
-                const dates = Object.values(readStatus).map(d => new Date(d).setHours(0,0,0,0)).sort((a,b) => b-a);
-                const uniqueDates = [...new Set(dates)];
-                if (uniqueDates.length === 0) return 0;
-                const today = new Date().setHours(0,0,0,0);
-                const yesterday = today - 86400000;
-                if (uniqueDates[0] < yesterday) return 0;
-                let streak = 1;
-                let expectedDate = uniqueDates[0]; 
-                for (let i = 1; i < uniqueDates.length; i++) {
-                    if (uniqueDates[i] === expectedDate - 86400000) { streak++; expectedDate -= 86400000; }
-                    else break;
-                }
-                return streak;
-            };
-
-            const goToReading = (b, c) => { setLoadedSegments([{ book: b, chapter: parseInt(c) }]); setView('reading'); if(mainScrollRef.current) mainScrollRef.current.scrollTo({top:0}); };
-            const toggleRead = (b, c) => { const id = `${b}-${c}`; setReadStatus(prev => { const n={...prev}; if(n[id]) delete n[id]; else n[id]=new Date().toISOString(); return n; }); };
-            
-            const updateAnnotation = (id, f, v) => { 
-                setAnnotations(prev => { 
-                    const c = prev[id]||{}; 
-                    const u={...c,[f]:v}; 
-                    if(!u.color && (!u.notes || u.notes.length === 0)){ const {[id]:d,...r}=prev; return r; } 
-                    return {...prev,[id]:u}; 
-                }); 
-            };
-
-            const handleAddNote = (id, content) => {
-                if (!content.trim()) return;
-                const newNote = { id: Date.now(), content: content, date: new Date().toISOString() };
-                setAnnotations(prev => {
-                    const current = prev[id] || {};
-                    const notes = current.notes || [];
-                    return { ...prev, [id]: { ...current, notes: [...notes, newNote] } };
+            const addNote = (vId) => {
+                if (!noteInput.trim()) return;
+                setAnnotations(p => {
+                    const cur = p[vId] || {};
+                    const notes = cur.notes || [];
+                    return { ...p, [vId]: { ...cur, notes: [...notes, { id: Date.now(), text: noteInput, date: new Date().toLocaleDateString() }] } };
                 });
                 setNoteInput("");
-                setActiveToolId(null);
             };
 
-            const handleDeleteNote = (verseId, noteId) => {
-                setAnnotations(prev => {
-                    const verseAnno = prev[verseId];
-                    if (!verseAnno || !verseAnno.notes) return prev;
-                    const updatedNotes = verseAnno.notes.filter(n => n.id !== noteId);
-                    if (!verseAnno.color && updatedNotes.length === 0) { const {[verseId]: d, ...rest} = prev; return rest; }
-                    return { ...prev, [verseId]: { ...verseAnno, notes: updatedNotes } };
+            const saveEditedNote = () => {
+                if (!editingNote.text.trim()) return;
+                setAnnotations(p => {
+                    const cur = p[editingNote.vId];
+                    if (!cur) return p;
+                    const updatedNotes = cur.notes.map(n => 
+                        n.id === editingNote.nId ? { ...n, text: editingNote.text } : n
+                    );
+                    return { ...p, [editingNote.vId]: { ...cur, notes: updatedNotes } };
                 });
+                setEditingNote({ vId: null, nId: null, text: "" });
             };
 
-            const handleEditClick = (id) => {
-                if (activeToolId === id) { setActiveToolId(null); setNoteInput(""); } 
-                else { setActiveToolId(id); setNoteInput(""); }
-            };
-            
-            const loadNext = () => { 
-                const l=loadedSegments[loadedSegments.length-1]; 
-                const ch=Object.keys(bibleData.content[l.book]||{}).map(Number).sort((a,b)=>a-b); 
-                const i=ch.indexOf(l.chapter); 
-                let n=null; 
-                if(i<ch.length-1) n={book:l.book, chapter:ch[i+1]};
-                else {
-                    const bi=bibleData.books.indexOf(l.book); 
-                    if(bi<bibleData.books.length-1){
-                        const nb=bibleData.books[bi+1]; 
-                        const nc=Object.keys(bibleData.content[nb]).map(Number).sort((a,b)=>a-b); 
-                        if(nc.length) n={book:nb, chapter:nc[0]};
-                    }
-                } 
-                if(n) setLoadedSegments(prev=>[...prev, n]); 
-            };
-            
-            const askVerse = async (t, r) => { 
-                setInlineLoad(true); 
-                setInlineAiResp(""); 
-                const prompt = `Actúa como experto bíblico y teólogo. Genera un análisis profundo y estructurado del siguiente versículo con el formato Markdown indicado:
-Versículo: "${t}" (${r})
-MD:
-### 🏛️ Contexto Histórico
-### ✝️ Significado Teológico
-### 🧭 Aplicación Actual
-### 🔗 Referencias Cruzadas`;
-                const res = await callGeminiAPI(prompt, apiKey); 
-                setInlineLoad(false); 
-                setInlineAiResp(res); 
+            const handleAssistantInquiry = async () => {
+                if (!assistantQuery.trim()) return;
+                setAiLoad(true);
+                setAssistantResponse("");
+                
+                let instruction = "";
+                if (assistantPersona === 'teologo') {
+                    instruction = `Eres un TEÃ“LOGO sistemÃ¡tico y acadÃ©mico. 
+                        REGLAS DE RESPUESTA:
+                        1. Usa un tono formal, erudito y analÃ­tico.
+                        2. CÃ©ntrate en la doctrina, el dogma, la etimologÃ­a y la exÃ©gesis.
+                        3. Menciona conceptos teolÃ³gicos complejos si es necesario.
+                        4. Tu objetivo es explicar la "Verdad Doctrinal" detrÃ¡s de la consulta.`;
+                } else if (assistantPersona === 'historiador') {
+                    instruction = `Eres un HISTORIADOR bÃ­blico y arqueÃ³logo. 
+                        REGLAS DE RESPUESTA:
+                        1. Usa un tono puramente objetivo, cientÃ­fico y cronolÃ³gico.
+                        2. CÃ©ntrate exclusivamente en el contexto del Antiguo Cercano Oriente o el mundo grecorromano.
+                        3. Habla de polÃ­tica, economÃ­a, arqueologÃ­a y costumbres sociales de la Ã©poca.
+                        4. NO des consejos espirituales ni hables de fe personal. Tu objetivo es el "Contexto Temporal".`;
+                } else {
+                    instruction = `Eres un PASTOR compasivo, empÃ¡tico y prÃ¡ctico. 
+                        REGLAS DE RESPUESTA:
+                        1. Usa un tono cÃ¡lido, cercano, amable y motivacional.
+                        2. DirÃ­gete al usuario de "tÃº" y habla al corazÃ³n.
+                        3. CÃ©ntrate en cÃ³mo aplicar la palabra a los problemas de hoy (estrÃ©s, familia, fe, esperanza).
+                        4. Tu objetivo es el "Aliento Espiritual" y la guÃ­a de vida.`;
+                }
+
+                const res = await callAI(assistantQuery, instruction);
+                setAssistantResponse(res);
+                setAiLoad(false);
             };
 
-            const renderMD = (t) => { 
-                if(!t) return null; 
-                return t.split('\n').map((l,i) => { 
-                    if(l.startsWith('###')) return <h4 key={i} style={{fontSize: `${fontSize}px`}} className="text-indigo-600 font-bold mt-2 text-sm border-b border-indigo-100 dark:border-slate-700 pb-1">{l.replace(/#/g,'')}</h4>; 
-                    const parsedText = l.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                    return <p key={i} style={{fontSize: `${fontSize}px`}} className="mb-1 text-opacity-90" dangerouslySetInnerHTML={{__html: parsedText}}></p>; 
-                }); 
+            const calculateProgress = (plan) => {
+                const completed = plan.days.filter(d => readStatus[`${d.b}-${d.c}`]).length;
+                return Math.round((completed / plan.days.length) * 100);
             };
 
-            const handleAssistantSubmit = async (e) => {
-                e.preventDefault();
-                if(!userQ.trim()) return;
-                setGeneralAiLoad(true);
-                setAssistantResponse(""); 
-                let instr = "";
-                if(assistantPersona === 'historian') instr = "Eres historiador bíblico.";
-                else if(assistantPersona === 'devotional') instr = "Eres un pastor compasivo.";
-                else instr = "Eres un teólogo experto.";
-                const prompt = `${instr} Analiza: "${userQ}". Usa Markdown.`;
-                const resp = await callGeminiAPI(prompt, apiKey);
-                setAssistantResponse(resp);
-                setGeneralAiLoad(false);
-            };
+            const renderMD = (t) => t?.split('\n').map((l, i) => {
+                if (l.startsWith('#') || l.startsWith('*')) {
+                    const clean = l.replace(/[#*]/g,'').trim();
+                    if (!clean) return null;
+                    return <h4 key={i} className="font-bold text-emerald-600 dark:text-emerald-400 mt-5 mb-2 text-[12px] uppercase tracking-widest border-b border-emerald-500/10 pb-1">{clean}</h4>;
+                }
+                const bold = l.replace(/\*\*(.*?)\*\*/g, '<strong class="text-emerald-700 dark:text-emerald-400 font-bold">$1</strong>');
+                if (!l.trim()) return null;
+                return <p key={i} className="text-base leading-relaxed mb-3 opacity-95 text-slate-700 dark:text-slate-300" dangerouslySetInnerHTML={{ __html: bold }}></p>;
+            });
 
-            const saveApiKey = () => {
-                setApiKey(inputApiKey);
-                localStorage.setItem('geminiApiKey', inputApiKey);
-                setApiKeySaved(true);
-                setTimeout(() => setApiKeySaved(false), 2000);
-            };
-
-            const triggerQuickPrompt = (type) => {
-                const book = loadedSegments[0]?.book || 'Este libro';
-                const chapter = loadedSegments[0]?.chapter || '1';
-                const msgs = { 
-                    summary: `Resumen de ${book} ${chapter}`, 
-                    context: `Contexto histórico de ${book} ${chapter}`, 
-                    apply: `Aplicación de ${book} ${chapter}` 
-                };
-                setUserQ(msgs[type]);
-                if (searchInputRef.current) searchInputRef.current.focus();
-            };
-
-            const currentBook = loadedSegments[0]?.book || ''; const currentChap = loadedSegments[0]?.chapter || '';
-            const getVerseId = (book, chap, num) => `${book}-${chap}-${num}`;
-            const bgCard = darkMode ? 'bg-slate-800 border-slate-700 text-slate-200' : 'bg-white border-slate-200 text-slate-700';
-            const showPlayer = view === 'reading' && loadedSegments.length > 0 && bibleData?.content[loadedSegments[0].book]?.[loadedSegments[0].chapter]?.length > 0;
-
-            if (isLoadingDB || !bibleData) {
-                return (
-                    <div className="flex flex-col items-center justify-center h-full bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400">
-                        <i className="fa-solid fa-database text-4xl mb-4 animate-bounce"></i>
-                        <p className="font-bold">Cargando datos...</p>
-                    </div>
-                );
-            }
-
-            const mainSegment = loadedSegments.length > 0 ? loadedSegments[0] : null;
-            const verses = mainSegment ? bibleData.content[mainSegment.book]?.[mainSegment.chapter] || [] : [];
-            const totalVerses = verses.length;
-            const startNode = Math.floor(scrollPosition / VERSE_HEIGHT_PX) - OVERSCAN_COUNT;
-            const startIndex = Math.max(0, startNode);
-            const visibleCount = Math.ceil(containerHeight / VERSE_HEIGHT_PX) + OVERSCAN_COUNT * 2;
-            const endIndex = Math.min(totalVerses, startIndex + visibleCount);
-            const visibleVerses = verses.slice(startIndex, endIndex);
-            const topPaddingHeight = startIndex * VERSE_HEIGHT_PX;
-            const bottomPaddingHeight = (totalVerses - endIndex) * VERSE_HEIGHT_PX;
+            if (!ready) return null;
 
             return (
-                <div className={`flex flex-col h-full w-full md:max-w-5xl shadow-2xl overflow-hidden md:border-x relative mx-auto ${darkMode ? 'border-slate-700 bg-slate-900' : 'border-slate-200 bg-white'}`}>
-                    <header className={`${darkMode ? 'bg-emerald-950' : 'bg-emerald-600'} text-white p-3 shadow-md z-10 shrink-0 transition-colors duration-300 pt-[env(safe-area-inset-top)]`}>
+                <div className={`flex flex-col h-full w-full md:max-w-xl shadow-2xl overflow-hidden transition-colors duration-300 relative mx-auto ${darkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'}`}>
+                    
+                    {/* CABEZAL */}
+                    <header className={`${darkMode ? 'bg-emerald-950' : 'bg-emerald-600'} text-white p-3 shadow-md z-20 shrink-0`}>
                         <div className="flex justify-between items-center mb-2 px-1">
-                            <h1 className="font-bold text-xl tracking-tight whitespace-nowrap mr-4">Biblia Interactiva</h1>
-                            <div className="flex gap-0.5 text-xl items-center">
-                                <button onClick={()=>setDarkMode(!darkMode)} className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${darkMode ? 'bg-white text-emerald-600 shadow' : 'text-white hover:bg-white hover:text-emerald-600'}`}><i className={`fa-solid ${darkMode ? 'fa-sun' : 'fa-moon'}`}></i></button>
-                                <button onClick={()=>setView('search')} className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${view === 'search' ? 'bg-white text-emerald-600 shadow' : 'text-white hover:bg-white hover:text-emerald-600'}`}><i className="fa-solid fa-magnifying-glass"></i></button>
-                                <button onClick={()=>{setView('plans'); setPlanTab(activePlanId?'active':'list')}} className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${view === 'plans' ? 'bg-white text-emerald-600 shadow' : 'text-white hover:bg-white hover:text-emerald-600'}`}><i className="fa-solid fa-calendar-check"></i></button>
-                                <button onClick={()=>setView('settings')} className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${view === 'settings' ? 'bg-white text-emerald-600 shadow' : 'text-white hover:bg-white hover:text-emerald-600'}`}><i className="fa-solid fa-gear"></i></button>
-                                <button onClick={()=>setView('assistant')} className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${view === 'assistant' ? 'bg-white text-emerald-600 shadow' : 'text-white hover:bg-white hover:text-emerald-600'}`}><i className="fa-solid fa-robot"></i></button>
-                                <button onClick={()=>setView('favorites')} className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${view === 'favorites' ? 'bg-white text-emerald-600 shadow' : 'text-white hover:bg-white hover:text-emerald-600'}`}><i className={`${view === 'favorites'?'fa-solid':'fa-regular'} fa-star`}></i></button>
+                            <h1 className="font-bold text-xl tracking-tight">Biblia Interactiva</h1>
+                            <div className="flex gap-1 items-center">
+                                <button onClick={() => setDarkMode(!darkMode)} title="Modo" className="w-11 h-11 flex items-center justify-center transition-all hover:bg-white/10 rounded-full">
+                                    <i className={`fa-solid ${darkMode ? 'fa-sun' : 'fa-moon'} text-2xl`}></i>
+                                </button>
+                                <button onClick={() => setView('search')} title="Buscador" className="w-11 h-11 flex items-center justify-center transition-all hover:bg-white/10 rounded-full">
+                                    <i className="fa-solid fa-magnifying-glass text-2xl"></i>
+                                </button>
+                                <button onClick={() => setView('plans')} title="Planes" className="w-11 h-11 flex items-center justify-center transition-all hover:bg-white/10 rounded-full">
+                                    <i className="fa-solid fa-calendar-check text-2xl"></i>
+                                </button>
+                                <button onClick={() => setView('settings')} title="Ajustes" className="w-11 h-11 flex items-center justify-center transition-all hover:bg-white/10 rounded-full">
+                                    <i className="fa-solid fa-gear text-2xl"></i>
+                                </button>
+                                <button onClick={() => setView('assistant')} title="Asistente" className="w-11 h-11 flex items-center justify-center transition-all hover:bg-white/10 rounded-full">
+                                    <i className="fa-solid fa-robot text-2xl"></i>
+                                </button>
+                                <button onClick={() => setView('favorites')} title="Favoritos" className="w-11 h-11 flex items-center justify-center transition-all hover:bg-white/10 rounded-full">
+                                    <i className="fa-solid fa-star text-2xl"></i>
+                                </button>
                             </div>
                         </div>
-                        <div className={`p-2 rounded-lg flex gap-2 items-center flex-wrap ${darkMode ? 'bg-slate-800' : 'bg-emerald-600'} transition-colors`}>
-                            {bibleData.books && bibleData.books.length > 0 ? (
-                                <button onClick={() => { setView('navigation'); setNavStep('books'); }} className={`flex-grow text-left px-4 py-2 rounded-lg font-bold text-sm shadow-sm flex justify-between items-center transition-colors ${darkMode ? 'bg-emerald-900/30 text-emerald-100 hover:bg-emerald-900/50' : 'bg-white text-emerald-800 hover:bg-emerald-50'}`}>
-                                    <span>{currentBook} <span className="opacity-60 text-xs ml-1">Cap. {currentChap}</span></span>
-                                    <i className="fa-solid fa-chevron-right text-xs opacity-50"></i>
-                                </button>
-                            ) : <span className={`text-sm italic flex-grow ${darkMode ? 'text-white/70' : 'text-emerald-100'}`}>Biblioteca vacía.</span>}
-                            <button onClick={()=>setView('import')} className={`w-10 h-10 rounded-lg font-bold text-lg shadow flex items-center justify-center transition-colors flex-shrink-0 ${darkMode ? 'bg-emerald-600 text-white hover:bg-emerald-500' : 'bg-white text-emerald-600 hover:bg-emerald-50'}`} title="Añadir Capítulo"><i className="fa-solid fa-plus"></i></button>
+                        <div className={`p-2 rounded-lg flex gap-2 items-center ${darkMode ? 'bg-slate-800' : 'bg-emerald-700'}`}>
+                            <button onClick={() => { setView('navigation'); setNavStep('books'); }} className="flex-grow text-left px-4 py-2 rounded-lg font-bold text-sm bg-white text-emerald-800 shadow-sm flex justify-between items-center transition-all hover:bg-emerald-50">
+                                <span>{loadedSegments[0]?.book} â€¢ Cap. {loadedSegments[0]?.chapter}</span>
+                                <i className="fa-solid fa-chevron-down text-xs opacity-40"></i>
+                            </button>
+                            <button onClick={() => setView('import')} className="w-10 h-10 rounded-lg bg-white text-emerald-600 shadow flex items-center justify-center font-bold text-xl transition-all hover:bg-emerald-50"><i className="fa-solid fa-plus"></i></button>
                         </div>
                     </header>
 
-                    <main ref={mainScrollRef} className={`flex-grow overflow-y-auto relative scroll-smooth ${showPlayer ? 'pb-32' : 'pb-6'} ${darkMode?'bg-slate-900':'bg-white'}`}>
-                        {view === 'reading' && (
-                            <div>
-                                {loadedSegments.length > 0 ? loadedSegments.map((seg, segIndex) => {
-                                    const isMainSegment = segIndex === 0;
-                                    const verses = bibleData.content[seg.book]?.[seg.chapter] || [];
-                                    const isRead = readStatus[`${seg.book}-${seg.chapter}`];
-                                    const versesToRender = isMainSegment ? visibleVerses : verses;
-                                    const offset = isMainSegment ? startIndex : 0;
-                                    return (
-                                        <div key={`${seg.book}-${seg.chapter}`} className={`pb-10 border-b ${darkMode?'border-slate-800':'border-slate-100'}`}>
-                                            <div className={`sticky top-0 z-10 py-3 px-4 flex justify-between items-center shadow-sm ${darkMode?'bg-slate-900/95 backdrop-blur':'bg-white/95 backdrop-blur'}`}>
-                                                <h2 className={`text-xl font-bold ${darkMode?'text-slate-200':'text-slate-800'}`}>{seg.book} <span className="text-emerald-600">{seg.chapter}</span></h2>
-                                                <button onClick={()=>toggleRead(seg.book, seg.chapter)} className={`text-2xl transition-colors ${isRead?'text-green-500 hover:text-green-600':'text-slate-300 hover:text-slate-400'}`}><i className={`fa-regular ${isRead ? 'fa-circle-check fa-solid' : 'fa-circle'}`}></i></button>
-                                            </div>
-                                            <div className="px-4 py-2 space-y-2">
-                                                {verses.length > 0 ? (
-                                                    <div style={{ paddingBlockStart: isMainSegment ? `${topPaddingHeight}px` : 0, paddingBlockEnd: isMainSegment ? `${bottomPaddingHeight}px` : 0 }}>
-                                                        {versesToRender.map((txt, i) => {
-                                                            const vNum = i + 1 + offset; 
-                                                            const id = getVerseId(seg.book, seg.chapter, vNum);
-                                                            const meta = annotations[id]||{}; const isTool = activeToolId===id;
-                                                            const isReadingNow = isReading && readingVerseIndex===(vNum - 1);
-                                                            const bg = isReadingNow ? 'reading-active' : (meta.color ? `highlight-${meta.color}` : (darkMode ? 'hover:bg-slate-800' : 'hover:bg-slate-50'));
-                                                            return (
-                                                                <div key={vNum} id={`v-${seg.book}-${seg.chapter}-${vNum}`} className={`p-2 rounded transition-colors ${bg} verse-virtual-row`}>
-                                                                    <div className="flex gap-2">
-                                                                        <span className="text-xs font-bold text-indigo-400 mt-1 w-6 text-right select-none">{vNum}</span>
-                                                                        <div className="flex-grow">
-                                                                            <p style={{ fontSize: `${fontSize}px`, lineHeight: lineHeight, fontFamily: getFontFamilyStyle(), textAlign: textAlign }} className={`cursor-pointer ${darkMode?'text-slate-300':'text-slate-700'}`} onClick={()=>handleEditClick(id)}>{txt}</p>
-                                                                            <div className="flex justify-end gap-3 mt-1.5 text-sm text-slate-400 dark:text-slate-500">
-                                                                                <button onClick={()=>toggleFav(txt,vNum,seg.book,seg.chapter)} className={`hover:text-yellow-500 transition-colors ${favorites.some(f=>f.id===id)?'text-yellow-400 dark:text-yellow-300':'text-slate-400 dark:text-slate-500'}`}><i className="fa-solid fa-star"></i></button>
-                                                                                <button onClick={()=>handleEditClick(id)} className={`hover:text-indigo-500 transition-colors ${isTool?'text-indigo-500':'text-slate-400'}`}><i className="fa-solid fa-pencil"></i></button>
-                                                                                <button onClick={()=>copyToClipboard(txt, `${seg.book} ${seg.chapter}:${vNum}`, id)} className={`hover:text-emerald-500 ${copyFeedback===id?'text-emerald-500':'text-slate-400'}`}><i className={`fa-regular ${copyFeedback===id?'fa-check':'fa-copy'}`}></i></button>
-                                                                                <button onClick={()=>shareVerse(txt, `${seg.book} ${seg.chapter}:${vNum}`)} className='hover:text-indigo-500'><i className="fa-solid fa-share-nodes"></i></button>
-                                                                            </div>
-                                                                            {meta.notes && meta.notes.length > 0 && meta.notes.map((note) => (
-                                                                                <div key={note.id} className="mt-1 text-sm bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-100 p-1 rounded italic flex justify-between items-start">
-                                                                                    <div><i className="fa-solid fa-pen-nib mr-1"></i> {note.content}</div>
-                                                                                    <button onClick={() => handleDeleteNote(id, note.id)} className="text-red-400 hover:text-red-600 text-xs ml-2"><i className="fa-solid fa-trash-can"></i></button>
-                                                                                </div>
-                                                                            ))}
-                                                                        </div>
-                                                                    </div>
-                                                                    {isTool && <div className={`mt-2 p-2 border-t ${darkMode?'border-slate-700':'border-slate-200'} animate-fade-in`}>
-                                                                        <div className="flex gap-2 mb-2">
-                                                                            {['yellow','green','blue','red'].map(c=><button key={c} onClick={()=>updateAnnotation(id,'color',c)} className={`w-5 h-5 rounded-full highlight-${c} border-2`}></button>)}
-                                                                            <button onClick={()=>updateAnnotation(id,'color',null)} className="w-5 h-5 rounded-full border bg-white dark:bg-slate-700 text-slate-400 text-xs"><i className="fa-solid fa-ban"></i></button>
-                                                                        </div>
-                                                                        <textarea value={noteInput} onChange={e=>setNoteInput(e.target.value)} className={`w-full border rounded p-1 text-sm mb-1 ${darkMode?'bg-slate-800 border-slate-600 text-white':'bg-white border-slate-200'}`} placeholder="Nueva nota..."></textarea>
-                                                                        <div className="flex justify-between items-center">
-                                                                            <button onClick={()=>askVerse(txt,`${seg.book} ${seg.chapter}:${vNum}`)} className="text-xs text-indigo-500 font-bold" disabled={!apiKey}><i className="fa-solid fa-robot"></i> Analizar IA</button>
-                                                                            <button onClick={()=>handleAddNote(id, noteInput)} disabled={!noteInput.trim()} className="text-xs bg-indigo-600 text-white px-3 py-1 rounded">Añadir</button>
-                                                                        </div>
-                                                                        {inlineLoad && <span className="text-xs text-indigo-400 animate-pulse">Analizando...</span>}
-                                                                        {inlineAiResp && <div className={`mt-2 p-2 rounded text-sm ${bgCard}`}>{renderMD(inlineAiResp)}</div>}
-                                                                    </div>}
-                                                                </div>
-                                                            )
-                                                        })}
-                                                    </div>
-                                                ) : (
-                                                    <div className="p-8 text-center opacity-60">
-                                                        <i className="fa-solid fa-scroll text-4xl mb-2"></i>
-                                                        <p>Sin contenido.</p>
-                                                        <button onClick={()=>openImportForPlan(seg.book, seg.chapter)} className="mt-4 text-emerald-500 underline">Importar</button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    )
-                                }) : (
-                                    <div className="flex flex-col items-center justify-center h-full pt-20 opacity-70">
-                                        <i className="fa-solid fa-book-bible text-5xl text-emerald-500 mb-6"></i>
-                                        <h3 className="text-2xl font-bold mb-2">Biblioteca Vacía</h3>
-                                        <button onClick={()=>setView('import')} className="bg-emerald-600 text-white px-8 py-3 rounded-xl font-bold">Añadir Contenido</button>
-                                    </div>
-                                )}
-                                {loadedSegments.length > 0 && <div className="p-8 flex justify-center"><button onClick={loadNext} className="bg-white dark:bg-slate-800 border border-emerald-200 text-emerald-600 px-8 py-3 rounded-full shadow-lg font-bold">Siguiente <i className="fa-solid fa-arrow-down ml-2"></i></button></div>}
-                            </div>
-                        )}
-
-                        {view === 'navigation' && (
-                            <div className="p-4 h-full flex flex-col">
-                                <div className="flex justify-between items-center mb-6 border-b pb-2 shrink-0">
-                                    <h2 className="text-xl font-bold text-emerald-600">{navStep === 'books' ? 'Libros' : navSelectedBook}</h2>
-                                    <button onClick={()=>{ if(navStep!=='books') setNavStep('books'); else setView('reading'); }} className="text-slate-400"><i className="fa-solid fa-xmark text-xl"></i></button>
-                                </div>
-                                <div className="flex-grow overflow-y-auto pb-20 pr-1">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        {navStep === 'books' ? bibleData.books.map(b => (
-                                            <button key={b} onClick={()=>{setNavSelectedBook(b); setNavStep('chapters');}} className={`p-6 rounded-2xl border flex flex-col items-center ${bgCard}`}>
-                                                <i className="fa-solid fa-book-bookmark text-3xl mb-1 text-emerald-500"></i>
-                                                <span className="font-bold">{b}</span>
-                                            </button>
-                                        )) : bibleData.content[navSelectedBook] ? Object.keys(bibleData.content[navSelectedBook]).map(Number).sort((a,b)=>a-b).map(c => (
-                                            <button key={c} onClick={()=>{setLoadedSegments([{book:navSelectedBook, chapter:c}]); setView('reading');}} className={`p-4 rounded-xl font-bold text-xl border ${bgCard}`}>{c}</button>
-                                        )) : null}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {view === 'favorites' && (
-                            <div className="p-4 h-full flex flex-col">
-                                <div className="flex justify-between items-center mb-6 border-b pb-2 shrink-0">
-                                    <h2 className="text-xl font-bold text-emerald-600">Favoritos</h2>
-                                    <button onClick={()=>setView('reading')} className="text-slate-400"><i className="fa-solid fa-xmark text-xl"></i></button>
-                                </div>
-                                <div className="flex-grow overflow-y-auto pb-20 pr-1">
-                                    <input value={favSearch} onChange={e=>setFavSearch(e.target.value)} placeholder="Buscar..." className={`w-full p-3 rounded-xl mb-4 ${bgCard} border`} />
-                                    <div className="space-y-4">
-                                        {filteredFavorites.length === 0 ? <p className="text-center opacity-60">Sin favoritos.</p> : filteredFavorites.map(f => (
-                                            <div key={f.id} className={`p-5 rounded-2xl border ${bgCard}`}>
-                                                <div className="flex justify-between mb-3">
-                                                    <span onClick={() => goToVerse(f.book, f.chapter, f.verse)} className="text-xs font-bold text-emerald-600 underline">{f.book} {f.chapter}:{f.verse}</span>
-                                                    <button onClick={() => toggleFav(f.text, f.verse, f.book, f.chapter)} className="text-rose-500"><i className="fa-solid fa-trash-can"></i></button>
-                                                </div>
-                                                <p className="italic">"{f.text}"</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {view === 'settings' && (
-                            <div className="p-4 h-full flex flex-col">
-                                <div className="flex justify-between items-center mb-6 border-b pb-2 shrink-0">
-                                    <h2 className="text-xl font-bold text-emerald-600">Ajustes</h2>
-                                    <button onClick={()=>setView('reading')} className="text-slate-400"><i className="fa-solid fa-xmark text-xl"></i></button>
-                                </div>
-                                <div className="flex-grow overflow-y-auto pb-20 space-y-6">
-                                    <div className={`p-6 rounded-2xl border ${bgCard}`}>
-                                        <h3 className="font-bold mb-4 text-emerald-600">Apariencia</h3>
-                                        <div className="space-y-4">
-                                            <div>
-                                                <label className="text-xs font-bold opacity-50 block mb-2">Tipografía</label>
-                                                <div className="flex bg-slate-100 dark:bg-slate-700 p-1 rounded-lg">
-                                                    {['serif', 'sans', 'mono'].map(f => <button key={f} onClick={()=>setFontFamily(f)} className={`flex-1 py-2 rounded-md text-sm ${fontFamily===f ? 'bg-white dark:bg-slate-600 text-emerald-600 font-bold shadow' : ''}`}>{f}</button>)}
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <label className="text-xs font-bold opacity-50 block mb-2">Tamaño: {fontSize}px</label>
-                                                <input type="range" min="14" max="32" value={fontSize} onChange={e=>setFontSize(parseInt(e.target.value))} className="w-full accent-emerald-600" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className={`p-6 rounded-2xl border ${bgCard}`}>
-                                        <h3 className="font-bold mb-4 text-emerald-600">Inteligencia Artificial</h3>
-                                        <div className="flex gap-2">
-                                            <input type="password" value={inputApiKey} onChange={e=>setInputApiKey(e.target.value)} placeholder="Gemini API Key" className={`flex-grow border rounded-xl p-3 text-sm ${darkMode?'bg-slate-700 border-slate-600':'bg-slate-50'}`} />
-                                            <button onClick={saveApiKey} className="bg-emerald-600 text-white px-4 rounded-xl">{apiKeySaved ? '✓' : 'S'}</button>
-                                        </div>
-                                    </div>
-                                    <div className={`p-6 rounded-2xl border ${bgCard}`}>
-                                        <button onClick={downloadFullBible} disabled={isDownloading} className="w-full py-3 bg-emerald-600 text-white rounded-lg font-bold">
-                                            {isDownloading ? 'Instalando...' : 'Descargar Biblia RV1909'}
+                    {/* CONTENIDO PRINCIPAL */}
+                    <main className="flex-grow overflow-y-auto no-scrollbar p-4 relative">
+                        
+                        {view === 'reading' && loadedSegments.map(seg => (
+                            <div key={`${seg.book}-${seg.chapter}`} className="animate-fade-in mb-8">
+                                <div className="flex justify-between items-center mb-4 border-b border-emerald-500/20 pb-2">
+                                    <h2 className="text-2xl font-serif italic text-emerald-600 dark:text-emerald-400">{seg.book} {seg.chapter}</h2>
+                                    <div className="flex gap-4 items-center">
+                                        <button onClick={() => {
+                                            const u = new SpeechSynthesisUtterance(bible.content[seg.book][seg.chapter].join(' '));
+                                            u.lang = 'es-ES'; synth.current.speak(u);
+                                        }} className="text-slate-300 hover:text-orange-500 transition-all"><i className="fa-solid fa-volume-high text-xl"></i></button>
+                                        <button onClick={() => toggleRead(seg.book, seg.chapter)} className={`text-2xl transition-colors ${readStatus[`${seg.book}-${seg.chapter}`] ? 'text-emerald-500' : 'text-slate-300'}`}>
+                                            <i className="fa-solid fa-circle-check"></i>
                                         </button>
                                     </div>
-                                    <div className={`p-6 rounded-2xl border ${bgCard}`}>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <button onClick={handleExportBackup} className="p-3 border border-dashed rounded-xl text-sm font-bold text-emerald-600">Exportar</button>
-                                            <label className="p-3 border border-dashed rounded-xl text-sm font-bold text-center cursor-pointer">
-                                                Importar <input type="file" onChange={handleImportBackup} className="hidden" />
-                                            </label>
-                                        </div>
-                                    </div>
+                                </div>
+                                <div className="space-y-4 pb-12">
+                                    {(bible.content[seg.book]?.[seg.chapter] || []).map((txt, i) => {
+                                        const vId = `${seg.book}-${seg.chapter}-${i+1}`;
+                                        const meta = annotations[vId] || {};
+                                        return (
+                                            <div key={vId} className={`p-3 rounded-lg transition-all ${meta.color ? `highlight-${meta.color}` : 'hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+                                                <div className="flex gap-3">
+                                                    <span className="text-sm font-bold text-indigo-500 mt-1 w-6 shrink-0 text-right">{i+1}</span>
+                                                    <div className="flex-grow min-w-0">
+                                                        <p style={{ fontSize: fontSize, lineHeight: 1.6, fontFamily: 'serif' }} onClick={() => setActiveV(activeV === vId ? null : vId)} className="cursor-pointer select-none">{txt}</p>
+                                                        
+                                                        {meta.notes?.length > 0 && (
+                                                            <div className="mt-2 space-y-1">
+                                                                {meta.notes.map(n => (
+                                                                    <div key={n.id} className="text-[11px] bg-amber-50 dark:bg-amber-900/20 p-2 rounded border-l-2 border-amber-400 flex flex-col shadow-sm">
+                                                                        {editingNote.nId === n.id ? (
+                                                                            <div className="flex flex-col gap-2 w-full p-1">
+                                                                                <textarea 
+                                                                                    value={editingNote.text} 
+                                                                                    onChange={e => setEditingNote({...editingNote, text: e.target.value})}
+                                                                                    className="w-full p-2 text-xs rounded border dark:bg-slate-800 dark:border-slate-700 outline-none"
+                                                                                />
+                                                                                <div className="flex gap-2 justify-end">
+                                                                                    <button onClick={() => setEditingNote({vId: null, nId: null, text: ""})} className="text-slate-400 text-[10px] font-bold uppercase p-1">Cancelar</button>
+                                                                                    <button onClick={saveEditedNote} className="bg-emerald-500 text-white px-3 py-1 rounded text-[10px] font-bold">Guardar</button>
+                                                                                </div>
+                                                                            </div>
+                                                                        ) : (
+                                                                            <div className="flex justify-between items-start">
+                                                                                <span className="italic leading-relaxed p-0.5">{n.text}</span>
+                                                                                <div className="flex gap-2 ml-2 shrink-0 p-1">
+                                                                                    <button onClick={() => setEditingNote({ vId, nId: n.id, text: n.text })} className="text-indigo-400 hover:text-indigo-600"><i className="fa-solid fa-pencil"></i></button>
+                                                                                    <button onClick={() => setAnnotations(p => ({ ...p, [vId]: { ...p[vId], notes: p[vId].notes.filter(x=>x.id!==n.id) } }))} className="text-rose-400 hover:text-rose-600"><i className="fa-solid fa-trash-can"></i></button>
+                                                                                </div>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+
+                                                        {activeV === vId && (
+                                                            <div className="mt-4 pt-3 border-t dark:border-slate-700 animate-slide-up">
+                                                                <div className="flex justify-between items-center mb-3 flex-wrap gap-2">
+                                                                    <div className="flex gap-2">
+                                                                        {['yellow', 'green', 'blue', 'red'].map(c => (
+                                                                            <button key={c} onClick={() => {
+                                                                                const cur = annotations[vId] || {};
+                                                                                setAnnotations(p => ({ ...p, [vId]: { ...cur, color: cur.color === c ? null : c } }));
+                                                                            }} className={`w-6 h-6 rounded-full highlight-${c} border border-slate-300 shadow-sm active:scale-90 transition-transform`}></button>
+                                                                        ))}
+                                                                    </div>
+                                                                    <div className="flex gap-3">
+                                                                        <button onClick={() => {
+                                                                            const ex = favorites.find(f => f.id === vId);
+                                                                            if (ex) setFavorites(favorites.filter(f => f.id !== vId));
+                                                                            else setFavorites([...favorites, { id: vId, text: txt, ref: `${seg.book} ${seg.chapter}:${i+1}` }]);
+                                                                        }} className={favorites.find(f=>f.id===vId) ? 'text-yellow-500' : 'text-slate-300'}><i className="fa-solid fa-star text-xl"></i></button>
+                                                                        <button onClick={() => analyzeVerse(txt, `${seg.book} ${seg.chapter}:${i+1}`)} className="bg-emerald-600 text-white px-3 py-1 rounded-full text-[10px] font-bold shadow-md active:scale-95 transition-all"><i className="fa-solid fa-brain mr-1 text-xs"></i> IA</button>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex flex-col sm:flex-row gap-2 mb-3">
+                                                                    <input 
+                                                                        value={noteInput} 
+                                                                        onChange={e => setNoteInput(e.target.value)} 
+                                                                        placeholder="Escribe una nota..." 
+                                                                        className={`flex-grow min-w-0 p-2 text-xs rounded border outline-none ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white'}`} 
+                                                                    />
+                                                                    <button onClick={() => addNote(vId)} className="bg-indigo-500 text-white px-4 py-2 rounded text-xs font-bold active:scale-95 transition-transform shrink-0">Guardar</button>
+                                                                </div>
+                                                                {aiLoad && <div className="text-[10px] text-emerald-500 animate-pulse font-bold pb-2">Analizando con profundidad...</div>}
+                                                                
+                                                                {aiResp && (
+                                                                    <div className="mt-5 pt-3 border-t-2 border-emerald-500/10 relative group animate-fade-in">
+                                                                        <div className="absolute -top-3 right-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                           <button onClick={() => setAiResp("")} title="Cerrar" className="text-slate-300 hover:text-emerald-500 p-1 bg-white dark:bg-slate-900 rounded-full border border-slate-200 dark:border-slate-700"><i className="fa-solid fa-xmark text-lg"></i></button>
+                                                                        </div>
+                                                                        <div className="text-left w-full">
+                                                                            {renderMD(aiResp)}
+                                                                        </div>
+                                                                        <button onClick={() => setAiResp("")} className="mt-8 text-[11px] font-bold text-slate-400 uppercase tracking-[4px] hover:text-emerald-500 transition-colors block text-center w-full pb-6">Finalizar AnÃ¡lisis</button>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
-                        )}
+                        ))}
 
-                        {view === 'import' && (
-                            <div className="p-4 h-full flex flex-col">
-                                <div className="flex justify-between items-center mb-4 border-b pb-2 shrink-0">
-                                    <h2 className="text-xl font-bold text-emerald-600">Importar</h2>
-                                    <button onClick={()=>setView('reading')} className="text-slate-400"><i className="fa-solid fa-xmark text-xl"></i></button>
+                        {view === 'navigation' && (
+                            <div className="animate-slide-up">
+                                <div className="flex justify-between items-center mb-6">
+                                    <h2 className="text-xl font-bold text-emerald-600">Navegar</h2>
+                                    <button onClick={() => setView('reading')} className="text-slate-400 hover:text-emerald-500 transition-colors"><i className="fa-solid fa-circle-xmark text-2xl"></i></button>
                                 </div>
-                                <div className="flex gap-2 mb-4">
-                                    <input value={importBook} onChange={e=>setImportBook(e.target.value)} placeholder="Libro" className={`p-3 flex-grow rounded border ${bgCard}`}/>
-                                    <input value={importChapter} onChange={e=>setImportChapter(e.target.value)} placeholder="Cap" className={`p-3 w-20 rounded border ${bgCard}`}/>
+                                <div className="flex gap-2 mb-6">
+                                    <button onClick={() => setNavStep('books')} className={`flex-1 p-3 rounded-xl font-bold text-sm ${navStep==='books'?'bg-emerald-600 text-white':'bg-slate-100 dark:bg-slate-800'}`}>Libros</button>
+                                    <button disabled={!navBook} onClick={() => setNavStep('chapters')} className={`flex-1 p-3 rounded-xl font-bold text-sm ${navStep==='chapters'?'bg-emerald-600 text-white':'bg-slate-100 dark:bg-slate-800'}`}>CapÃ­tulos</button>
                                 </div>
-                                <textarea value={importText} onChange={e=>setImportText(e.target.value)} className={`flex-grow w-full border rounded p-4 mb-4 ${bgCard}`} placeholder="Pega el texto aquí..."></textarea>
-                                <button onClick={handleImportText} className="w-full py-3 bg-emerald-600 text-white rounded font-bold">Guardar</button>
-                            </div>
-                        )}
-
-                        {view === 'search' && (
-                            <div className="p-4 h-full flex flex-col">
-                                <div className="flex justify-between items-center mb-6 border-b pb-2 shrink-0">
-                                    <h2 className="text-xl font-bold text-emerald-600">Buscador</h2>
-                                    <button onClick={()=>setView('reading')} className="text-slate-400"><i className="fa-solid fa-xmark text-xl"></i></button>
-                                </div>
-                                <div className="flex-grow overflow-y-auto pb-20 pr-1">
-                                    <input ref={searchInputRef} value={searchQuery} onChange={e=>setSearchQuery(e.target.value)} onKeyUp={e=>e.key==='Enter' && handleSearch()} placeholder="Buscar palabra..." className={`w-full p-4 rounded-2xl border mb-6 ${bgCard}`} />
-                                    <div className="space-y-3">
-                                        {searchResults.map((r,i)=>(<div key={i} onClick={()=>goToVerse(r.book, r.chapter, r.verse)} className={`p-4 rounded-xl border border-l-emerald-500 cursor-pointer ${bgCard}`}><span className="font-bold text-emerald-600 text-sm">{r.book} {r.chapter}:{r.verse}</span><p className="text-sm mt-1">"{r.text}"</p></div>))}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {view === 'plans' && (
-                            <div className="p-4 h-full flex flex-col">
-                                <div className="flex justify-between items-center mb-4 border-b pb-2 shrink-0">
-                                    <h2 className="text-xl font-bold text-emerald-600">Planes</h2>
-                                    <button onClick={()=>setView('reading')} className="text-slate-400"><i className="fa-solid fa-xmark text-xl"></i></button>
-                                </div>
-                                <div className="flex-grow overflow-y-auto pb-20">
-                                    <div className="flex mb-6 border-b">
-                                        {['active', 'list', 'stats'].map(t => <button key={t} onClick={()=>setPlanTab(t)} className={`flex-1 py-3 text-sm font-bold border-b-2 ${planTab===t?'text-emerald-600 border-emerald-600':'text-slate-400 border-transparent'}`}>{t.toUpperCase()}</button>)}
-                                    </div>
-                                    {planTab==='list' && <div className="grid gap-3">{predefinedPlans.map(p => (<div key={p.id} onClick={()=>startPlan(p.id)} className={`p-4 rounded-xl border-l-4 border-emerald-500 shadow-sm ${bgCard}`}><h4 className="font-bold">{p.title}</h4><p className="text-xs opacity-70">{p.desc}</p></div>))}</div>}
-                                    {planTab==='active' && (activePlanId ? (<div><div className="bg-emerald-500 text-white p-6 rounded-2xl mb-6"><h3>{predefinedPlans.find(p=>p.id===activePlanId).title}</h3><div className="mt-4 h-2 bg-black/20 rounded-full overflow-hidden"><div style={{width: `${checkPlanProgress(activePlanId)}%`}} className="h-full bg-white transition-all duration-1000"></div></div></div><div className="space-y-3">{predefinedPlans.find(p=>p.id===activePlanId).days.map((d,i)=>{ const isR = readStatus[`${d.book}-${d.chapter}`]; return (<div key={i} className={`p-3 rounded-lg border flex justify-between items-center ${isR?(darkMode?'bg-emerald-900/20':'bg-emerald-50'):bgCard}`}><span>{d.book} {d.chapter}</span>{isR ? '✓' : <button onClick={()=>goToReading(d.book, d.chapter)} className="text-xs font-bold text-emerald-600">LEER</button>}</div>)})}</div></div>) : <p className="text-center opacity-60">Selecciona un plan.</p>)}
-                                    {planTab==='stats' && <div className="text-center p-8"><div className="text-5xl font-bold text-emerald-600">{getTotalProgress()}%</div><p className="text-sm opacity-60">Bíblia Leída</p><div className="mt-6 text-2xl font-bold"><i className="fa-solid fa-fire text-orange-500"></i> {getReadingStreak()} días</div></div>}
+                                <div className="grid grid-cols-2 gap-3 pb-10">
+                                    {navStep === 'books' ? bible.books.map(b => (
+                                        <button key={b} onClick={() => { setNavBook(b); setNavStep('chapters'); }} className="p-4 rounded-xl border dark:border-slate-700 font-bold text-left dark:bg-slate-800 hover:border-emerald-500 transition-colors">
+                                            <i className="fa-solid fa-book mr-2 opacity-30 text-emerald-500"></i> {b}
+                                        </button>
+                                    )) : Object.keys(bible.content[navBook] || {}).map(c => (
+                                        <button key={c} onClick={() => { setLoadedSegments([{book:navBook, chapter:parseInt(c)}]); setView('reading'); }} className="p-4 rounded-xl border dark:border-slate-700 font-bold text-center dark:bg-slate-800 hover:bg-emerald-600 hover:text-white transition-all">
+                                            {c}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
                         )}
 
                         {view === 'assistant' && (
-                            <div className="p-4 h-full flex flex-col">
-                                <div className="flex justify-between items-center mb-4 border-b pb-2 shrink-0">
-                                    <h2 className="text-xl font-bold text-emerald-600">Asistente</h2>
-                                    <button onClick={()=>setView('reading')} className="text-slate-400"><i className="fa-solid fa-xmark text-xl"></i></button>
+                            <div className="flex flex-col h-full animate-fade-in space-y-6">
+                                <div className="flex justify-between items-center">
+                                    <h2 className="text-xl font-bold text-emerald-600">Asistente BÃ­blico</h2>
+                                    <button onClick={() => setView('reading')} className="text-slate-400 hover:text-emerald-500 transition-colors"><i className="fa-solid fa-circle-xmark text-2xl"></i></button>
                                 </div>
-                                <div className="flex-grow overflow-y-auto pb-20">
-                                    <form onSubmit={handleAssistantSubmit} className="mb-6"><div className="relative"><input ref={searchInputRef} value={userQ} onChange={e=>setUserQ(e.target.value)} className={`w-full p-4 pr-12 rounded-xl border ${bgCard}`} placeholder="Pregunta algo..." /><button type="submit" className="absolute right-3 top-3 text-emerald-500 text-xl"><i className={generalAiLoad ? "fa-solid fa-circle-notch fa-spin" : "fa-solid fa-magnifying-glass"}></i></button></div></form>
-                                    <div className={`p-6 rounded-2xl border min-h-[300px] ${bgCard}`}>
-                                        {generalAiLoad ? <div className="animate-pulse space-y-4"><div className="h-4 bg-slate-200 rounded w-3/4"></div><div className="h-4 bg-slate-200 rounded w-full"></div></div> : (assistantResponse ? renderMD(assistantResponse) : <div className="text-center opacity-40 py-20"><i className="fa-solid fa-robot text-5xl"></i></div>)}
+                                
+                                {/* SELECTOR DE ENFOQUE */}
+                                <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl shadow-inner">
+                                    {[
+                                        { id: 'teologo', label: 'TeÃ³logo', icon: 'fa-scroll' },
+                                        { id: 'historiador', label: 'Historiador', icon: 'fa-landmark' },
+                                        { id: 'pastor', label: 'Pastor', icon: 'fa-hands-praying' }
+                                    ].map(role => (
+                                        <button 
+                                            key={role.id}
+                                            onClick={() => { setAssistantPersona(role.id); setAssistantResponse(""); }}
+                                            className={`flex-1 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${assistantPersona === role.id ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                        >
+                                            <i className={`fa-solid ${role.icon}`}></i>
+                                            {role.label}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div className="relative">
+                                        <textarea 
+                                            value={assistantQuery}
+                                            onChange={e => setAssistantQuery(e.target.value)}
+                                            onKeyDown={e => e.key==='Enter' && !e.shiftKey && (e.preventDefault(), handleAssistantInquiry())}
+                                            placeholder={`Pregunta al ${assistantPersona}...`}
+                                            className={`w-full p-4 pr-12 rounded-2xl outline-none border transition-all min-h-[120px] shadow-sm ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-200 focus:border-emerald-500'}`}
+                                        />
+                                        <button 
+                                            onClick={handleAssistantInquiry}
+                                            className="absolute bottom-4 right-4 w-10 h-10 bg-emerald-600 text-white rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform"
+                                        >
+                                            <i className={aiLoad ? "fa-solid fa-circle-notch fa-spin" : "fa-solid fa-magnifying-glass"}></i>
+                                        </button>
                                     </div>
+                                </div>
+
+                                {/* ESPACIO DE RESPUESTA INTEGRADO */}
+                                {assistantResponse && (
+                                    <div className="animate-fade-in border-t border-slate-200 dark:border-slate-800 pt-6 pb-20">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center text-emerald-600">
+                                                <i className={`fa-solid ${assistantPersona === 'teologo' ? 'fa-scroll' : assistantPersona === 'historiador' ? 'fa-landmark' : 'fa-hands-praying'} text-xl`}></i>
+                                            </div>
+                                            <div>
+                                                <h3 className="font-bold text-sm uppercase tracking-widest text-emerald-600">Estudio del {assistantPersona}</h3>
+                                                <p className="text-[10px] opacity-40 uppercase font-bold">Enfoque personalizado</p>
+                                            </div>
+                                        </div>
+                                        <div className="text-left w-full">
+                                            {renderMD(assistantResponse)}
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                {!assistantResponse && !aiLoad && (
+                                    <div className="text-center py-20 opacity-20 italic">
+                                        <i className="fa-solid fa-bible text-6xl mb-4"></i>
+                                        <p className="text-sm px-6">Elige un rol superior, escribe tu consulta y presiona buscar para generar un estudio especÃ­fico.</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {view === 'favorites' && (
+                            <div className="animate-slide-up space-y-4">
+                                <div className="flex justify-between items-center mb-2">
+                                    <h2 className="text-xl font-bold text-emerald-600">Favoritos</h2>
+                                    <button onClick={() => setView('reading')} className="text-slate-400 hover:text-emerald-500 transition-colors"><i className="fa-solid fa-circle-xmark text-2xl"></i></button>
+                                </div>
+                                {favorites.length === 0 && <p className="text-center py-20 opacity-40 italic">AÃºn no tienes versÃ­culos favoritos.</p>}
+                                {favorites.map(f => (
+                                    <div key={f.id} className="p-4 rounded-xl border dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm group">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <span onClick={() => {
+                                                const parts = f.id.split('-');
+                                                setLoadedSegments([{book:parts[0], chapter:parseInt(parts[1])}]); setView('reading');
+                                            }} className="text-xs font-bold text-emerald-600 underline cursor-pointer">{f.ref}</span>
+                                            <button onClick={() => setFavorites(favorites.filter(x=>x.id!==f.id))} className="text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity"><i className="fa-solid fa-trash-can"></i></button>
+                                        </div>
+                                        <p className="text-sm italic opacity-80 leading-relaxed">"{f.text}"</p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {view === 'search' && (
+                            <div className="animate-fade-in">
+                                <div className="flex justify-between items-center mb-6">
+                                    <h2 className="text-xl font-bold text-emerald-600">Buscador</h2>
+                                    <button onClick={() => setView('reading')} className="text-slate-400 hover:text-emerald-500 transition-colors"><i className="fa-solid fa-circle-xmark text-2xl"></i></button>
+                                </div>
+                                <div className="flex gap-2 mb-6">
+                                    <input value={searchQ} onChange={e => setSearchQ(e.target.value)} onKeyDown={e => e.key==='Enter' && runSearch()} placeholder="Palabra clave..." className={`flex-grow p-4 rounded-xl outline-none shadow-inner ${darkMode ? 'bg-slate-800 border-slate-700 border text-white' : 'bg-slate-100'}`} />
+                                    <button onClick={runSearch} className="bg-emerald-600 text-white px-6 rounded-xl shadow-md"><i className="fa-solid fa-magnifying-glass"></i></button>
+                                </div>
+                                <div className="space-y-3 pb-10">
+                                    {searchRes.map((r, i) => (
+                                        <div key={i} onClick={() => { setLoadedSegments([{book:r.b, chapter:r.c}]); setView('reading'); }} className="p-4 rounded-xl border dark:border-slate-700 bg-white dark:bg-slate-800 cursor-pointer hover:border-emerald-500 transition-colors">
+                                            <span className="text-xs font-bold text-emerald-600">{r.b} {r.c}:{r.v}</span>
+                                            <p className="text-sm italic mt-1 opacity-70 leading-relaxed">"{r.t}"</p>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         )}
-                    </main>
 
-                    {view === 'reading' && loadedSegments.length > 0 && bibleData?.content[loadedSegments[0].book]?.[loadedSegments[0].chapter]?.length > 0 && (
-                        <div className={`fixed bottom-0 w-full p-3 border-t flex items-center justify-between pb-[calc(12px+env(safe-area-inset-bottom))] ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-lg'}`}>
-                            <div className="flex items-center gap-4">
-                                <button onClick={playChapter} className={`w-12 h-12 rounded-full flex items-center justify-center text-white ${isReading ? 'bg-amber-500' : 'bg-emerald-600'}`}>
-                                    <i className={`fa-solid ${isReading ? 'fa-pause' : 'fa-play'} text-xl`}></i>
-                                </button>
-                                <div><p className="font-bold text-sm">Voz</p><p className="text-xs opacity-60">{isReading ? 'Leyendo...' : 'Listo'}</p></div>
+                        {view === 'settings' && (
+                            <div className="animate-fade-in space-y-6">
+                                <div className="flex justify-between items-center">
+                                    <h2 className="text-xl font-bold text-emerald-600">Ajustes</h2>
+                                    <button onClick={() => setView('reading')} className="text-slate-400 hover:text-emerald-500 transition-colors"><i className="fa-solid fa-circle-xmark text-2xl"></i></button>
+                                </div>
+                                <div className="p-6 rounded-2xl border dark:bg-slate-800 dark:border-slate-700 bg-white shadow-sm text-center">
+                                    <label className="text-xs font-bold opacity-50 block mb-4 uppercase tracking-widest">TamaÃ±o de Fuente: {fontSize}px</label>
+                                    <input type="range" min="14" max="32" value={fontSize} onChange={e => setFontSize(parseInt(e.target.value))} className="w-full mb-8" />
+                                    <button onClick={async () => {
+                                        setIsLoading(true);
+                                        const res = await fetch('https://raw.githubusercontent.com/thiagobodruk/bible/master/json/es_rvr09.json');
+                                        const data = await res.json();
+                                        const bks = []; const cont = {};
+                                        data.forEach(b => { bks.push(b.name); cont[b.name] = {}; b.chapters.forEach((v, i) => cont[b.name][i+1] = v); });
+                                        setBible({ books: bks, content: cont }); setView('reading');
+                                    }} className="w-full p-4 bg-emerald-600 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/20 active:scale-95 transition-transform">Descargar Reina Valera 1909</button>
+                                </div>
                             </div>
-                            <button onClick={stopReading} className="text-slate-400 p-2"><i className="fa-solid fa-stop text-xl"></i></button>
-                        </div>
-                    )}
+                        )}
+
+                        {view === 'plans' && (
+                            <div className="animate-fade-in space-y-6">
+                                <div className="flex justify-between items-center">
+                                    <h2 className="text-xl font-bold text-emerald-600">Devocionales</h2>
+                                    <button onClick={() => setView('reading')} className="text-slate-400 hover:text-emerald-500 transition-colors"><i className="fa-solid fa-circle-xmark text-2xl"></i></button>
+                                </div>
+                                <div className="space-y-4 pb-10">
+                                    {PREDEFINED_PLANS.map(p => {
+                                        const prog = calculateProgress(p);
+                                        return (
+                                            <div key={p.id} className="p-5 rounded-2xl border dark:border-slate-700 border-l-4 border-l-emerald-500 bg-white dark:bg-slate-800 shadow-sm relative overflow-hidden">
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <div>
+                                                        <h3 className="font-bold text-sm">{p.title}</h3>
+                                                        <p className="text-[10px] opacity-60 italic">{p.desc}</p>
+                                                    </div>
+                                                    <span className="text-xs font-bold text-emerald-600 bg-emerald-100 dark:bg-emerald-900/40 px-2 py-1 rounded">{prog}%</span>
+                                                </div>
+                                                <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full mb-4 overflow-hidden">
+                                                    <div style={{ width: `${prog}%` }} className="h-full bg-emerald-500 transition-all duration-700"></div>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    {p.days.map((d, i) => {
+                                                        const isRead = readStatus[`${d.b}-${d.c}`];
+                                                        return (
+                                                            <button 
+                                                                key={i} 
+                                                                onClick={() => { setLoadedSegments([{book:d.b, chapter:d.c}]); setView('reading'); }} 
+                                                                className={`w-full text-left p-3 rounded-xl text-[11px] font-bold flex justify-between items-center transition-all ${isRead ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 border border-emerald-200 dark:border-emerald-800' : 'bg-slate-50 dark:bg-slate-700 hover:bg-slate-100'}`}
+                                                            >
+                                                                <span>DÃ­a {i+1}: {d.b} {d.c}</span>
+                                                                {isRead ? <i className="fa-solid fa-check-circle"></i> : <i className="fa-regular fa-circle opacity-30"></i>}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
+                        {view === 'import' && (
+                            <div className="animate-fade-in space-y-4">
+                                <div className="flex justify-between items-center">
+                                    <h2 className="text-xl font-bold text-emerald-600">Importar Texto</h2>
+                                    <button onClick={() => setView('reading')} className="text-slate-400 hover:text-emerald-500 transition-colors"><i className="fa-solid fa-circle-xmark text-2xl"></i></button>
+                                </div>
+                                <p className="text-xs opacity-50 italic leading-relaxed">Pega un capÃ­tulo completo aquÃ­ para guardarlo en tu biblioteca personal.</p>
+                                <textarea className={`w-full h-64 p-4 rounded-xl border outline-none shadow-inner ${darkMode ? 'bg-slate-800 dark:border-slate-700 text-white' : 'bg-slate-100'}`} placeholder="Pega el contenido aquÃ­..."></textarea>
+                                <button className="w-full p-4 bg-emerald-600 text-white rounded-xl font-bold shadow-md">Guardar en Biblioteca</button>
+                            </div>
+                        )}
+
+                    </main>
                 </div>
             );
         }
+
         const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<ErrorBoundary><App /></ErrorBoundary>);
+        root.render(<App />);
     </script>
 </body>
 </html>
