@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Biblia</title>
+    <title>Biblia IA</title>
     
     <!-- iOS Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Biblia">
+    <meta name="apple-mobile-web-app-title" content="Biblia IA">
     
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3389/3389081.png">
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3389/3389081.png">
@@ -64,151 +64,73 @@
     <div id="root" class="h-full flex justify-center w-full"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useMemo, useRef } = React;
 
-        // --- MOTOR DE SABIDURÍA LOCAL (SISTEMA AUTÓNOMO EXPANDIDO) ---
-        const MatrixWisdomEngine = {
-            doctrines: [
-                {
-                    id: "cristologia",
-                    keys: ["jesus", "cristo", "señor", "hijo", "mesias", "nazaret", "cordero", "maestro", "verbo"],
-                    teologo: "La centralidad de la persona de Jesucristo es el eje absoluto de este pasaje, revelándolo no solo como un profeta, sino como el Hijo de Dios encarnado. Se subraya Su autoridad divina y Su papel como el mediador perfecto entre la santidad de Dios y la humanidad caída, cumpliendo las promesas del antiguo pacto mediante Su encarnación. Este análisis doctrinal debe considerar la unión hipostática, donde Jesús es plenamente Dios y plenamente hombre, ofreciendo un sacrificio final que satisface la justicia divina. La teología aquí presentada invita a reconocer que en Cristo habita toda la plenitud de la Deidad, estableciendo que no hay otro nombre bajo el cielo dado a los hombres por el cual podamos ser salvos.",
-                    historiador: "En el contexto del siglo I, proclamar a Jesús como Señor (Kyrios) era un acto de valentía política y religiosa frente al culto imperial romano que exigía lealtad absoluta al César. Este mensaje se extendió rápidamente gracias a la avanzada red de caminos romanos y la estabilidad relativa de la Pax Romana, desafiando las estructuras legalistas judías de la época. Los historiadores destacan cómo el movimiento de Jesús rompió barreras étnicas y sociales, integrando a gentiles y judíos en una comunidad de fe sin precedentes. Este pasaje refleja las tensiones entre la emergente Iglesia primitiva y las autoridades de Jerusalén, mostrando la transformación de un grupo de pescadores en un movimiento que cambiaría el curso de la historia occidental. La arqueología y los documentos contemporáneos confirman que la figura de Jesús de Nazaret provocó un cisma irreversible en la cosmovisión del mundo antiguo.",
-                    pastor: "Jesús te entiende profundamente porque Él mismo experimentó las limitaciones y los dolores de la condición humana al habitar entre nosotros. No importa cuál sea la magnitud de tu lucha hoy, Su compasión es infinita y Su poder está disponible en este preciso momento para restaurar cada área de tu vida que se sienta quebrantada. Él es el buen pastor que nunca abandona a Sus ovejas, incluso cuando estas atraviesan los valles más oscuros y solitarios de la existencia. Permite que Su voz calme tu ansiedad y traiga claridad a tu confusión, recordando que Su presencia es un ancla segura en medio de las tormentas actuales. Al igual que sanó y enseñó en las humildes aldeas de Galilea, desea hoy hacer un milagro de paz en tu corazón. Confía en que Su guía es perfecta y que Su amor por ti es la fuerza más poderosa que existe en el universo."
-                },
-                {
-                    id: "soteriologia",
-                    keys: ["salvacion", "gracia", "perdon", "cruz", "sangre", "redencion", "justicia", "regalo", "inmerecido", "paz"],
-                    teologo: "La doctrina de la justificación por la gracia mediante la sola fe es el núcleo teológico fundamental que encontramos en este texto sagrado. El texto explica con rigor cómo el hombre es reconciliado con su Creador no por el cumplimiento de obras legales, sino por el favor soberano de Dios que otorga justicia al creyente a través del mérito vicario de Cristo. Se destaca la propiciación, donde la ira de Dios contra el pecado es satisfecha en la cruz, permitiendo que la santidad divina y la misericordia se besen en un acto de redención perfecto. Esta teología anula cualquier jactancia humana, posicionando al creyente como un receptor pasivo de una riqueza espiritual incalculable. La salvación se presenta aquí como un diseño eterno que precede a la creación, asegurando que la elección divina es la base de nuestra seguridad y paz con Dios.",
-                    historiador: "El concepto de gracia rompió radicalmente con la moralidad de la antigüedad clásica, la cual se basaba estrictamente en el intercambio de favores, el honor y la deuda acumulada. El cristianismo introdujo una revolución ética sin precedentes al ofrecer dignidad y perdón completo a los estratos más bajos de la sociedad, incluyendo esclavos y parias, sin exigir sacrificios económicos o estatus previo. Los registros históricos indican que esta doctrina de igualdad espiritual socavó las bases jerárquicas del Imperio Romano, creando una comunidad donde el amo y el esclavo se sentaban a la misma mesa como hermanos. La expansión del evangelio fue impulsada por esta noción de perdón gratuito, que resultaba sumamente atractiva en un mundo dominado por deidades caprichosas y deudas sociales impagables. Este pasaje es un testimonio de cómo la fe cristiana democratizó el acceso a la paz espiritual para toda la humanidad.",
-                    pastor: "Deja de intentar pagar una deuda espiritual que ya fue cancelada totalmente por Jesús en la cruz del Calvario. La gracia significa que no tienes que ser perfecto ni alcanzar estándares inalcanzables para poder acercarte hoy mismo al trono de la gracia del Padre. Recibe hoy Su perdón sin reservas, suelta de una vez por todas las pesadas cargas de tu pasado y permítete vivir bajo la libertad gloriosa de saber que eres profundamente amado por quien eres, no por lo que haces. Muchas veces somos nuestros jueces más severos y crueles, pero Dios te ofrece hoy una página en blanco firmada con la sangre preciosa de Su Hijo. Esta verdad debería eliminar tu ansiedad y llenarte de una alegría que no depende de tus circunstancias. Vive hoy desde el agradecimiento, sabiendo que tu identidad está segura en Cristo y que nada puede separarte de Su amor eterno."
-                },
-                {
-                    id: "consuelo",
-                    keys: ["paz", "llanto", "tristeza", "dolor", "consuelo", "lagrimas", "esperanza", "descanso", "angustia", "prueba"],
-                    teologo: "Se subraya el atributo de Dios como el Consolador Supremo y la fuente inagotable de toda esperanza en medio de la finitud humana. Este pasaje enseña que el sufrimiento no es un accidente sin sentido o el destino final, sino un proceso de refinamiento espiritual donde la fidelidad de Dios brilla con más fuerza en nuestra debilidad. La teología del consuelo nos recuerda que Dios es empático y participa del dolor de Su creación para redimirlo, asegurando que la aflicción presente tiene un peso de gloria eterno. Se enfatiza la soberanía de Dios sobre el dolor, prometiendo que Él enjugará toda lágrima y restaurará lo que el pecado ha intentado destruir. La esperanza aquí no es un deseo vago, sino una certeza anclada en la victoria de Cristo sobre la muerte y la angustia del mundo.",
-                    historiador: "Esta literatura de consuelo y esperanza era el sostén vital de las primeras comunidades cristianas que enfrentaban periodos de persecución sistemática bajo emperadores romanos. En catacumbas y hogares ocultos, estos versículos servían para reafirmar la identidad del creyente como ciudadano de un reino eterno que no puede ser conmovido por las tragedias temporales o la violencia estatal. Los historiadores observan que la resiliencia de los cristianos primitivos, alimentada por estos textos, desconcertaba a las autoridades paganas, quienes no comprendían la paz que mostraban ante el martirio. Este pasaje refleja la fortaleza psicológica y espiritual de un pueblo que, a pesar de estar rodeado de hostilidad, confiaba en que las promesas de restauración divina eran más reales que la opresión política. Es un documento histórico que explica la supervivencia y el triunfo final de la fe en un entorno hostil.",
-                    pastor: "Dios está mucho más cerca de lo que imaginas, especialmente en los momentos en que sientes que tu corazón está más quebrantado. Aunque hoy camines por un valle de sombras profundas y sientas que el dolor te abruma, recuerda que no estás solo; Su vara y Su cayado te infunden un aliento real y presente. Él no ignora tu dolor ni desprecia tus dudas; al contrario, Él cuenta cada una de tus lágrimas y las guarda con un cuidado paternal infinito. Permite que Su paz, que sobrepasa absolutamente todo entendimiento humano, guarde tu mente y tu corazón en este preciso instante de prueba. Recuerda que después de cada noche oscura, por larga que parezca, Su misericordia siempre trae un nuevo amanecer lleno de nuevas oportunidades. Tu situación actual no es tu destino final; es solo un capítulo donde Dios está escribiendo una historia de restauración que servirá para bendecir a otros en el futuro."
-                }
-            ],
-            genres: {
-                ley: {
-                    teologo: "Este pasaje establece el estándar moral y ritual que refleja la santidad divina absoluta, revelando la brecha entre la pureza de Dios y la imperfección humana. Sirve como un ayo pedagógico que nos muestra nuestra incapacidad y nos señala la necesidad imperiosa de un Redentor perfecto.",
-                    historiador: "Documenta el nacimiento jurídico de Israel como nación teocrática tras la milagrosa salida de Egipto, estableciendo leyes que protegían a los vulnerables. Se diferenciaba radicalmente de los códigos mesopotámicos al poner la vida y la justicia ética por encima de los intereses de las élites monárquicas de la época.",
-                    pastor: "Los mandatos de Dios no son muros para limitarte, sino vallados de protección diseñados por un Padre amoroso que desea evitarte dolores innecesarios. Sigue Sus sendas de justicia con diligencia y encontrarás la paz y la prosperidad espiritual que Él ha prometido para ti y para las futuras generaciones de tu familia."
-                },
-                poesia: {
-                    teologo: "Expresa la relación íntima, honesta y sin filtros entre el ser humano y su Creador, integrando la adoración más sublime con el lamento más profundo. Esta literatura valida las emociones humanas como una parte integral del diseño de nuestra relación de fe con un Dios que escucha y responde.",
-                    historiador: "Estos poemas y cánticos formaban la liturgia viva del Segundo Templo y de los hogares judíos, transmitiendo la identidad nacional mediante la belleza literaria. La estructura de paralelismos en este texto muestra la sofisticación de la cultura israelita antigua en su búsqueda de expresar lo inefable de la divinidad.",
-                    pastor: "Usa estas palabras sagradas para hablar con Dios hoy mismo de manera abierta y sincera. Él no se asusta de tus dudas ni se cansa de tus peticiones; Él es un Padre que siempre tiene tiempo para escucharte con atención. No hay oración demasiado pequeña o sentimiento demasiado complejo para compartirlo en Su presencia."
-                }
-            },
-            generic: {
-                teologo: "Este texto nos invita a una contemplación profunda de la soberanía absoluta de Dios y Su revelación progresiva a lo largo de la historia de la salvación. Cada palabra inspirada tiene el propósito de formarnos, exhortarnos y darnos una sabiduría que trasciende el conocimiento intelectual para penetrar en la vida del espíritu.",
-                historiador: "El trasfondo de este mensaje revela la fidelidad inquebrantable de Dios hacia Su pueblo en medio de desafíos culturales, guerras y cambios políticos drásticos. Nos recuerda que, aunque los imperios se levantan y caen, la Palabra de Dios permanece firme y relevante a pesar del paso de los milenios y las modas humanas.",
-                pastor: "Recibe esta reflexión como una palabra fresca y vital enviada por el Padre para tu situación específica el día de hoy. Dios no habla al azar ni por accidente; Él tiene un plan detallado y amoroso para tu vida y desea guiarte con sabiduría en cada decisión que tomes. Confía plenamente en Su proceso de transformación y camina con la seguridad de que Él es fiel para completar la obra que comenzó en ti."
-            }
+        const apiKey = "";
+
+        const BIBLE_BOOKS_MAP = {
+            1: "Génesis", 2: "Éxodo", 3: "Levítico", 4: "Números", 5: "Deuteronomio", 6: "Josué", 7: "Jueces", 8: "Rut", 9: "1 Samuel", 10: "2 Samuel",
+            11: "1 Reyes", 12: "2 Reyes", 13: "1 Crónicas", 14: "2 Crónicas", 15: "Esdras", 16: "Nehemías", 17: "Ester", 18: "Job", 19: "Salmos", 20: "Proverbios",
+            21: "Eclesiastés", 22: "Cantares", 23: "Isaías", 24: "Jeremías", 25: "Lamentaciones", 26: "Ezequiel", 27: "Daniel", 28: "Oseas", 29: "Joel", 30: "Amós",
+            31: "Abdías", 32: "Jonás", 33: "Miqueas", 34: "Nahúm", 35: "Habacuc", 36: "Sofonías", 37: "Hageo", 38: "Zacarías", 39: "Malaquías", 40: "Mateo",
+            41: "Marcos", 42: "Lucas", 43: "Juan", 44: "Hechos", 45: "Romanos", 46: "1 Corintios", 47: "2 Corintios", 48: "Gálatas", 49: "Efesios", 50: "Filipenses",
+            51: "Colosenses", 52: "1 Tesalonicenses", 53: "2 Tesalonicenses", 54: "1 Timoteo", 55: "2 Timoteo", 56: "Tito", 57: "Filemón", 58: "Hebreos", 59: "Santiago", 60: "1 Pedro",
+            61: "2 Pedro", 62: "1 Juan", 63: "2 Juan", 64: "3 Juan", 65: "Judas", 66: "Apocalipsis"
         };
 
-        const generateEnhancedLocalFallback = (text, role, bookName) => {
-            const lowText = text.toLowerCase();
-            const lowBook = (bookName || "").toLowerCase();
-            let scores = {};
-            MatrixWisdomEngine.doctrines.forEach(doc => {
-                scores[doc.id] = 0;
-                doc.keys.forEach(key => { if (lowText.includes(key)) scores[doc.id] += 2; });
-            });
-            let bestId = null; let maxScore = 0;
-            for (let id in scores) { if (scores[id] > maxScore) { maxScore = scores[id]; bestId = id; } }
-            if (bestId && maxScore > 0) return MatrixWisdomEngine.doctrines.find(d => d.id === bestId)[role];
-            if (["génesis", "éxodo", "levítico", "números", "deuteronomio"].includes(lowBook)) return MatrixWisdomEngine.genres.ley[role];
-            if (["salmos", "proverbios", "job", "cantares", "eclesiastés"].includes(lowBook)) return MatrixWisdomEngine.genres.poesia[role];
-            return MatrixWisdomEngine.generic[role];
-        };
+        const PREDEFINED_PLANS = [
+            { id: 'sabiduria', title: 'Sabiduría Diaria', desc: 'Un proverbio al día para iluminar tu camino práctico y un salmo para fortalecer tu espíritu.', duration: 31, category: 'Hábitos', icon: 'fa-sun' },
+            { id: 'juan21', title: 'Los 21 días de Juan', desc: 'La mejor puerta de entrada a la Biblia. Conoce a Jesús íntimamente a través del Evangelio del Amor.', duration: 21, category: 'Principiantes', icon: 'fa-heart' },
+            { id: 'evangelios', title: 'Armonía de los Evangelios', desc: 'La vida de Cristo en orden cronológico, unificando los relatos de Mateo, Marcos, Lucas y Juan.', duration: 45, category: 'Vida de Jesús', icon: 'fa-dove' },
+            { id: 'fundamentos', title: 'Fundamentos de la Fe', desc: 'Explora las doctrinas centrales: Creación, Gracia, Redención y Eternidad en pasajes clave.', duration: 15, category: 'Doctrina', icon: 'fa-gavel' },
+            { id: 'nt90', title: 'Nuevo Testamento en 90 días', desc: 'Un reto intensivo pero transformador para leer todos los libros desde Mateo hasta Apocalipsis.', duration: 90, category: 'Reto', icon: 'fa-bolt' },
+            { id: 'biografias', title: 'Tras los pasos de Pablo', desc: 'Sigue los viajes misioneros y el fuego del apóstol de los gentiles a través de Hechos.', duration: 10, category: 'Personajes', icon: 'fa-person-walking' },
+            { id: 'cronologico', title: 'Plan Cronológico', desc: 'Lee la Biblia en el orden real de los sucesos históricos, desde el Caos hasta la Nueva Jerusalén.', duration: 365, category: 'Avanzado', icon: 'fa-timeline' },
+            { id: 'anio', title: 'La Biblia en un Año', desc: 'El plan clásico: Antiguo Testamento, Nuevo Testamento y Salmos cada día sin falta.', duration: 365, category: 'Clásico', icon: 'fa-calendar-days' },
+            { id: 'relatos', title: 'Los Grandes Relatos', desc: 'Solo los hitos: David y Goliat, El Éxodo, Sansón... las historias que cambiaron el mundo.', duration: 30, category: 'Panorámico', icon: 'fa-mountain' }
+        ];
 
-        // --- MOTOR DE CONSULTA GEMINI 1.5 FLASH (POTENCIADO Y SEGURO) ---
-        async function fetchGemini(key, prompt, isVerse = false, retries = 3) {
-            if (!key || key.trim() === "") return null;
-            
-            const system = `Eres un erudito bíblico experto de nivel doctoral. Tu objetivo es proporcionar conocimiento académico, histórico y pastoral con la MÁXIMA PROFUNDIDAD Y EXTENSIÓN posible. Responde siempre en ESPAÑOL.
-            REGLAS INVIOLABLES:
-            - NO USES negritas (**) bajo ninguna circunstancia.
-            - NO USES introducciones genéricas ni despedidas.
-            - Si analizas un versículo, DEBES incluir exactamente estos encabezados en líneas separadas: "TEÓLOGO:", "HISTORIADOR:" y "PASTOR:".
-            - CADA SECCIÓN (Teólogo, Historiador, Pastor) DEBE SER EXTREMADAMENTE EXTENSA, analizando matices léxicos, contextos arqueológicos y aplicaciones psicológicas modernas (mínimo 10 frases por sección).
-            - En el asistente, mantén este mismo estándar de profundidad enciclopédica.`;
-            
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
-            
+        async function fetchGemini(userKey, prompt, retries = 3) {
+            const cleanKey = (userKey && userKey.trim()) || apiKey;
+            if (!cleanKey) return { error: "Falta configurar la API Key en Ajustes." };
+            const systemPrompt = `Eres un erudito bíblico experto. Proporciona conocimiento profundo pero muy conciso. Responde siempre en ESPAÑOL. REGLAS: NO USES negritas (**). NO introducciones ni despedidas.`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${cleanKey}`;
+            const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }], systemInstruction: { parts: [{ text: systemPrompt }] } };
             for (let i = 0; i < retries; i++) {
                 try {
-                    const resp = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: prompt }] }],
-                            systemInstruction: { parts: [{ text: system }] }
-                        })
-                    });
-                    
-                    if (!resp.ok) {
-                        const errData = await resp.json();
-                        throw new Error(errData.error?.message || "Fallo de API");
-                    }
-
-                    const data = await resp.json();
-                    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                    
-                    if (!text || text.trim() === "") return null;
-                    return text;
+                    const resp = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    const result = await resp.json();
+                    if (!resp.ok) throw new Error(result.error?.message || "Error de red");
+                    return { data: result.candidates?.[0]?.content?.parts?.[0]?.text };
                 } catch (e) {
-                    if (i === retries - 1) return null;
-                    await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
+                    if (i === retries - 1) return { error: e.message };
+                    await new Promise(r => setTimeout(r, 1000));
                 }
             }
-            return null;
         }
 
-        // --- PERSISTENCIA (IDB) ---
-        const DB_NAME = 'Bible_App_V16';
+        const DB_NAME = 'Bible_App_Persistent_V2';
         const db = {
             init: () => new Promise(res => {
                 const req = indexedDB.open(DB_NAME, 1);
-                req.onupgradeneeded = e => {
-                    const d = e.target.result;
-                    if (!d.objectStoreNames.contains('appData')) d.createObjectStore('appData');
-                    if (!d.objectStoreNames.contains('bibleStore')) d.createObjectStore('bibleStore');
-                };
+                req.onupgradeneeded = e => { const d = e.target.result; if (!d.objectStoreNames.contains('appData')) d.createObjectStore('appData'); };
                 req.onsuccess = e => res(e.target.result);
                 req.onerror = () => res(null);
             }),
-            get: (store, key) => new Promise(async res => {
+            get: (key) => new Promise(async res => {
                 const inst = await db.init(); if(!inst) return res(null);
-                const req = inst.transaction(store, 'readonly').objectStore(store).get(key);
+                const req = inst.transaction('appData', 'readonly').objectStore('appData').get(key);
                 req.onsuccess = () => res(req.result);
             }),
-            set: (store, key, val) => new Promise(async res => {
+            set: (key, val) => new Promise(async res => {
                 const inst = await db.init(); if(!inst) return res(null);
-                inst.transaction(store, 'readwrite').objectStore(store).put(val, key).oncomplete = () => res();
+                inst.transaction('appData', 'readwrite').objectStore('appData').put(val, key).oncomplete = () => res();
             })
         };
 
-        const CORE_BOOKS = ['Génesis', 'Salmos', 'Juan', 'Romanos'];
-        const CORE_DATA = {
-            'Génesis': { 1: ["En el principio creó Dios los cielos y la tierra.", "Y la tierra estaba desordenada y vacía...", "Y dijo Dios: Sea la luz; y fue la luz."] },
-            'Salmos': { 1: ["Bienaventurado el varón que no anduvo en consejo de malos.", "Sino que en la ley de Jehová está su delicia."], 23: ["Jehová es mi pastor; nada me faltará.", "En lugares de delicados pastos me hará descansar.", "Confortará mi alma..."] },
-            'Juan': { 1: ["En el principio era el Verbo, y el Verbo era con Dios, y el Verbo era Dios."], 3: ["Había un hombre de los fariseos que se llamaba Nicodemo.", "Respondió Jesús: De cierto te digo, que el que no naciere de nuevo, no puede ver el reino de Dios."] },
-            'Romanos': { 8: ["Ahora, pues, ninguna condensación hay para los que están en Cristo Jesús."] }
-        };
-
-        const INITIAL_PLANS = [
-            { id: 'p1', title: 'Fundamentos de la Fe', days: [{b:'Juan', c:1}, {b:'Juan', c:3}, {b:'Romanos', c:8}] },
-            { id: 'p2', title: 'Paz en la Tormenta', days: [{b:'Salmos', c:23}, {b:'Salmos', c:1}] }
-        ];
-
         function App() {
             const [view, setView] = useState('reading');
-            const [bible, setBible] = useState({ books: CORE_BOOKS, content: CORE_DATA });
+            const [bibleData, setBibleData] = useState({});
             const [annotations, setAnnotations] = useState({});
             const [favorites, setFavorites] = useState([]);
             const [readStatus, setReadStatus] = useState({});
@@ -216,7 +138,7 @@
             const [streak, setStreak] = useState({ count: 0, lastDate: null });
             const [fontSize, setFontSize] = useState(20);
             const [darkMode, setDarkMode] = useState(false);
-            const [currentChapter, setCurrentChapter] = useState({book: 'Juan', chapter: 3});
+            const [currentChapter, setCurrentChapter] = useState({book: '', chapter: 1});
             const [ready, setReady] = useState(false);
             const [activeV, setActiveV] = useState(null);
             const [aiLoading, setAiLoading] = useState(false);
@@ -230,11 +152,31 @@
             const [noteInput, setNoteInput] = useState("");
             const [editingNoteId, setEditingNoteId] = useState(null);
             const [editingNoteText, setEditingNoteText] = useState("");
+            const [apiError, setApiError] = useState("");
+            const [importText, setImportText] = useState("");
+            const [importStatus, setImportStatus] = useState("");
+            const fileInputRef = useRef(null);
+
+            // Filtros de búsqueda
+            const [searchBook, setSearchBook] = useState("todos");
+            const [searchTestament, setSearchTestament] = useState("todos");
+            const [searchScope, setSearchScope] = useState("texto");
+            const [matchType, setMatchType] = useState("frase");
+            const [capStart, setCapStart] = useState("");
+            const [capEnd, setCapEnd] = useState("");
+            const [showSearchFilters, setShowSearchFilters] = useState(false);
+
+            // Devocionales
+            const [selectedPlanId, setSelectedPlanId] = useState(null);
+            const [iaEmotion, setIaEmotion] = useState("");
+
+            const booksList = useMemo(() => Object.keys(bibleData), [bibleData]);
 
             useEffect(() => {
                 const load = async () => {
-                    const saved = await db.get('appData', 'config_v900');
-                    const full = await db.get('bibleStore', 'bible_v900');
+                    const saved = await db.get('config_vBibleData');
+                    const bData = await db.get('bible_content');
+                    if (bData) { setBibleData(bData); const firstBook = Object.keys(bData)[0]; if (firstBook) setCurrentChapter({book: firstBook, chapter: 1}); }
                     if (saved) {
                         setAnnotations(saved.annotations || {});
                         setFavorites(saved.favorites || []);
@@ -245,7 +187,6 @@
                         setDarkMode(saved.darkMode || false);
                         setUserApiKey(saved.userApiKey || "");
                     }
-                    if (full) setBible(full);
                     setReady(true);
                 };
                 load();
@@ -253,7 +194,7 @@
 
             useEffect(() => {
                 if (ready) {
-                    db.set('appData', 'config_v900', { annotations, favorites, readStatus, fontSize, darkMode, planProgress, streak, userApiKey });
+                    db.set('config_vBibleData', { annotations, favorites, readStatus, fontSize, darkMode, planProgress, streak, userApiKey });
                     document.body.classList.toggle('dark', darkMode);
                 }
             }, [ready, annotations, favorites, readStatus, fontSize, darkMode, planProgress, streak, userApiKey]);
@@ -262,19 +203,6 @@
                 const today = new Date().toISOString().split('T')[0];
                 if (streak.lastDate === today) return;
                 setStreak(prev => ({ count: prev.count + 1, lastDate: today }));
-            };
-
-            const downloadFullBible = async () => {
-                try {
-                    const URL = 'https://raw.githubusercontent.com/thiagobodruk/bible/master/json/es_rvr09.json';
-                    const response = await fetch(URL);
-                    const data = await response.json();
-                    const bks = []; const cont = {};
-                    data.forEach(b => { bks.push(b.name); cont[b.name] = {}; b.chapters.forEach((vArray, idx) => { cont[b.name][idx + 1] = vArray; }); });
-                    const finalData = { books: bks, content: cont };
-                    await db.set('bibleStore', 'bible_v900', finalData);
-                    setBible(finalData);
-                } catch (error) { console.error(error); }
             };
 
             const handleToggleVerse = (vId) => {
@@ -302,54 +230,118 @@
                 const q = searchQ.toLowerCase().trim();
                 if (!q) { setSearchRes([]); return; }
                 const results = [];
-                bible.books.forEach(b => {
-                    const bData = bible.content[b];
-                    if (bData) {
-                        Object.keys(bData).forEach(c => {
-                            bData[c].forEach((t, i) => { if (t.toLowerCase().includes(q)) results.push({ b, c, v: i+1, t }); });
+                const words = q.split(/\s+/);
+                booksList.forEach(b => {
+                    if (searchBook !== "todos" && searchBook !== b) return;
+                    const bId = Object.keys(BIBLE_BOOKS_MAP).find(k => BIBLE_BOOKS_MAP[k] === b);
+                    if (searchTestament === "antiguo" && parseInt(bId) > 39) return;
+                    if (searchTestament === "nuevo" && parseInt(bId) <= 39) return;
+                    const bData = bibleData[b];
+                    Object.keys(bData).forEach(c => {
+                        const chapterNum = parseInt(c);
+                        if (capStart && chapterNum < parseInt(capStart)) return;
+                        if (capEnd && chapterNum > parseInt(capEnd)) return;
+                        bData[c].forEach((t, i) => {
+                            if (!t) return;
+                            const vId = `${b}-${c}-${i+1}`;
+                            const meta = annotations[vId] || {};
+                            const notesText = (meta.notes || []).map(n => n.text).join(" ").toLowerCase();
+                            const verseText = t.toLowerCase();
+                            let match = false;
+                            const checkMatch = (target) => { if (matchType === "frase") return target.includes(q); return words.every(w => target.includes(w)); };
+                            if (searchScope === "texto" || searchScope === "ambos") if (checkMatch(verseText)) match = true;
+                            if (!match && (searchScope === "notas" || searchScope === "ambos")) if (checkMatch(notesText)) match = true;
+                            if (match) results.push({ b, c, v: i+1, t, noteMatch: !verseText.includes(q) }); 
                         });
-                    }
+                    });
                 });
                 setSearchRes(results);
+                setShowSearchFilters(false);
+            };
+
+            const handleConceptualSearch = async () => {
+                if (!searchQ.trim() || aiLoading) return;
+                setAiLoading(true); setSearchRes([]); setApiError("");
+                const prompt = `Como experto bíblico, encuentra hasta 10 pasajes para: "${searchQ}". Responde SOLO JSON: {"resultados": [{"ref": "Libro Cap:Ver", "explicacion": "razon"}]}`;
+                const result = await fetchGemini(userApiKey, prompt);
+                if (result.data) {
+                    try {
+                        const parsed = JSON.parse(result.data.replace(/```json|```/g, ""));
+                        const mapped = [];
+                        parsed.resultados.forEach(res => {
+                            const match = res.ref.match(/^(.+?)\s+(\d+)[:\s](\d+)$/);
+                            if (match) { const [_, b, c, v] = match; mapped.push({ b, c, v, t: bibleData[b]?.[c]?.[parseInt(v)-1] || "Libro no cargado.", iaComment: res.explicacion }); }
+                        });
+                        setSearchRes(mapped);
+                    } catch (e) { setApiError("Error en formato IA."); }
+                } else setApiError(result.error);
+                setAiLoading(false);
             };
 
             const handleSynthesis = async (txt) => {
-                setAiLoading(true); setAiVersePanel(null);
-                const aiResult = await fetchGemini(userApiKey, `Proporciona un estudio exhaustivo de este versículo: "${txt}"`, true);
-                if (aiResult) {
-                    const parts = aiResult.split(/(TEÓLOGO|HISTORIADOR|PASTOR):?/i);
-                    setAiVersePanel({
-                        teologo: (parts[2] || parts[0] || "").trim(),
-                        historiador: (parts[4] || "Extrayendo contexto histórico detallado...").trim(),
-                        pastor: (parts[6] || "Extrayendo sabiduría pastoral profunda...").trim()
-                    });
-                } else {
-                    setAiVersePanel({
-                        teologo: generateEnhancedLocalFallback(txt, "teologo", currentChapter.book),
-                        historiador: generateEnhancedLocalFallback(txt, "historiador", currentChapter.book),
-                        pastor: generateEnhancedLocalFallback(txt, "pastor", currentChapter.book)
-                    });
-                }
+                setAiLoading(true); setAiVersePanel(null); setApiError("");
+                const result = await fetchGemini(userApiKey, `Analiza profundamente en modo ESTUDIO: "${txt}" (TEÓLOGO, HISTORIADOR, PASTOR, REFERENCIAS)`);
+                if (result.data) {
+                    const raw = result.data;
+                    const extract = (tag) => { const regex = new RegExp(`${tag}:?\\s*([\\s\\S]*?)(?=(?:TEÓLOGO|HISTORIADOR|PASTOR|REFERENCIAS):|$)`, 'i'); const m = raw.match(regex); return m ? m[1].trim() : ""; };
+                    setAiVersePanel({ teologo: extract("TEÓLOGO"), historiador: extract("HISTORIADOR"), pastor: extract("PASTOR"), referencias: extract("REFERENCIAS") });
+                } else setApiError(result.error);
                 setAiLoading(false);
             };
 
             const handleAssistantAsk = async () => {
                 if (!asstQuery.trim() || aiLoading) return;
                 setAiLoading(true); setAsstResponse("");
-                const aiResult = await fetchGemini(userApiKey, `Actúa como experto ${asstRole} y responde con máxima extensión a: ${asstQuery}`);
-                if (aiResult) {
-                    setAsstResponse(aiResult);
-                } else {
-                    setAsstResponse(generateEnhancedLocalFallback(asstQuery, asstRole, currentChapter.book));
-                }
+                const result = await fetchGemini(userApiKey, `Actúa como ${asstRole} bíblico: ${asstQuery}`);
+                if (result.data) setAsstResponse(result.data);
+                else setAsstResponse("Error: " + result.error);
                 setAiLoading(false); updateStreak();
             };
 
-            const togglePlanDay = (planId, dayIdx) => {
-                const current = planProgress[planId] || [];
-                const updated = current.includes(dayIdx) ? current.filter(d => d !== dayIdx) : [...current, dayIdx];
-                setPlanProgress({ ...planProgress, [planId]: updated });
-                updateStreak();
+            const handleGenerateSituationalPlan = async () => {
+                if (!iaEmotion.trim() || aiLoading) return;
+                setAiLoading(true); setApiError("");
+                const prompt = `Crea un plan devocional de 7 días para alguien que se siente: "${iaEmotion}". Responde SOLO JSON: {"title": "Nombre Plan", "days": [{"b": "Libro", "c": 1, "desc": "reflexion"}]}`;
+                const result = await fetchGemini(userApiKey, prompt);
+                if (result.data) {
+                    try {
+                        const parsed = JSON.parse(result.data.replace(/```json|```/g, ""));
+                        const newPlan = { id: `ia-${Date.now()}`, title: parsed.title, days: parsed.days, category: 'IA Personalizado', icon: 'fa-wand-magic-sparkles', custom: true };
+                        setSelectedPlanId(newPlan.id);
+                        PREDEFINED_PLANS.unshift(newPlan);
+                        setIaEmotion("");
+                    } catch (e) { setApiError("Error generando el plan."); }
+                } else setApiError(result.error);
+                setAiLoading(false);
+            };
+
+            const processImport = async (inputData) => {
+                try {
+                    let parsed = {};
+                    const text = inputData.trim();
+                    if (text.startsWith('{')) { parsed = JSON.parse(text); } 
+                    else {
+                        const tupleRegex = /\(?\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*['"](.*?)['"]\s*\)?/;
+                        const naturalRegex = /^(.+?)\s+(\d+)[:\s](\d+)\s+(.+)$/;
+                        text.split('\n').forEach(line => {
+                            let m = line.trim().match(tupleRegex);
+                            if (m) { const [_, bId, chapter, verse, content] = m; const bName = BIBLE_BOOKS_MAP[bId] || `Libro ${bId}`; if (!parsed[bName]) parsed[bName] = {}; if (!parsed[bName][chapter]) parsed[bName][chapter] = []; parsed[bName][chapter][parseInt(verse)-1] = content.replace(/\/n/g, '\n'); }
+                            else { m = line.trim().match(naturalRegex); if (m) { const [_, book, chapter, verse, content] = m; if (!parsed[book]) parsed[book] = {}; if (!parsed[book][chapter]) parsed[book][chapter] = []; parsed[book][chapter][parseInt(verse)-1] = content; } }
+                        });
+                    }
+                    if (Object.keys(parsed).length === 0) throw new Error("No válido.");
+                    const merged = { ...bibleData };
+                    Object.keys(parsed).forEach(b => { if (!merged[b]) merged[b] = parsed[b]; else Object.keys(parsed[b]).forEach(c => merged[b][c] = parsed[b][c]); });
+                    setBibleData(merged); await db.set('bible_content', merged);
+                    setImportStatus("¡Libro(s) cargado(s) correctamente!"); setImportText(""); setTimeout(() => setImportStatus(""), 4000);
+                } catch (e) { setImportStatus("Error: " + e.message); }
+            };
+
+            const handleFileUpload = (e) => {
+                const file = e.target.files[0]; if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (event) => processImport(event.target.result);
+                reader.readAsText(file);
             };
 
             const ExpertItem = ({ icon, title, text, color }) => (
@@ -369,7 +361,7 @@
                     <header className={`safe-top ${darkMode ? 'bg-emerald-950' : 'bg-emerald-600'} text-white shadow-lg z-30 shrink-0 w-full`}>
                         <div className="flex justify-between items-center px-4 py-2">
                             <div className="flex items-center gap-2">
-                                <h1 className="font-black text-[12px] tracking-widest opacity-90 uppercase">Biblia</h1>
+                                <h1 className="font-black text-[12px] tracking-widest opacity-90 uppercase italic tracking-tighter">Biblia IA</h1>
                                 <div className="flex items-center gap-1.5 px-2.5 py-0.5 bg-white/10 rounded-full border border-white/10">
                                     <i className="fa-solid fa-fire text-orange-400 text-[10px]"></i>
                                     <span className="font-black text-[11px]">{streak.count}</span>
@@ -384,7 +376,11 @@
                         </div>
                         <div className="px-3 pb-2.5">
                             <button onClick={() => setView('nav')} className="w-full text-left px-4 py-2 rounded-xl font-bold text-[16px] bg-white text-emerald-900 shadow-md flex justify-between items-center active:scale-[0.98] transition-all border border-emerald-500/10">
-                                <span className="flex items-center gap-2"><i className="fa-solid fa-book-open text-[14px] opacity-30"></i>{currentChapter.book} <span className="opacity-40 ml-0.5">Cap. {currentChapter.chapter}</span></span>
+                                <span className="flex items-center gap-2">
+                                    <i className="fa-solid fa-book-open text-[14px] opacity-30"></i>
+                                    {currentChapter.book || "Seleccionar Libro"} 
+                                    {currentChapter.book && <span className="opacity-40 ml-0.5">Cap. {currentChapter.chapter}</span>}
+                                </span>
                                 <i className="fa-solid fa-chevron-down text-[10px] opacity-20"></i>
                             </button>
                         </div>
@@ -393,80 +389,173 @@
                     <main className="flex-grow overflow-y-auto no-scrollbar p-0 safe-bottom relative w-full">
                         {view === 'reading' && (
                             <div className="animate-fade-in w-full pb-24">
-                                <div className="flex justify-between items-center mt-5 mb-3 border-b border-emerald-500/5 pb-2.5 px-4">
-                                    <h2 className="text-2xl font-serif italic text-emerald-600 dark:text-emerald-400">{currentChapter.book} {currentChapter.chapter}</h2>
-                                    <button onClick={() => { setReadStatus(p => ({ ...p, [`${currentChapter.book}-${currentChapter.chapter}`]: !p[`${currentChapter.book}-${currentChapter.chapter}`] })); updateStreak(); }} className={`text-2xl ${readStatus[`${currentChapter.book}-${currentChapter.chapter}`] ? 'text-emerald-500' : 'text-slate-200'}`}><i className="fa-solid fa-circle-check"></i></button>
+                                {!currentChapter.book ? (
+                                    <div className="p-20 text-center opacity-40 italic">Sube un libro en Ajustes para comenzar.</div>
+                                ) : (
+                                    <>
+                                        <div className="flex justify-between items-center mt-5 mb-3 border-b border-emerald-500/5 pb-2.5 px-4">
+                                            <h2 className="text-2xl font-serif italic text-emerald-600 dark:text-emerald-400">{currentChapter.book} {currentChapter.chapter}</h2>
+                                            <button onClick={() => { setReadStatus(p => ({ ...p, [`${currentChapter.book}-${currentChapter.chapter}`]: !p[`${currentChapter.book}-${currentChapter.chapter}`] })); updateStreak(); }} className={`text-2xl ${readStatus[`${currentChapter.book}-${currentChapter.chapter}`] ? 'text-emerald-500' : 'text-slate-200'}`}><i className="fa-solid fa-circle-check"></i></button>
+                                        </div>
+                                        <div className="space-y-0 w-full">
+                                            {(bibleData[currentChapter.book]?.[currentChapter.chapter] || []).map((txt, i) => {
+                                                if (txt === "") return null;
+                                                const vId = `${currentChapter.book}-${currentChapter.chapter}-${i+1}`;
+                                                const meta = annotations[vId] || {};
+                                                const isFav = favorites.some(f => f.id === vId);
+                                                return (
+                                                    <div key={vId} className={`px-4 py-3 transition-all w-full ${meta.color ? `highlight-${meta.color}` : 'hover:bg-slate-50/40 dark:hover:bg-slate-800/10'}`}>
+                                                        <div className="w-full">
+                                                            <p style={{ fontSize: fontSize, lineHeight: 1.55 }} onClick={() => handleToggleVerse(vId)} className="cursor-pointer select-none font-medium text-justify opacity-95 tracking-tight">
+                                                                <span className="text-[12px] font-black text-emerald-500/40 mr-2.5 inline-block w-5 select-none text-left italic">{i+1}</span>{txt}
+                                                            </p>
+                                                            {meta.notes?.map(n => (
+                                                                <div key={n.id} className="mt-2.5 text-[15px] bg-amber-50/60 dark:bg-amber-900/10 p-4 rounded-2xl border-l-2 border-amber-400 italic flex flex-col shadow-sm">
+                                                                    {editingNoteId === n.id ? (
+                                                                        <div className="flex flex-col gap-2">
+                                                                            <textarea autoFocus value={editingNoteText} onChange={e => setEditingNoteText(e.target.value)} className="w-full p-2 rounded-xl border dark:bg-slate-800 outline-none text-[15px] not-italic" />
+                                                                            <div className="flex justify-end gap-2">
+                                                                                <button onClick={() => setEditingNoteId(null)} className="px-4 py-1.5 bg-slate-200 rounded-lg text-[11px] font-black">Canc.</button>
+                                                                                <button onClick={() => saveNoteEdit(vId, n.id)} className="px-4 py-1.5 bg-emerald-600 text-white rounded-lg text-[11px] font-black">Ok</button>
+                                                                            </div>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div className="flex justify-between items-start">
+                                                                            <span className="opacity-90">{n.text}</span>
+                                                                            <div className="flex gap-2">
+                                                                                <button onClick={() => { setEditingNoteId(n.id); setEditingNoteText(n.text); }} className="text-blue-400 opacity-60"><i className="fa-solid fa-pen"></i></button>
+                                                                                <button onClick={() => setAnnotations({...annotations, [vId]: {...meta, notes: meta.notes.filter(x=>x.id!==n.id)}})} className="text-rose-400 opacity-60"><i className="fa-solid fa-trash"></i></button>
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            ))}
+                                                            {activeV === vId && (
+                                                                <div className="mt-4 pt-4 border-t dark:border-slate-800 animate-slide-up">
+                                                                    <div className="flex justify-between items-center mb-4">
+                                                                        <div className="flex gap-1.5">
+                                                                            {['yellow', 'green', 'blue', 'red'].map(c => <button key={c} onClick={() => setAnnotations({...annotations, [vId]: {...meta, color: meta.color === c ? null : c}})} className={`w-8 h-8 rounded-full highlight-${c} border-2 border-white shadow-md`}></button>)}
+                                                                        </div>
+                                                                        <div className="flex gap-3">
+                                                                            <button onClick={() => toggleFav(vId, txt, `${currentChapter.book} ${currentChapter.chapter}:${i+1}`, currentChapter.book, currentChapter.chapter)} className={isFav ? 'text-yellow-500' : 'text-slate-300'}><i className="fa-solid fa-star text-2xl"></i></button>
+                                                                            <button onClick={() => handleSynthesis(txt)} className="bg-emerald-600 text-white px-4 py-2 rounded-2xl text-[13px] font-black">ESTUDIO IA</button>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="flex gap-2 mb-4 w-full">
+                                                                        <input value={noteInput} onChange={e => setNoteInput(e.target.value)} placeholder="Reflexión..." className="flex-grow p-3.5 rounded-2xl border dark:bg-slate-800 outline-none" />
+                                                                        <button onClick={() => { if(!noteInput) return; const cur = annotations[vId] || {}; setAnnotations({...annotations, [vId]: { ...cur, notes: [...(cur.notes || []), { id: Date.now(), text: noteInput }] } }); setNoteInput(""); updateStreak(); }} className="bg-emerald-50 px-5 rounded-2xl font-black text-emerald-700">Ok</button>
+                                                                    </div>
+                                                                    {aiLoading && <div className="text-center p-4 text-emerald-500 animate-pulse font-black">Consultando IA...</div>}
+                                                                    {aiVersePanel && (
+                                                                        <div className="mt-4 bg-white dark:bg-slate-800 p-5 rounded-[2rem] border shadow-xl space-y-2">
+                                                                            <ExpertItem icon="fa-scroll" title="Teólogo" text={aiVersePanel.teologo} color="blue" />
+                                                                            <ExpertItem icon="fa-landmark" title="Historiador" text={aiVersePanel.historiador} color="amber" />
+                                                                            <ExpertItem icon="fa-hands-praying" title="Pastor" text={aiVersePanel.pastor} color="emerald" />
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        )}
+
+                        {view === 'assistant' && (
+                            <div className="animate-fade-in px-4 pt-6 pb-32">
+                                <h2 className="text-base font-black text-emerald-600 uppercase mb-6">Asistente Exclusivo</h2>
+                                <div className="space-y-6">
+                                    <div className="flex bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl">
+                                        {['teologo','historiador','pastor'].map(r => (
+                                            <button key={r} onClick={() => { setAsstRole(r); setAsstResponse(""); }} className={`flex-1 py-3 rounded-xl font-bold text-[10px] uppercase transition-all ${asstRole === r ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-md' : 'text-slate-400'}`}>{r}</button>
+                                        ))}
+                                    </div>
+                                    <div className="relative">
+                                        <textarea value={asstQuery} onChange={e => setAsstQuery(e.target.value)} placeholder={`Pregunta al ${asstRole}...`} className="w-full p-6 rounded-[2rem] outline-none border-2 dark:bg-slate-800 min-h-[140px] text-[18px]" />
+                                        <button onClick={handleAssistantAsk} className="absolute bottom-5 right-5 w-14 h-14 bg-emerald-600 text-white rounded-[1.2rem] shadow-2xl active:scale-90"><i className={aiLoading ? "fa-solid fa-circle-notch fa-spin" : "fa-solid fa-paper-plane"}></i></button>
+                                    </div>
+                                    {asstResponse && <div className="p-8 bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-2xl border text-[18px] leading-relaxed whitespace-pre-wrap">{asstResponse}</div>}
                                 </div>
-                                <div className="space-y-0 w-full">
-                                    {(bible.content[currentChapter.book]?.[currentChapter.chapter] || []).map((txt, i) => {
-                                        const vId = `${currentChapter.book}-${currentChapter.chapter}-${i+1}`;
-                                        const meta = annotations[vId] || {};
-                                        const isFav = favorites.some(f => f.id === vId);
+                            </div>
+                        )}
+
+                        {view === 'nav' && (
+                            <div className="animate-fade-in w-full px-4 pt-6 pb-32">
+                                <h2 className="text-base font-black text-emerald-600 uppercase mb-6">Libros</h2>
+                                {booksList.length === 0 ? <div className="text-center py-20 opacity-30 italic">No hay libros.</div> : (
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {booksList.sort((a,b) => { const aIdx = Object.values(BIBLE_BOOKS_MAP).indexOf(a); const bIdx = Object.values(BIBLE_BOOKS_MAP).indexOf(b); return (aIdx !== -1 && bIdx !== -1) ? aIdx - bIdx : a.localeCompare(b); }).map(b => (
+                                            <div key={b} className="space-y-2">
+                                                <button onClick={() => { setCurrentChapter({book:b, chapter:1}); setView('reading'); }} className={`w-full p-5 rounded-[1.5rem] border-2 font-black text-[14px] text-left active:scale-[0.96] transition-all ${currentChapter.book === b ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-950' : 'border-slate-50 dark:border-slate-800 dark:bg-slate-800'}`}>{b}</button>
+                                                {currentChapter.book === b && (
+                                                    <div className="flex flex-wrap gap-1.5 p-2 bg-emerald-50/50 rounded-2xl">
+                                                        {Object.keys(bibleData[b]).sort((a,b)=>parseInt(a)-parseInt(b)).map(c => <button key={c} onClick={() => { setCurrentChapter({book:b, chapter: parseInt(c)}); setView('reading'); }} className={`w-8 h-8 rounded-lg text-[10px] font-bold ${currentChapter.chapter === parseInt(c) ? 'bg-emerald-600 text-white' : 'bg-white text-emerald-800'}`}>{c}</button>)}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {view === 'plans' && (
+                            <div className="animate-fade-in px-4 pt-6 pb-32">
+                                <h2 className="text-base font-black text-emerald-600 uppercase tracking-widest mb-6 px-2">Planes y Devocionales</h2>
+                                
+                                {/* DEVOCIONAL IA SITUACIONAL */}
+                                <div className="mb-10 p-8 rounded-[2.5rem] bg-gradient-to-br from-emerald-600 to-emerald-800 text-white shadow-2xl relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 p-10 opacity-10"><i className="fa-solid fa-wand-magic-sparkles text-8xl"></i></div>
+                                    <h3 className="font-black text-xl mb-2 flex items-center gap-2"><i className="fa-solid fa-robot"></i> Devocional Situacional IA</h3>
+                                    <p className="text-emerald-50 text-sm mb-6 leading-relaxed">Dime cómo te sientes hoy o qué necesitas aprender, y crearé un plan de 7 días buscando en tus libros.</p>
+                                    <div className="flex gap-2">
+                                        <input value={iaEmotion} onChange={e => setIaEmotion(e.target.value)} placeholder="Ej: Me siento ansioso..." className="flex-grow p-4 rounded-2xl bg-white/10 border border-white/20 outline-none placeholder:text-white/40 text-[16px] font-bold text-white" />
+                                        <button onClick={handleGenerateSituationalPlan} disabled={aiLoading} className="bg-white text-emerald-700 w-14 h-14 rounded-2xl shadow-lg flex items-center justify-center active:scale-90 transition-all disabled:opacity-50">
+                                            <i className={aiLoading ? "fa-solid fa-circle-notch fa-spin text-xl" : "fa-solid fa-plus text-xl"}></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <h3 className="text-xs font-black uppercase text-slate-400 mb-4 tracking-widest px-4">Guías y Planes Disponibles</h3>
+                                <div className="grid gap-6 px-2">
+                                    {PREDEFINED_PLANS.map(plan => {
+                                        const progress = planProgress[plan.id]?.length || 0;
+                                        const percent = Math.round((progress / plan.duration) * 100);
                                         return (
-                                            <div key={vId} className={`px-4 py-3 transition-all w-full ${meta.color ? `highlight-${meta.color}` : 'hover:bg-slate-50/40 dark:hover:bg-slate-800/10'}`}>
-                                                <div className="w-full">
-                                                    <p style={{ fontSize: fontSize, lineHeight: 1.55 }} onClick={() => handleToggleVerse(vId)} className="cursor-pointer select-none font-medium text-justify opacity-95 tracking-tight">
-                                                        <span className="text-[12px] font-black text-emerald-500/40 mr-2.5 inline-block w-5 select-none text-left italic">{i+1}</span>{txt}
-                                                    </p>
-                                                    
-                                                    {/* SECCIÓN DE NOTAS EXISTENTES */}
-                                                    {meta.notes?.map(n => (
-                                                        <div key={n.id} className="mt-2.5 text-[15px] bg-amber-50/60 dark:bg-amber-900/10 p-4 rounded-2xl border-l-2 border-amber-400 italic flex flex-col shadow-sm">
-                                                            {editingNoteId === n.id ? (
-                                                                <div className="flex flex-col gap-2">
-                                                                    <textarea autoFocus value={editingNoteText} onChange={e => setEditingNoteText(e.target.value)} className="w-full p-2 rounded-xl border dark:bg-slate-800 outline-none text-[15px] not-italic" />
-                                                                    <div className="flex justify-end gap-2">
-                                                                        <button onClick={() => setEditingNoteId(null)} className="px-4 py-1.5 rounded-lg bg-slate-200 dark:bg-slate-700 text-[11px] font-black uppercase">Cancelar</button>
-                                                                        <button onClick={() => saveNoteEdit(vId, n.id)} className="px-4 py-1.5 rounded-lg bg-emerald-600 text-white text-[11px] font-black uppercase">Guardar</button>
-                                                                    </div>
-                                                                </div>
-                                                            ) : (
-                                                                <div className="flex justify-between items-start group">
-                                                                    <span className="opacity-90 leading-snug pr-4">{n.text}</span>
-                                                                    <div className="flex gap-2 shrink-0">
-                                                                        <button onClick={() => { setEditingNoteId(n.id); setEditingNoteText(n.text); }} className="text-blue-400 opacity-60 p-1"><i className="fa-solid fa-pen-to-square"></i></button>
-                                                                        <button onClick={() => setAnnotations({...annotations, [vId]: {...meta, notes: meta.notes.filter(x=>x.id!==n.id)}})} className="text-rose-400 opacity-60 p-1"><i className="fa-solid fa-trash-can"></i></button>
-                                                                    </div>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    ))}
-
-                                                    {activeV === vId && (
-                                                        <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 animate-slide-up relative">
-                                                            <div className="flex justify-between items-center mb-4 gap-2">
-                                                                <div className="flex gap-1.5">
-                                                                    {['yellow', 'green', 'blue', 'red'].map(c => (
-                                                                        <button key={c} onClick={() => setAnnotations({...annotations, [vId]: {...meta, color: meta.color === c ? null : c}})} className={`w-8 h-8 rounded-full highlight-${c} border-2 border-white shadow-md active:scale-90`}></button>
-                                                                    ))}
-                                                                </div>
-                                                                <div className="flex gap-3 items-center">
-                                                                    <button onClick={() => toggleFav(vId, txt, `${currentChapter.book} ${currentChapter.chapter}:${i+1}`, currentChapter.book, currentChapter.chapter)} className={isFav ? 'text-yellow-500' : 'text-slate-300'}>
-                                                                        <i className="fa-solid fa-star text-2xl"></i>
-                                                                    </button>
-                                                                    <button onClick={() => handleSynthesis(txt)} className="bg-emerald-600 text-white px-4 py-2 rounded-2xl text-[13px] font-black shadow-lg active:scale-95 flex items-center gap-2">
-                                                                        <i className={aiLoading ? "fa-solid fa-sync fa-spin" : "fa-solid fa-bolt"}></i> ESTUDIO PROFUNDO
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-
-                                                            {/* CAMPO PARA AÑADIR NOTA */}
-                                                            <div className="flex gap-2 mb-2 w-full">
-                                                                <input value={noteInput} onChange={e => setNoteInput(e.target.value)} placeholder="Añadir reflexión..." className="flex-grow p-3.5 text-[16px] rounded-2xl border dark:bg-slate-800 dark:border-slate-700 outline-none" />
-                                                                <button onClick={() => { if(!noteInput) return; const cur = annotations[vId] || {}; setAnnotations({...annotations, [vId]: { ...cur, notes: [...(cur.notes || []), { id: Date.now(), text: noteInput }] } }); setNoteInput(""); updateStreak(); }} className="bg-emerald-50 dark:bg-slate-700 px-5 rounded-2xl font-black uppercase text-[10px] text-emerald-700 dark:text-emerald-100">Ok</button>
-                                                            </div>
-
-                                                            {aiLoading && <div className="p-4 text-center text-emerald-500 animate-pulse font-black text-[10px] uppercase">Buscando sabiduría profunda en Gemini...</div>}
-                                                            {aiVersePanel && (
-                                                                <div className="mt-4 bg-white dark:bg-slate-800 p-5 rounded-[2rem] border dark:border-slate-700 shadow-xl">
-                                                                    <ExpertItem icon="fa-scroll" title="Teólogo" text={aiVersePanel.teologo} color="blue" />
-                                                                    <ExpertItem icon="fa-landmark" title="Historiador" text={aiVersePanel.historiador} color="amber" />
-                                                                    <ExpertItem icon="fa-hands-praying" title="Pastor" text={aiVersePanel.pastor} color="emerald" />
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    )}
+                                            <div key={plan.id} className="p-8 rounded-[2.5rem] bg-gradient-to-br from-emerald-500 to-emerald-700 text-white shadow-xl relative overflow-hidden active:scale-[0.98] transition-all group">
+                                                {/* ICONO DE FONDO */}
+                                                <div className="absolute -top-4 -right-4 opacity-10 group-hover:rotate-12 transition-transform duration-500">
+                                                    <i className={`fa-solid ${plan.icon} text-8xl`}></i>
                                                 </div>
+
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-white">
+                                                        <i className={`fa-solid ${plan.icon} text-xl`}></i>
+                                                    </div>
+                                                    <span className="text-[10px] font-black uppercase bg-white/20 px-3 py-1 rounded-full text-white/90">{plan.category}</span>
+                                                </div>
+
+                                                <h4 className="font-black text-xl mb-1 text-white">{plan.title}</h4>
+                                                <p className="text-emerald-50/80 text-sm leading-relaxed mb-8">{plan.desc}</p>
+                                                
+                                                <div className="flex items-center gap-4 mb-6">
+                                                    <div className="flex-grow h-2.5 bg-white/20 rounded-full overflow-hidden">
+                                                        <div style={{ width: `${percent}%` }} className="h-full bg-white rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(255,255,255,0.5)]"></div>
+                                                    </div>
+                                                    <span className="text-[11px] font-black text-white">{percent}%</span>
+                                                </div>
+                                                
+                                                <button onClick={() => {
+                                                    if (plan.id === 'juan21' && bibleData['Juan']) { setCurrentChapter({book:'Juan', chapter:1}); setView('reading'); }
+                                                    else if (plan.id === 'sabiduria' && bibleData['Proverbios']) { setCurrentChapter({book:'Proverbios', chapter:1}); setView('reading'); }
+                                                    else { setImportStatus("Falta cargar libro en Ajustes."); setTimeout(()=>setImportStatus(""), 3000); }
+                                                }} className="w-full py-4 bg-white text-emerald-700 font-black uppercase text-[11px] rounded-2xl shadow-lg active:scale-95 transition-all">
+                                                    {percent > 0 ? 'Continuar Lectura' : 'Comenzar ahora'}
+                                                </button>
                                             </div>
                                         );
                                     })}
@@ -474,31 +563,13 @@
                             </div>
                         )}
 
-                        {view === 'assistant' && (
-                            <div className="animate-fade-in px-4 pt-6 pb-32">
-                                <h2 className="text-base font-black text-emerald-600 uppercase tracking-widest mb-6">Asistente IA</h2>
-                                <div className="space-y-6">
-                                    <div className="flex bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl w-full">
-                                        {['teologo','historiador','pastor'].map(r => (
-                                            <button key={r} onClick={() => { setAsstRole(r); setAsstResponse(""); }} className={`flex-1 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all ${asstRole === r ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-md' : 'text-slate-400'}`}>{r}</button>
-                                        ))}
-                                    </div>
-                                    <div className="relative">
-                                        <textarea value={asstQuery} onChange={e => setAsstQuery(e.target.value)} placeholder={`Pregunta cualquier cosa...`} className="w-full p-6 rounded-[2rem] outline-none border-2 dark:bg-slate-800 dark:border-slate-700 min-h-[120px] text-[18px] shadow-sm resize-none" />
-                                        <button onClick={handleAssistantAsk} className="absolute bottom-5 right-5 w-14 h-14 bg-emerald-600 text-white rounded-[1.2rem] flex items-center justify-center shadow-2xl active:scale-90"><i className={aiLoading ? "fa-solid fa-circle-notch fa-spin text-xl" : "fa-solid fa-paper-plane text-xl"}></i></button>
-                                    </div>
-                                    {asstResponse && <div className="p-8 bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-2xl border animate-fade-in text-[18px] leading-relaxed whitespace-pre-wrap">{asstResponse}</div>}
-                                </div>
-                            </div>
-                        )}
-
                         {view === 'favorites' && (
                             <div className="animate-fade-in px-4 pt-6 pb-32">
-                                <h2 className="text-base font-black text-emerald-600 uppercase tracking-widest mb-6">Favoritos</h2>
-                                {favorites.length === 0 ? <div className="text-center py-20 opacity-30">Lista vacía</div> : 
+                                <h2 className="text-base font-black text-emerald-600 uppercase mb-6">Favoritos</h2>
+                                {favorites.length === 0 ? <div className="text-center py-20 opacity-30 italic">Lista vacía</div> : 
                                     favorites.map(f => (
                                         <div key={f.id} className="p-5 rounded-[1.5rem] border dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm mb-4">
-                                            <div className="flex justify-between items-start mb-2">
+                                            <div className="flex justify-between items-start">
                                                 <span onClick={() => { setCurrentChapter({book: f.b, chapter: f.c}); setView('reading'); }} className="text-[11px] font-black text-emerald-600 cursor-pointer italic hover:underline">{f.ref}</span>
                                                 <button onClick={() => toggleFav(f.id, f.text, f.ref, f.b, f.c)} className="text-rose-400 opacity-60"><i className="fa-solid fa-trash-can"></i></button>
                                             </div>
@@ -514,95 +585,133 @@
                                 <h2 className="text-base font-black text-emerald-600 uppercase tracking-widest mb-6">Ajustes</h2>
                                 <div className="space-y-6">
                                     <div className="p-8 rounded-[2.5rem] border-2 dark:bg-slate-800 bg-white shadow-lg text-center">
-                                        <div className="flex justify-between mb-6 items-center"><span className="text-[11px] font-black uppercase opacity-40">Tamaño de Fuente</span><span className="text-emerald-600 font-black text-2xl">{fontSize}px</span></div>
+                                        <div className="flex justify-between mb-6 items-center font-black uppercase opacity-40 text-[11px]"><span>Fuente</span><span>{fontSize}px</span></div>
                                         <input type="range" min="14" max="44" value={fontSize} onChange={e => setFontSize(parseInt(e.target.value))} className="w-full" />
                                     </div>
-
-                                    <div className="p-8 rounded-[2.5rem] border-2 border-emerald-100 dark:border-emerald-900/30 bg-emerald-50/30 dark:bg-slate-800 shadow-lg">
-                                        <div className="flex items-center gap-2 mb-4">
-                                            <i className="fa-solid fa-robot text-emerald-600"></i>
-                                            <span className="text-[11px] font-black uppercase tracking-widest text-emerald-700">Configuración de IA (Gemini 1.5 Flash)</span>
+                                    <div className="p-8 rounded-[2.5rem] border-2 border-emerald-100 dark:border-emerald-900/30 bg-emerald-50/30 dark:bg-slate-800 shadow-lg text-center">
+                                        <div className="flex items-center gap-2 mb-4 justify-center font-black uppercase tracking-widest text-emerald-700 text-[11px]">
+                                            <i className="fa-solid fa-key"></i><span>API Gemini 2.5</span>
                                         </div>
-                                        <p className="text-[12px] opacity-60 mb-4 leading-relaxed">Pega tu API Key de Google AI Studio para activar respuestas avanzadas profundas. El sistema detectará automáticamente el estado de la conexión.</p>
-                                        <input 
-                                            type="password" 
-                                            value={userApiKey} 
-                                            onChange={e => setUserApiKey(e.target.value)} 
-                                            placeholder="Tu API Key de Gemini..." 
-                                            className="w-full p-4 rounded-2xl border-2 dark:bg-slate-900 outline-none text-[14px] font-mono focus:border-emerald-500 transition-all mb-4" 
-                                        />
-                                        <div className="flex justify-between items-center bg-white/50 dark:bg-black/20 p-3 rounded-xl">
-                                            <span className="text-[10px] font-bold uppercase opacity-40">Estado:</span>
-                                            <span className={`text-[10px] font-black uppercase ${userApiKey ? 'text-emerald-600' : 'text-amber-600'}`}>
-                                                {userApiKey ? 'IA Gemini Activa' : 'Modo Offline (Motor Local)'}
-                                            </span>
-                                        </div>
+                                        <input type="password" value={userApiKey} onChange={e => setUserApiKey(e.target.value)} placeholder="API Key..." className="w-full p-4 rounded-2xl border-2 dark:bg-slate-900 outline-none text-[14px] font-mono focus:border-emerald-500 transition-all text-slate-800 dark:text-white" />
                                     </div>
 
-                                    <button onClick={downloadFullBible} className="w-full p-7 bg-slate-100 dark:bg-slate-800 rounded-[2rem] font-black uppercase flex justify-between items-center shadow-sm">Actualizar Base Local <i className="fa-solid fa-cloud-arrow-down opacity-30"></i></button>
-                                </div>
-                            </div>
-                        )}
+                                    {/* SECCIÓN DE ADMINISTRACIÓN DE CONTENIDO */}
+                                    <div className="p-8 rounded-[2.5rem] border-2 border-emerald-100 dark:border-emerald-900/30 bg-emerald-50/30 dark:bg-slate-800 shadow-lg">
+                                        <div className="flex items-center gap-2 mb-6 justify-center font-black uppercase tracking-widest text-emerald-700 text-[11px]">
+                                            <i className="fa-solid fa-database"></i><span>Administrar Libros</span>
+                                        </div>
+                                        
+                                        <div className="space-y-4">
+                                            <div>
+                                                <p className="text-[10px] font-black uppercase opacity-40 mb-2">Subir archivo (JSON, Texto o SQL)</p>
+                                                <input ref={fileInputRef} type="file" accept=".json,.txt,.sql" onChange={handleFileUpload} className="hidden" />
+                                                <button onClick={() => fileInputRef.current.click()} className="w-full py-4 rounded-2xl border-2 border-dashed border-emerald-300 text-emerald-600 font-bold text-sm hover:bg-emerald-50 transition-all">
+                                                    <i className="fa-solid fa-file-import mr-2"></i>Seleccionar Archivo
+                                                </button>
+                                            </div>
 
-                        {view === 'nav' && (
-                            <div className="animate-fade-in w-full px-4 pt-6 pb-32">
-                                <h2 className="text-base font-black text-emerald-600 uppercase tracking-widest mb-6">Biblioteca</h2>
-                                <div className="grid grid-cols-2 gap-3">
-                                    {bible.books.map(b => (
-                                        <button key={b} onClick={() => { setCurrentChapter({book:b, chapter:1}); setView('reading'); }} className={`p-5 rounded-[1.5rem] border-2 font-black text-[14px] text-left active:scale-[0.96] transition-all overflow-hidden text-ellipsis ${currentChapter.book === b ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-950' : 'border-slate-50 dark:border-slate-800 dark:bg-slate-800 shadow-sm'}`}>{b}</button>
-                                    ))}
+                                            <div className="relative">
+                                                <p className="text-[10px] font-black uppercase opacity-40 mb-2">Pegar contenido (Se añadirá a lo existente)</p>
+                                                <textarea value={importText} onChange={e => setImportText(e.target.value)} placeholder='Formatos detectados:&#10;1, 1, 1, "En el principio..."&#10;(1, 1, 1, "En el principio...")&#10;Génesis 1:1 En el principio...' className="w-full p-4 rounded-2xl border-2 dark:bg-slate-900 outline-none text-[12px] font-mono min-h-[140px] focus:border-emerald-500 transition-all text-slate-800 dark:text-white" />
+                                                <button onClick={() => processImport(importText)} className="w-full mt-2 bg-emerald-600 text-white py-4 rounded-2xl font-black uppercase text-[11px] shadow-lg active:scale-95 transition-all">Cargar a Libros</button>
+                                            </div>
+                                            
+                                            {importStatus && (
+                                                <div className={`text-center p-3 rounded-xl text-[12px] font-bold animate-fade-in ${importStatus.startsWith('Error') ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                                                    <i className={`fa-solid ${importStatus.startsWith('Error') ? 'fa-circle-xmark' : 'fa-circle-check'} mr-2`}></i>
+                                                    {importStatus}
+                                                </div>
+                                            )}
+                                            
+                                            <div className="mt-4 p-4 bg-white/40 dark:bg-slate-900/40 rounded-xl">
+                                                <p className="text-[10px] leading-relaxed opacity-60 text-emerald-900 dark:text-emerald-100">
+                                                    <i className="fa-solid fa-circle-info mr-1"></i>
+                                                    <strong>Fusión inteligente:</strong> Al cargar nuevos datos, los libros existentes se mantienen. Si cargas un capítulo que ya existe, se actualizará.
+                                                </p>
+                                            </div>
+                                            
+                                            <button onClick={async () => { if(confirm("¿Seguro que quieres borrar todos los libros cargados?")) { setBibleData({}); await db.set('bible_content', {}); setCurrentChapter({book:'', chapter:1}); setImportStatus("Biblioteca vaciada."); setTimeout(()=>setImportStatus(""), 3000); } }} className="w-full py-2 text-[10px] font-black uppercase text-rose-500 opacity-40 hover:opacity-100 transition-all">Borrar toda la biblioteca</button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )}
 
                         {view === 'search' && (
                             <div className="animate-fade-in px-4 pt-6 pb-32">
-                                <h2 className="text-base font-black text-emerald-600 uppercase tracking-widest mb-6">Buscador</h2>
-                                <div className="flex gap-2 mb-6">
-                                    <input value={searchQ} onChange={e => setSearchQ(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSearch()} placeholder="Buscar..." className="flex-grow p-4 text-[17px] rounded-2xl border-2 dark:bg-slate-800 outline-none" />
-                                    <button onClick={handleSearch} className="bg-emerald-600 text-white px-5 rounded-2xl shadow-xl shrink-0"><i className="fa-solid fa-magnifying-glass text-xl"></i></button>
+                                <div className="flex justify-between items-center mb-6">
+                                    <h2 className="text-base font-black text-emerald-600 uppercase tracking-widest">Buscador</h2>
+                                    <button onClick={() => setShowSearchFilters(!showSearchFilters)} className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase border transition-all ${showSearchFilters ? 'bg-emerald-600 text-white border-emerald-600' : 'text-slate-400 border-slate-200'}`}>Filtros</button>
                                 </div>
-                                <div className="space-y-3">
-                                    {searchRes.map((r, i) => (
-                                        <div key={i} onClick={() => { setCurrentChapter({book:r.b, chapter:r.c}); setView('reading'); }} className="p-5 rounded-[1.5rem] border dark:border-slate-700 bg-white dark:bg-slate-800 cursor-pointer shadow-sm active:scale-[0.98]">
-                                            <span className="text-[11px] font-black text-emerald-600 italic">{r.b} {r.c}:{r.v}</span>
-                                            <p className="text-[17px] opacity-80 line-clamp-3 mt-1">"{r.t}"</p>
-                                        </div>
-                                    ))}
+                                <div className="flex gap-2 mb-4">
+                                    <div className="relative flex-grow">
+                                        <input value={searchQ} onChange={e => setSearchQ(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSearch()} placeholder="Busca en la Biblia..." className="w-full p-4 pr-12 text-[17px] rounded-2xl border-2 dark:bg-slate-800 outline-none focus:border-emerald-500" />
+                                        <button onClick={handleSearch} className="absolute right-2 top-2 w-10 h-10 text-emerald-600"><i className="fa-solid fa-magnifying-glass"></i></button>
+                                    </div>
+                                    <button onClick={handleConceptualSearch} disabled={aiLoading} className="bg-emerald-600 text-white px-5 rounded-2xl shadow-lg active:scale-90 flex items-center justify-center">
+                                        <i className={aiLoading ? "fa-solid fa-circle-notch fa-spin" : "fa-solid fa-brain"}></i>
+                                    </button>
                                 </div>
-                            </div>
-                        )}
-
-                        {view === 'plans' && (
-                            <div className="animate-fade-in px-4 pt-6 pb-32">
-                                <h2 className="text-base font-black text-emerald-600 uppercase tracking-widest mb-6">Planes</h2>
-                                <div className="grid gap-6">
-                                    {INITIAL_PLANS.map(plan => {
-                                        const completed = planProgress[plan.id] || [];
-                                        const progress = Math.round((completed.length / plan.days.length) * 100);
-                                        return (
-                                            <div key={plan.id} className="p-6 rounded-[2rem] bg-emerald-50 dark:bg-emerald-950/20 border-2 border-emerald-100 dark:border-emerald-900 shadow-sm relative transition-all active:scale-[0.99] w-full">
-                                                <div className="flex justify-between items-start mb-4">
-                                                    <div><h3 className="font-black text-lg text-emerald-800 dark:text-emerald-400">{plan.title}</h3><p className="text-[10px] font-black uppercase opacity-40 mt-1 tracking-widest">{progress}%</p></div>
-                                                    {progress === 100 && <i className="fa-solid fa-circle-check text-emerald-500 text-2xl"></i>}
-                                                </div>
-                                                <div className="w-full h-2.5 bg-white dark:bg-slate-800 rounded-full mb-6 overflow-hidden border dark:border-slate-700 shadow-inner">
-                                                    <div className="h-full bg-emerald-500 transition-all duration-700 ease-out" style={{ width: `${progress}%` }}></div>
-                                                </div>
-                                                <div className="space-y-3">
-                                                    {plan.days.map((d, idx) => {
-                                                        const isDone = completed.includes(idx);
-                                                        return (
-                                                            <div key={idx} className="flex gap-3 items-center group w-full overflow-hidden">
-                                                                <button onClick={() => togglePlanDay(plan.id, idx)} className={`w-10 h-10 shrink-0 rounded-xl flex items-center justify-center transition-all border-2 ${isDone ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 text-slate-300'}`}><i className={`fa-solid ${isDone ? 'fa-check' : 'fa-circle-dot text-[10px]'}`}></i></button>
-                                                                <button onClick={() => { setCurrentChapter({book: d.b, chapter: d.c}); setView('reading'); }} className="flex-grow min-w-0 text-left p-3.5 rounded-xl bg-white/50 dark:bg-slate-800/40 border dark:border-slate-700 text-[14px] font-bold flex justify-between items-center group-active:translate-x-1 transition-transform overflow-hidden"><span className={`truncate ${isDone ? 'opacity-40 line-through' : ''}`}>Día {idx + 1}: {d.b} {d.c}</span><i className="fa-solid fa-book-open opacity-30 text-xs shrink-0 ml-2"></i></button>
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </div>
+                                {showSearchFilters && (
+                                    <div className="mb-6 p-6 rounded-[2rem] bg-slate-50 dark:bg-slate-800 space-y-5 animate-slide-up border-2 border-emerald-50">
+                                        <div>
+                                            <p className="text-[10px] font-black uppercase opacity-40 mb-2">Testamento</p>
+                                            <div className="flex gap-2">
+                                                {['todos', 'antiguo', 'nuevo'].map(t => (
+                                                    <button key={t} onClick={() => setSearchTestament(t)} className={`flex-1 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${searchTestament === t ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-slate-700 text-slate-400'}`}>{t}</button>
+                                                ))}
                                             </div>
-                                        );
-                                    })}
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black uppercase opacity-40 mb-2">Libro Específico</p>
+                                            <select value={searchBook} onChange={e => setSearchBook(e.target.value)} className="w-full p-3 rounded-xl border dark:bg-slate-900 text-sm outline-none">
+                                                <option value="todos">Todos los libros</option>
+                                                {booksList.map(b => <option key={b} value={b}>{b}</option>)}
+                                            </select>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <p className="text-[10px] font-black uppercase opacity-40 mb-2">Ámbito</p>
+                                                <select value={searchScope} onChange={e => setSearchScope(e.target.value)} className="w-full p-3 rounded-xl border dark:bg-slate-900 text-[11px] font-bold">
+                                                    <option value="texto">Texto Bíblico</option>
+                                                    <option value="notas">Mis Notas</option>
+                                                    <option value="ambos">Ambos</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-black uppercase opacity-40 mb-2">Coincidencia</p>
+                                                <select value={matchType} onChange={e => setMatchType(e.target.value)} className="w-full p-3 rounded-xl border dark:bg-slate-900 text-[11px] font-bold">
+                                                    <option value="frase">Frase Exacta</option>
+                                                    <option value="palabras">Cualquier Palabra</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-4">
+                                            <div className="flex-1">
+                                                <p className="text-[10px] font-black uppercase opacity-40 mb-2">Desde Cap.</p>
+                                                <input value={capStart} onChange={e => setCapStart(e.target.value)} type="number" className="w-full p-3 rounded-xl border dark:bg-slate-900 text-sm" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="text-[10px] font-black uppercase opacity-40 mb-2">Hasta Cap.</p>
+                                                <input value={capEnd} onChange={e => setCapEnd(e.target.value)} type="number" className="w-full p-3 rounded-xl border dark:bg-slate-900 text-sm" />
+                                            </div>
+                                        </div>
+                                        <button onClick={handleSearch} className="w-full py-3 bg-emerald-600 text-white rounded-2xl font-black uppercase text-[11px]">Aplicar Filtros</button>
+                                    </div>
+                                )}
+                                <div className="space-y-4">
+                                    {searchRes.length === 0 ? <div className="text-center py-20 opacity-30 italic">Busca palabras o usa la IA para conceptos.</div> : 
+                                        searchRes.map((r, i) => (
+                                            <div key={i} onClick={() => { setCurrentChapter({book:r.b, chapter:r.c}); setView('reading'); }} className="p-5 rounded-[1.8rem] border dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm active:scale-[0.98] transition-all hover:border-emerald-200">
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <span className="text-[11px] font-black text-emerald-600 italic tracking-wider">{r.b} {r.c}:{r.v}</span>
+                                                    {r.iaComment && <span className="text-[9px] bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-full font-bold uppercase"><i className="fa-solid fa-brain mr-1"></i>IA</span>}
+                                                </div>
+                                                <p className="text-[17px] opacity-80 leading-relaxed">"{r.t}"</p>
+                                                {r.iaComment && <p className="mt-3 text-[12px] italic text-emerald-700 opacity-60 border-t pt-2 border-emerald-500/10">{r.iaComment}</p>}
+                                            </div>
+                                        ))
+                                    }
                                 </div>
                             </div>
                         )}
