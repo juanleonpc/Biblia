@@ -76,25 +76,122 @@
 
         const apiKey = "";
 
+        // Estructura Católica CEE Actualizada
+        const CATHOLIC_BIBLE_STRUCTURE = [
+            {
+                title: "Antiguo Testamento",
+                groups: [
+                    {
+                        name: "Pentateuco",
+                        books: [
+                            { id: "Génesis", ch: 50 }, { id: "Éxodo", ch: 40 }, { id: "Levítico", ch: 27 }, 
+                            { id: "Números", ch: 36 }, { id: "Deuteronomio", ch: 34 }
+                        ]
+                    },
+                    {
+                        name: "Libros históricos",
+                        books: [
+                            { id: "Josué", ch: 24 }, { id: "Jueces", ch: 21 }, { id: "Rut", ch: 4 }, 
+                            { id: "1 Samuel", ch: 31 }, { id: "2 Samuel", ch: 24 }, { id: "1 Reyes", ch: 22 }, 
+                            { id: "2 Reyes", ch: 25 }, { id: "1 Crónicas", ch: 29 }, { id: "2 Crónicas", ch: 36 }, 
+                            { id: "Esdrás", ch: 10 }, { id: "Nehemías", ch: 13 }, { id: "Tobías", ch: 14 }, 
+                            { id: "Judit", ch: 16 }, { id: "Ester", ch: 10 }, { id: "1 Macabeos", ch: 16 }, 
+                            { id: "2 Macabeos", ch: 15 }
+                        ]
+                    },
+                    {
+                        name: "Libros sapienciales y poéticos",
+                        books: [
+                            { id: "Job", ch: 42 }, { id: "Salmos", ch: 150 }, { id: "Proverbios", ch: 31 }, 
+                            { id: "Eclesiastés", ch: 12 }, { id: "Cantar de los cantares", ch: 8 }, { id: "Sabiduría", ch: 19 }, 
+                            { id: "Eclesiástico", ch: 51 }
+                        ]
+                    },
+                    {
+                        name: "Libros proféticos",
+                        books: [
+                            { id: "Isaías", ch: 66 }, { id: "Jeremías", ch: 52 }, { id: "Lamentaciones", ch: 5 }, 
+                            { id: "Baruc", ch: 6 }, { id: "Ezequiel", ch: 48 }, { id: "Daniel", ch: 14 }, 
+                            { id: "Oseas", ch: 14 }, { id: "Joel", ch: 3 }, { id: "Amós", ch: 9 }, 
+                            { id: "Abdías", ch: 1 }, { id: "Jonás", ch: 4 }, { id: "Miqueas", ch: 7 }, 
+                            { id: "Nahún", ch: 3 }, { id: "Habacuc", ch: 3 }, { id: "Sofonías", ch: 3 }, 
+                            { id: "Ageo", ch: 2 }, { id: "Zacarías", ch: 14 }, { id: "Malaquías", ch: 4 }
+                        ]
+                    }
+                ]
+            },
+            {
+                title: "Nuevo Testamento",
+                groups: [
+                    {
+                        name: "Evangelios",
+                        books: [
+                            { id: "Mateo", ch: 28 }, { id: "Marcos", ch: 16 }, { id: "Lucas", ch: 24 }, { id: "Juan", ch: 21 }
+                        ]
+                    },
+                    {
+                        name: "Hechos de los apóstoles",
+                        books: [
+                            { id: "Hechos", ch: 28 }
+                        ]
+                    },
+                    {
+                        name: "Corpus paulino",
+                        books: [
+                            { id: "Romanos", ch: 16 }, { id: "1 Corintios", ch: 16 }, { id: "2 Corintios", ch: 13 }, 
+                            { id: "Gálatas", ch: 6 }, { id: "Efesios", ch: 6 }, { id: "Filipenses", ch: 4 }, 
+                            { id: "Colosenses", ch: 4 }, { id: "1 Tesalonicenses", ch: 5 }, { id: "2 Tesalonicenses", ch: 3 }, 
+                            { id: "1 Timoteo", ch: 6 }, { id: "2 Timoteo", ch: 4 }, { id: "Tito", ch: 3 }, 
+                            { id: "Filemón", ch: 1 }, { id: "Hebreos", ch: 13 }
+                        ]
+                    },
+                    {
+                        name: "Cartas católicas",
+                        books: [
+                            { id: "Santiago", ch: 5 }, { id: "1 Pedro", ch: 5 }, { id: "2 Pedro", ch: 3 }
+                        ]
+                    },
+                    {
+                        name: "Cartas de San Juan",
+                        books: [
+                            { id: "Juan. Cartas 1-3", ch: 7 }
+                        ]
+                    },
+                    {
+                        name: "Judas",
+                        books: [
+                            { id: "Judas", ch: 1 }
+                        ]
+                    },
+                    {
+                        name: "Apocalipsis",
+                        books: [
+                            { id: "Apocalipsis", ch: 22 }
+                        ]
+                    }
+                ]
+            }
+        ];
+
         const BIBLE_BOOKS_MAP = {
             1: "Génesis", 2: "Éxodo", 3: "Levítico", 4: "Números", 5: "Deuteronomio", 6: "Josué", 7: "Jueces", 8: "Rut", 9: "1 Samuel", 10: "2 Samuel",
-            11: "1 Reyes", 12: "2 Reyes", 13: "1 Crónicas", 14: "2 Crónicas", 15: "Esdras", 16: "Nehemías", 17: "Ester", 18: "Job", 19: "Salmos", 20: "Proverbios",
-            21: "Eclesiastés", 22: "Cantares", 23: "Isaías", 24: "Jeremías", 25: "Lamentaciones", 26: "Ezequiel", 27: "Daniel", 28: "Oseas", 29: "Joel", 30: "Amós",
-            31: "Abdías", 32: "Jonás", 33: "Miqueas", 34: "Nahúm", 35: "Habacuc", 36: "Sofonías", 37: "Hageo", 38: "Zacarías", 39: "Malaquías", 40: "Mateo",
+            11: "1 Reyes", 12: "2 Reyes", 13: "1 Crónicas", 14: "2 Crónicas", 15: "Esdrás", 16: "Nehemías", 17: "Ester", 18: "Job", 19: "Salmos", 20: "Proverbios",
+            21: "Eclesiastés", 22: "Cantar de los cantares", 23: "Isaías", 24: "Jeremías", 25: "Lamentaciones", 26: "Ezequiel", 27: "Daniel", 28: "Oseas", 29: "Joel", 30: "Amós",
+            31: "Abdías", 32: "Jonás", 33: "Miqueas", 34: "Nahún", 35: "Habacuc", 36: "Sofonías", 37: "Ageo", 38: "Zacarías", 39: "Malaquías", 40: "Mateo",
             41: "Marcos", 42: "Lucas", 43: "Juan", 44: "Hechos", 45: "Romanos", 46: "1 Corintios", 47: "2 Corintios", 48: "Gálatas", 49: "Efesios", 50: "Filipenses",
             51: "Colosenses", 52: "1 Tesalonicenses", 53: "2 Tesalonicenses", 54: "1 Timoteo", 55: "2 Timoteo", 56: "Tito", 57: "Filemón", 58: "Hebreos", 59: "Santiago", 60: "1 Pedro",
-            61: "2 Pedro", 62: "1 Juan", 63: "2 Juan", 64: "3 Juan", 65: "Judas", 66: "Apocalipsis"
+            61: "2 Pedro", 62: "Juan. Cartas 1-3", 65: "Judas", 66: "Apocalipsis"
         };
         
-        // Orden canónico para visualización y ordenamiento
+        // Orden canónico actualizado
         const CANONICAL_ORDER = [
             "Génesis", "Éxodo", "Levítico", "Números", "Deuteronomio", "Josué", "Jueces", "Rut", "1 Samuel", "2 Samuel",
-            "1 Reyes", "2 Reyes", "1 Crónicas", "2 Crónicas", "Esdras", "Nehemías", "Ester", "Job", "Salmos", "Proverbios",
-            "Eclesiastés", "Cantares", "Isaías", "Jeremías", "Lamentaciones", "Ezequiel", "Daniel", "Oseas", "Joel", "Amós",
-            "Abdías", "Jonás", "Miqueas", "Nahúm", "Habacuc", "Sofonías", "Hageo", "Zacarías", "Malaquías", "Mateo",
+            "1 Reyes", "2 Reyes", "1 Crónicas", "2 Crónicas", "Esdrás", "Nehemías", "Ester", "Job", "Salmos", "Proverbios",
+            "Eclesiastés", "Cantar de los cantares", "Isaías", "Jeremías", "Lamentaciones", "Ezequiel", "Daniel", "Oseas", "Joel", "Amós",
+            "Abdías", "Jonás", "Miqueas", "Nahún", "Habacuc", "Sofonías", "Ageo", "Zacarías", "Malaquías", "Mateo",
             "Marcos", "Lucas", "Juan", "Hechos", "Romanos", "1 Corintios", "2 Corintios", "Gálatas", "Efesios", "Filipenses",
             "Colosenses", "1 Tesalonicenses", "2 Tesalonicenses", "1 Timoteo", "2 Timoteo", "Tito", "Filemón", "Hebreos", "Santiago", "1 Pedro",
-            "2 Pedro", "1 Juan", "2 Juan", "3 Juan", "Judas", "Apocalipsis"
+            "2 Pedro", "Juan. Cartas 1-3", "Judas", "Apocalipsis"
         ];
 
         const PREDEFINED_PLANS = [
@@ -102,7 +199,7 @@
             { id: 'juan21', title: 'Los 21 días de Juan', desc: 'La mejor puerta de entrada a la Biblia. Conoce a Jesús íntimamente a través del Evangelio del Amor.', duration: 21, category: 'Principiantes', icon: 'fa-heart', bookRef: 'Juan' },
             { id: 'evangelios', title: 'Armonía de los evangelios', desc: 'La vida de Cristo en orden cronológico, unificando los relatos de Mateo, Marcos, Lucas y Juan.', duration: 45, category: 'Vida de Jesús', icon: 'fa-dove', bookRef: 'Mateo' },
             { id: 'fundamentos', title: 'Fundamentos de la fe', desc: 'Explora las doctrinas centrales: Creación, Gracia, Redención y Eternidad en pasajes clave.', duration: 15, category: 'Doctrina', icon: 'fa-gavel', bookRef: 'Romanos' },
-            { id: 'nt90', title: 'Nuevo Testamento en 90 días', desc: 'Un reto intensivo pero transformador para leer todos los libros desde Mateo hasta Apocalipsis.', duration: 90, category: 'Reto', icon: 'fa-bolt', bookRef: 'Mateo' },
+            { id: 'nt90', title: <span>Nuevo Testamento<br/>en 90 días</span>, desc: 'Un reto intensivo pero transformador para leer todos los libros desde Mateo hasta Apocalipsis.', duration: 90, category: 'Reto', icon: 'fa-bolt', bookRef: 'Mateo' },
             { id: 'biografias', title: 'Tras los pasos de Pablo', desc: 'Sigue los viajes misioneros y el fuego del apóstol de los gentiles a través de Hechos.', duration: 10, category: 'Personajes', icon: 'fa-person-walking', bookRef: 'Hechos' },
             { id: 'cronologico', title: 'Plan cronológico', desc: 'Lee la Biblia en el orden real de los sucesos históricos, desde el Caos hasta la Nueva Jerusalén.', duration: 365, category: 'Avanzado', icon: 'fa-timeline', bookRef: 'Génesis' },
             { id: 'anio', title: 'La Biblia en un año', desc: 'El plan clásico: Antiguo Testamento, Nuevo Testamento y Salmos cada día sin falta.', duration: 365, category: 'Clásico', icon: 'fa-calendar-days', bookRef: 'Génesis' },
@@ -122,7 +219,7 @@
             { title: "El centro de la Biblia", text: "Muchos consideran el Salmo 118:8 el centro de la Biblia: 'Mejor es confiar en Jehová que confiar en el hombre'." },
             { title: "¿Gatos?", text: "Se mencionan perros 14 veces en la Biblia, leones 55 veces, pero los gatos domésticos no se mencionan ni una sola vez." },
             { title: "El juez zurdo", text: "Aod fue un juez zurdo que liberó a Israel. La Biblia especifica su mano izquierda porque la usó para esconder su espada y sorprender al rey Eglón." },
-            { title: "Animales que hablan", text: "Solo hay dos casos de animales hablando en la Biblia: la serpiente en el Edén y la burra del profeta Balaam." },
+            { title: "Animales que hablan", text: "Solo hay dos casi de animales hablando en la Biblia: la serpiente en el Edén y la burra del profeta Balaam." },
             { title: "El cabello más pesado", text: "Absalón, hijo de David, tenía un cabello tan denso que se lo cortaba una vez al año y pesaba unos 2 kilos (200 siclos reales)." },
             { title: "Sermón mortal", text: "Un joven llamado Eutico se durmió durante un largo sermón de Pablo, cayó de un tercer piso y murió, pero Pablo bajó y lo resucitó." },
             { title: "El profeta calvo", text: "Eliseo era calvo. Un grupo de muchachos se burló de él gritándole '¡Sube, calvo!', y fueron atacados por dos osas (2 Reyes 2:23)." },
@@ -265,6 +362,11 @@
             const [dailyCuriosity, setDailyCuriosity] = useState(null);
             const [manualBookSelect, setManualBookSelect] = useState("");
             
+            // Nuevos estados para Biblioteca
+            const [navSearchQ, setNavSearchQ] = useState("");
+            const [showNavFilters, setShowNavFilters] = useState(false);
+            const [navTestamentFilter, setNavTestamentFilter] = useState("todos");
+
             const [showUI, setShowUI] = useState(true);
             const lastScrollY = useRef(0);
 
@@ -760,6 +862,24 @@
                 return bks.sort((a, b) => CANONICAL_ORDER.indexOf(a) - CANONICAL_ORDER.indexOf(b));
             }, [favorites]);
 
+            const filteredNavStructure = useMemo(() => {
+                return CATHOLIC_BIBLE_STRUCTURE.map(testament => {
+                    // Filtrar por testamento si no es "todos"
+                    if (navTestamentFilter !== "todos" && testament.title !== navTestamentFilter) return null;
+                    
+                    const filteredGroups = testament.groups.map(group => {
+                        const filteredBooks = group.books.filter(book => 
+                            book.id.toLowerCase().includes(navSearchQ.toLowerCase())
+                        );
+                        if (filteredBooks.length === 0) return null;
+                        return { ...group, books: filteredBooks };
+                    }).filter(Boolean);
+
+                    if (filteredGroups.length === 0) return null;
+                    return { ...testament, groups: filteredGroups };
+                }).filter(Boolean);
+            }, [navSearchQ, navTestamentFilter]);
+
             const SectionHeader = ({ title, onClose, children }) => (
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xs font-bold text-emerald-600 uppercase tracking-[0.2em]">{title}</h2>
@@ -779,10 +899,10 @@
                     "Esd": "Esdras", "Neh": "Nehemías", "Est": "Ester", "Job": "Job", "Sal": "Salmos", "Prov": "Proverbios",
                     "Ecl": "Eclesiastés", "Cant": "Cantares", "Is": "Isaías", "Jer": "Jeremías", "Lam": "Lamentaciones",
                     "Ez": "Ezequiel", "Dn": "Daniel", "Os": "Oseas", "Jl": "Joel", "Am": "Amós", "Abd": "Abdías",
-                    "Jon": "Jonás", "Miq": "Miqueas", "Nah": "Nahúm", "Hab": "Habacuc", "Sof": "Sofonías", "Ag": "Hageo",
+                    "Jon": "Jonás", "Miq": "Miqueas", "Nah": "Nahúm", "Hab!": "Habacuc", "Sof": "Sofonías", "Ag": "Hageo",
                     "Zac": "Zacarías", "Mal": "Malaquías", "Mt": "Mateo", "Mc": "Marcos", "Lc": "Lucas", "Jn": "Juan",
                     "Hch": "Hechos", "Rom": "Romanos", "1 Cor": "1 Corintios", "2 Cor": "2 Corintios", "Gal": "Gálatas",
-                    "Ef": "Efesios", "Flp": "Filipenses", "Col": "Colosenses", "1 Tes": "1 Tesalonicenses", "2 Tes": "2 Tesalonicenses",
+                    "Ef": "Efesios", "Flp": "Filipenses", "Col": "Colosenses", "1 Tes": "1 Tesalonicenses", "2 Tes!": "2 Tesalonicenses",
                     "1 Tim": "1 Timoteo", "2 Tim": "2 Timoteo", "Tit": "Tito", "Flm": "Filemón", "Heb": "Hebreos",
                     "Sant": "Santiago", "1 Pe": "1 Pedro", "2 Pe": "2 Pedro", "1 Jn": "1 Juan", "2 Jn": "2 Juan",
                     "3 Jn": "3 Juan", "Jds": "Judas", "Ap": "Apocalipsis"
@@ -833,7 +953,7 @@
                 </div>
             );
 
-            const closeToReading = () => { setView('reading'); setActivePlan(null); setSettingsPart(null); setShowDeleteConfirm(false); };
+            const closeToReading = () => { setView('reading'); setActivePlan(null); setSettingsPart(null); setShowDeleteConfirm(false); setImportStatus(""); };
 
             const getSettingsTitle = () => {
                 if (!settingsPart) return "Ajustes";
@@ -885,7 +1005,7 @@
             return (
                 <div className={`flex flex-col h-full w-full md:max-w-3xl shadow-2xl overflow-hidden transition-all relative mx-auto bg-yvGrey-50 text-slate-800`}>
                     
-                    {importStatus && (
+                    {importStatus && view !== 'settings' && (
                         <div onClick={() => setImportStatus("")} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 bg-slate-900/95 backdrop-blur-md text-white rounded-full shadow-2xl animate-slide-up flex items-center gap-3 cursor-pointer hover:bg-slate-800 active:scale-95 transition-all">
                             <i className={`fa-solid ${importStatus.startsWith('Error') ? 'fa-circle-exclamation text-rose-400' : 'fa-check text-emerald-400'} text-sm`}></i>
                             <span className="text-xs font-bold uppercase tracking-wider">{importStatus}</span>
@@ -921,7 +1041,7 @@
                                 <button onClick={() => { setView('nav'); setActivePlan(null); setSettingsPart(null); }} className="w-full text-left px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 shadow-sm flex justify-between items-center active:scale-[0.98] transition-all group">
                                     <span className="flex items-center gap-2.5">
                                         <i className="fa-solid fa-layer-group text-emerald-600 opacity-40"></i>
-                                        <span className="text-slate-700 font-bold text-sm">{currentChapter.book || "Explorar la Palabra"}</span>
+                                        <span className="text-slate-700 font-bold text-sm">{currentChapter.book || "Libros"}</span>
                                         {currentChapter.book && <span className="text-slate-400 font-medium text-xs tracking-wide">Capítulo {currentChapter.chapter}</span>}
                                     </span>
                                     <i className="fa-solid fa-chevron-right text-[10px] text-slate-300 group-hover:translate-x-1 transition-transform"></i>
@@ -1100,9 +1220,34 @@
 
                         {view === 'nav' && (
                             <div className="animate-fade-in w-full px-6 pt-2 pb-32">
-                                <SectionHeader title="Biblioteca" onClose={closeToReading} />
+                                <SectionHeader title="Biblioteca" onClose={closeToReading}>
+                                    <button onClick={() => setNavSearchQ("")} className="w-9 h-9 flex items-center justify-center bg-slate-100 text-slate-400 rounded-full hover:text-rose-500 active:scale-95 transition-all"><i className="fa-solid fa-trash-can text-sm"></i></button>
+                                    <button onClick={() => setShowNavFilters(!showNavFilters)} className={`w-9 h-9 flex items-center justify-center rounded-full border transition-all ${showNavFilters ? 'bg-emerald-600 text-white border-emerald-600 shadow-md' : 'text-slate-400 border-slate-200'}`}><i className="fa-solid fa-sliders text-sm"></i></button>
+                                </SectionHeader>
                                 
-                                {lastPosition && (
+                                <div className="relative mb-6">
+                                    <input 
+                                        value={navSearchQ} 
+                                        onChange={e => setNavSearchQ(e.target.value)} 
+                                        placeholder="Buscar un libro..." 
+                                        className="w-full p-4 pr-12 text-base rounded-2xl bg-white border border-slate-100 outline-none focus:border-emerald-500/50 shadow-sm" 
+                                    />
+                                    <i className="fa-solid fa-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
+                                </div>
+
+                                {showNavFilters && (
+                                    <div className="mb-8 p-6 rounded-[2rem] bg-white animate-slide-up border shadow-xl space-y-4">
+                                        <p className="text-[10px] font-bold uppercase text-slate-400 tracking-widest px-1">Filtrar por Testamento</p>
+                                        <div className="flex bg-slate-50 p-1 rounded-xl border">
+                                            <button onClick={() => setNavTestamentFilter("todos")} className={`flex-1 py-2.5 text-[10px] font-bold uppercase rounded-lg transition-all ${navTestamentFilter === 'todos' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400'}`}>Todos</button>
+                                            <button onClick={() => setNavTestamentFilter("Antiguo Testamento")} className={`flex-1 py-2.5 text-[10px] font-bold uppercase rounded-lg transition-all ${navTestamentFilter === 'Antiguo Testamento' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400'}`}>Antiguo</button>
+                                            <button onClick={() => setNavTestamentFilter("Nuevo Testamento")} className={`flex-1 py-2.5 text-[10px] font-bold uppercase rounded-lg transition-all ${navTestamentFilter === 'Nuevo Testamento' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400'}`}>Nuevo</button>
+                                        </div>
+                                        <button onClick={() => setShowNavFilters(false)} className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold uppercase text-[10px] shadow-lg">Listo</button>
+                                    </div>
+                                )}
+
+                                {lastPosition && !navSearchQ && navTestamentFilter === "todos" && (
                                     <div onClick={() => { setCurrentChapter({book: lastPosition.book, chapter: lastPosition.chapter}); setView('reading'); setTimeout(() => { handleToggleVerse(`${lastPosition.book}-${lastPosition.chapter}-${lastPosition.verse}`); }, 300); }} className="mb-6 p-5 rounded-[2rem] bg-emerald-600 text-white shadow-lg shadow-emerald-600/20 active:scale-[0.98] transition-all relative overflow-hidden cursor-pointer group animate-slide-up">
                                         <div className="absolute -top-6 -right-6 opacity-10 text-white text-8xl group-hover:rotate-12 transition-transform"><i className="fa-solid fa-bookmark"></i></div>
                                         <div className="relative z-10 flex items-center justify-between">
@@ -1117,46 +1262,68 @@
                                     </div>
                                 )}
 
-                                {booksList.length === 0 ? <div className="text-center py-20 text-slate-400 italic">No hay libros instalados. Accede a ajustes para cargar contenido.</div> : (
-                                    <div className="grid grid-cols-1 gap-4">
-                                        {/* CORRECCIÓN: Ordenar usando la lista canónica católica completa */}
-                                        {booksList.sort((a,b) => {
-                                            let idxA = CANONICAL_ORDER.indexOf(a);
-                                            let idxB = CANONICAL_ORDER.indexOf(b);
-                                            // Si no está en la lista (raro), ponerlo al final
-                                            if (idxA === -1) idxA = 999;
-                                            if (idxB === -1) idxB = 999;
-                                            return idxA - idxB;
-                                        }).map(b => {
-                                            const progress = getBookProgress(b);
-                                            const isExp = expandedBook === b;
-                                            return (
-                                                <div key={b} className="flex flex-col gap-2">
-                                                    <button onClick={() => setExpandedBook(isExp ? null : b)} className={`w-full p-5 rounded-2xl border transition-all text-left relative overflow-hidden ${isExp ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-600/10' : 'bg-white border-slate-100 text-slate-700 shadow-sm'}`}>
-                                                        <div className="flex justify-between items-center mb-2.5 relative z-10">
-                                                            <span className="font-bold text-base">{b}</span>
-                                                            <div className="flex items-center gap-3">
-                                                                <span className={`text-[10px] font-black uppercase ${isExp ? 'text-white/60' : progress === 100 ? 'text-emerald-500' : 'text-slate-300'}`}>{progress}%</span>
-                                                                <i className={`fa-solid ${isExp ? 'fa-chevron-up' : 'fa-chevron-down'} text-[10px] opacity-40`}></i>
-                                                            </div>
-                                                        </div>
-                                                        <div className={`w-full h-1 rounded-full overflow-hidden relative z-10 ${isExp ? 'bg-white/20' : 'bg-slate-100'}`}>
-                                                            <div className={`h-full transition-all duration-700 ${isExp ? 'bg-white' : 'bg-emerald-500'}`} style={{ width: `${progress}%` }}></div>
-                                                        </div>
-                                                    </button>
-                                                    {isExp && (
-                                                        <div className="grid grid-cols-5 sm:grid-cols-7 gap-2.5 p-5 bg-white rounded-2xl border border-slate-100 animate-slide-up shadow-inner">
-                                                            {Object.keys(bibleData[b] || {}).sort((a,b)=>parseInt(a)-parseInt(b)).map(c => {
-                                                                const isCompleted = readStatus[`${b}-${c}`];
-                                                                return (<button key={c} onClick={() => { setCurrentChapter({book:b, chapter: parseInt(c)}); setExpandedBook(null); setView('reading'); }} className={`aspect-square relative rounded-xl text-[13px] font-bold flex items-center justify-center transition-all active:scale-90 ${isCompleted ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-slate-50 text-slate-500 border border-slate-100'}`}>{c}{isCompleted && <i className="fa-solid fa-check absolute top-1 right-1 text-[7px]"></i>}</button>);
-                                                            })}
-                                                        </div>
-                                                    )}
+                                <div className="space-y-6">
+                                    {filteredNavStructure.length === 0 ? (
+                                        <div className="py-20 text-center text-slate-400 italic">No se encontraron libros con esos criterios.</div>
+                                    ) : filteredNavStructure.map((section, sIdx) => (
+                                        <div key={sIdx} className="space-y-4">
+                                            <h3 className="px-2 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] sticky top-0 bg-yvGrey-50/95 backdrop-blur-sm py-2 z-20 border-b border-slate-200/50">{section.title}</h3>
+                                            {section.groups.map((group, gIdx) => (
+                                                <div key={gIdx}>
+                                                    <h4 className="px-2 mb-2 text-xs font-bold text-emerald-600 uppercase tracking-wider">{group.name}</h4>
+                                                    <div className="grid grid-cols-1 gap-4 mb-6">
+                                                        {group.books.map(book => {
+                                                            const isLoaded = bibleData[book.id];
+                                                            const progress = getBookProgress(book.id);
+                                                            const isExp = expandedBook === book.id;
+                                                            
+                                                            return (
+                                                                <div key={book.id} className="flex flex-col gap-2">
+                                                                    <button onClick={() => setExpandedBook(isExp ? null : book.id)} className={`w-full p-5 rounded-2xl border transition-all text-left relative overflow-hidden ${isExp ? (isLoaded ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg' : 'bg-slate-100 border-slate-200 text-slate-400') : (isLoaded ? 'bg-white border-slate-100 text-slate-700 shadow-sm' : 'bg-white border-dashed border-slate-200 text-slate-400 opacity-60 hover:opacity-100')}`}>
+                                                                        <div className="flex justify-between items-center mb-2.5 relative z-10">
+                                                                            <span className={`font-bold text-base ${!isLoaded && 'italic'}`}>{book.id}</span>
+                                                                            <div className="flex items-center gap-3">
+                                                                                {isLoaded && <span className={`text-[10px] font-black uppercase ${isExp ? 'text-white/60' : progress === 100 ? 'text-emerald-500' : 'text-slate-300'}`}>{progress}%</span>}
+                                                                                <i className={`fa-solid ${isExp ? 'fa-chevron-up' : 'fa-chevron-down'} text-[10px] opacity-40`}></i>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className={`w-full h-1 rounded-full overflow-hidden relative z-10 ${isExp ? 'bg-white/20' : 'bg-slate-100'}`}>
+                                                                            <div className={`h-full transition-all duration-700 ${isExp ? 'bg-white' : 'bg-emerald-500'}`} style={{ width: `${progress}%` }}></div>
+                                                                        </div>
+                                                                    </button>
+                                                                    {isExp && (
+                                                                        <div className="grid grid-cols-5 sm:grid-cols-7 gap-2.5 p-5 bg-white rounded-2xl border border-slate-100 animate-slide-up shadow-inner">
+                                                                            {Array.from({length: book.ch}, (_, i) => i + 1).map(c => {
+                                                                                const isCompleted = readStatus[`${book.id}-${c}`];
+                                                                                
+                                                                                if (isLoaded) {
+                                                                                    // Capítulo disponible y activo
+                                                                                    return (
+                                                                                        <button key={c} onClick={() => { setCurrentChapter({book: book.id, chapter: c}); setExpandedBook(null); setView('reading'); }} className={`aspect-square relative rounded-xl text-[13px] font-bold flex items-center justify-center transition-all active:scale-90 ${isCompleted ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-slate-50 text-slate-500 border border-slate-100'}`}>
+                                                                                            {c}
+                                                                                            {isCompleted && <i className="fa-solid fa-check absolute top-1 right-1 text-[7px]"></i>}
+                                                                                        </button>
+                                                                                    );
+                                                                                } else {
+                                                                                    // Capítulo fantasma (no cargado)
+                                                                                    return (
+                                                                                        <button key={c} onClick={() => setMissingBook(book.id)} className="aspect-square relative rounded-xl text-[13px] font-bold flex items-center justify-center bg-slate-50 text-slate-300 border border-dashed border-slate-200 cursor-help hover:border-emerald-200 transition-colors">
+                                                                                            {c}
+                                                                                        </button>
+                                                                                    );
+                                                                                }
+                                                                            })}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
                                                 </div>
-                                            );
-                                        })}
-                                    </div>
-                                )}
+                                            ))}
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         )}
 
@@ -1183,13 +1350,13 @@
                                 ) : (
                                     <>
                                         <SectionHeader title="Planes y Devocionales" onClose={closeToReading} />
-                                        <div className="mb-10 p-8 rounded-[2.5rem] bg-gradient-to-br from-emerald-600 to-emerald-800 text-white shadow-2xl shadow-emerald-600/30 relative overflow-hidden group">
-                                            <div className="absolute top-0 right-0 p-10 opacity-10 text-white pointer-events-none group-hover:scale-110 transition-transform duration-1000"><i className="fa-solid fa-wand-magic-sparkles text-[10rem]"></i></div>
-                                            <div className="flex items-center gap-4 mb-3 relative z-10"><i className="fa-solid fa-sparkles text-xl"></i><h3 className="font-black text-2xl flex-1">Generar Devocional IA</h3></div>
-                                            <p className="text-white/80 text-[15px] mb-6 leading-relaxed relative z-10">Cuéntame cómo te sientes o sobre qué tema quieres aprender, y crearé un plan de 7 días solo para ti.</p>
+                                        <div className="mb-10 p-8 rounded-[2.5rem] bg-white border border-slate-100 shadow-sm relative overflow-hidden group">
+                                            <div className="absolute top-0 right-0 p-10 opacity-[0.03] text-slate-900 pointer-events-none group-hover:scale-110 transition-transform duration-1000"><i className="fa-solid fa-wand-magic-sparkles text-[10rem]"></i></div>
+                                            <div className="flex items-center gap-4 mb-3 relative z-10"><i className="fa-solid fa-sparkles text-xl text-emerald-600"></i><h3 className="font-black text-2xl text-slate-800 flex-1">Generar Devocional&nbsp;IA</h3></div>
+                                            <p className="text-slate-500 text-[15px] mb-6 leading-relaxed relative z-10">Cuéntame cómo te sientes o sobre qué tema quieres aprender, y crearé un plan de 7 días solo para ti.</p>
                                             <div className="flex gap-2.5 relative z-10">
-                                                <input value={iaEmotion} onChange={e => setIaEmotion(e.target.value)} placeholder="Ej: Busco paz en la tormenta..." className="flex-grow p-4 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 outline-none text-base font-bold placeholder:text-white/40 focus:bg-white/20 transition-all" />
-                                                <button onClick={handleGenerateSituationalPlan} disabled={aiLoading} className="bg-white text-emerald-700 w-14 h-14 rounded-xl shadow-xl flex items-center justify-center active:scale-90 transition-all disabled:opacity-50"><i className={aiLoading ? "fa-solid fa-circle-notch fa-spin" : "fa-solid fa-plus"}></i></button>
+                                                <input value={iaEmotion} onChange={e => setIaEmotion(e.target.value)} placeholder="Ej: Busco paz en la tormenta..." className="flex-grow p-4 rounded-xl bg-slate-50 border border-slate-100 outline-none text-base font-bold text-slate-700 placeholder:text-slate-300 focus:bg-white focus:border-emerald-500/30 transition-all" />
+                                                <button onClick={handleGenerateSituationalPlan} disabled={aiLoading} className="bg-emerald-600 text-white w-14 h-14 rounded-xl shadow-lg active:scale-90 transition-all disabled:opacity-50 flex items-center justify-center"><i className={aiLoading ? "fa-solid fa-circle-notch fa-spin" : "fa-solid fa-plus"}></i></button>
                                             </div>
                                         </div>
                                         <h3 className="text-[10px] font-bold uppercase text-slate-400 mb-5 tracking-[0.2em] px-1">Planes Sugeridos</h3>
@@ -1197,7 +1364,7 @@
                                             {PREDEFINED_PLANS.map(plan => (
                                                 <div key={plan.id} onClick={() => setActivePlan(plan)} className="p-6 rounded-[2rem] bg-white border border-slate-100 shadow-sm relative overflow-hidden active:scale-[0.99] transition-all group cursor-pointer hover:shadow-md">
                                                     <div className="absolute -top-4 -right-4 opacity-[0.03] text-slate-900 text-8xl group-hover:rotate-6 transition-transform"><i className="fa-solid fa-bookmark"></i></div>
-                                                    <span className="absolute top-4 right-6 text-[8px] font-black uppercase text-slate-300">{plan.category}</span>
+                                                    <span className="absolute top-4 right-6 text-[8px] font-black uppercase text-slate-500">{plan.category}</span>
                                                     <div className="flex items-center gap-4 mb-4">
                                                         <div className="w-12 h-12 shrink-0 rounded-2xl bg-slate-50 flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all"><i className={`fa-solid ${plan.icon} text-lg`}></i></div>
                                                         <h4 className="font-bold text-lg text-slate-800 leading-tight flex-1">{plan.title}</h4>
@@ -1258,7 +1425,7 @@
                         {view === 'settings' && (
                             <div className="animate-fade-in px-6 pt-2 pb-32">
                                 <SectionHeader title={getSettingsTitle().toUpperCase()} onClose={closeToReading}>
-                                    {settingsPart && (<button onClick={() => {setSettingsPart(null); setShowDeleteConfirm(false);}} className="text-emerald-600 font-bold text-[10px] uppercase tracking-widest"><i className="fa-solid fa-arrow-left mr-1"></i>Atrás</button>)}
+                                    {settingsPart && (<button onClick={() => {setSettingsPart(null); setShowDeleteConfirm(false); setImportStatus("");}} className="text-emerald-600 font-bold text-[10px] uppercase tracking-widest"><i className="fa-solid fa-arrow-left mr-1"></i>Atrás</button>)}
                                 </SectionHeader>
                                 <div className="space-y-4">
                                     {!settingsPart ? (
@@ -1273,8 +1440,54 @@
                                                     <div className="p-8 rounded-[2rem] bg-white shadow-xl border border-slate-100"><p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-6 text-center">Fuentes de Lectura</p><div className="grid grid-cols-2 gap-4">{[{id:'sans', name:'Sans'},{id:'serif', name:'Serif'},{id:'mono', name:'Mono'},{id:'slab', name:'Slab'}].map(f => (<button key={f.id} onClick={() => setFontFamily(f.id)} className={`py-4 rounded-xl border-2 transition-all ${fontFamily === f.id ? 'border-emerald-500 bg-emerald-50 text-emerald-600 shadow-md' : 'border-slate-50 text-slate-400 hover:border-slate-200'}`}><span className={`font-reading-${f.id} text-lg font-bold`}>{f.name}</span></button>))}</div></div>
                                                 </div>
                                             )}
-                                            {settingsPart === 'ia' && (<div className="p-8 rounded-[2rem] bg-white shadow-xl border border-slate-100 text-center"><div className="flex items-center gap-3 mb-6 justify-center text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-600"><i className="fa-solid fa-key"></i><span>Acceso API Gemini</span>{userApiKey && <i className="fa-solid fa-circle-check text-emerald-500 animate-fade-in"></i>}</div><input type="password" value={userApiKey} onChange={e => setUserApiKey(e.target.value)} placeholder="Introduce tu clave privada..." className="w-full p-4 rounded-xl bg-slate-50 border border-slate-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 outline-none text-center text-emerald-600 font-mono text-sm transition-all" /></div>)}
-                                            {settingsPart === 'backup' && (<div className="p-8 rounded-[2rem] bg-white shadow-xl border border-slate-100 space-y-4"><div className="grid grid-cols-1 gap-3"><button onClick={handleExportBackup} className="w-full py-4 bg-emerald-50 text-emerald-600 rounded-xl font-bold uppercase text-xs shadow-sm flex items-center justify-center gap-3 hover:bg-emerald-100 transition-colors"><i className="fa-solid fa-download"></i> Crear Backup</button><button onClick={() => backupInputRef.current.click()} className="w-full py-4 bg-emerald-600 text-white rounded-xl font-bold uppercase text-xs shadow-lg flex items-center justify-center gap-3 active:scale-95 transition-transform"><i className="fa-solid fa-upload"></i> Restaurar</button><input ref={backupInputRef} type="file" accept=".json" onChange={handleImportBackup} className="hidden" /></div></div>)}
+                                            {settingsPart === 'ia' && (
+                                                <div className="p-8 rounded-[2rem] bg-white shadow-xl border border-slate-100 text-center">
+                                                    <div className="flex items-center gap-3 mb-6 justify-center text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-600">
+                                                        <i className="fa-solid fa-key"></i>
+                                                        <span>Acceso API Gemini</span>
+                                                        {userApiKey && <i className="fa-solid fa-circle-check text-emerald-500 animate-fade-in"></i>}
+                                                    </div>
+                                                    <input 
+                                                        type="password" 
+                                                        value={userApiKey} 
+                                                        onChange={e => {
+                                                            setUserApiKey(e.target.value);
+                                                            if(e.target.value.trim()){
+                                                                setImportStatus("API Key registrada correctamente");
+                                                            } else {
+                                                                setImportStatus("");
+                                                            }
+                                                        }} 
+                                                        placeholder="Introduce tu clave privada..." 
+                                                        className="w-full p-4 rounded-xl bg-slate-50 border border-slate-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 outline-none text-center text-emerald-600 font-reading-sans text-sm transition-all" 
+                                                    />
+                                                    {importStatus && (
+                                                        <div className={`mt-4 p-3 rounded-xl text-[10px] font-bold uppercase tracking-wider animate-fade-in ${importStatus.startsWith('Error') ? 'bg-rose-50 text-rose-500' : 'bg-emerald-50 text-emerald-600'}`}>
+                                                            <i className={`fa-solid ${importStatus.startsWith('Error') ? 'fa-circle-exclamation' : 'fa-check'} mr-2`}></i>
+                                                            {importStatus}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                            {settingsPart === 'backup' && (
+                                                <div className="p-8 rounded-[2rem] bg-white shadow-xl border border-slate-100 space-y-4 text-center">
+                                                    <div className="grid grid-cols-1 gap-3">
+                                                        <button onClick={handleExportBackup} className="w-full py-4 bg-emerald-50 text-emerald-600 rounded-xl font-bold uppercase text-xs shadow-sm flex items-center justify-center gap-3 hover:bg-emerald-100 transition-colors">
+                                                            <i className="fa-solid fa-download"></i> Crear Backup
+                                                        </button>
+                                                        <button onClick={() => backupInputRef.current.click()} className="w-full py-4 bg-emerald-600 text-white rounded-xl font-bold uppercase text-xs shadow-lg flex items-center justify-center gap-3 active:scale-95 transition-transform">
+                                                            <i className="fa-solid fa-upload"></i> Restaurar
+                                                        </button>
+                                                        <input ref={backupInputRef} type="file" accept=".json" onChange={handleImportBackup} className="hidden" />
+                                                    </div>
+                                                    {importStatus && (
+                                                        <div className={`mt-4 p-3 rounded-xl text-[10px] font-bold uppercase tracking-wider animate-fade-in ${importStatus.startsWith('Error') ? 'bg-rose-50 text-rose-500' : 'bg-emerald-50 text-emerald-600'}`}>
+                                                            <i className={`fa-solid ${importStatus.startsWith('Error') ? 'fa-circle-exclamation' : 'fa-check'} mr-2`}></i>
+                                                            {importStatus}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
                                             {settingsPart === 'biblioteca' && (
                                                 <div className="p-8 rounded-[2rem] bg-white shadow-xl border border-slate-100 space-y-6">
                                                     <button onClick={() => fileInputRef.current.click()} className="w-full py-6 rounded-2xl border-2 border-dashed border-emerald-200 text-emerald-600 font-bold text-xs uppercase tracking-widest bg-emerald-50/30 hover:bg-emerald-50 transition-colors flex flex-col items-center gap-2"><i className="fa-solid fa-file-arrow-up text-xl mb-1"></i>Elegir archivo (.json, .txt)</button>
@@ -1282,13 +1495,21 @@
                                                     <div className="relative"><select value={manualBookSelect} onChange={e => setManualBookSelect(e.target.value)} className="w-full p-4 rounded-xl bg-slate-50 border border-slate-100 focus:border-emerald-500 outline-none text-sm font-bold text-slate-600 appearance-none shadow-sm transition-all"><option value="">✨ Auto-detectar libro</option>{CANONICAL_ORDER.map(b => <option key={b} value={b}>{b}</option>)}</select><i className="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i></div>
                                                     <textarea value={importText} onChange={e => setImportText(e.target.value)} placeholder='Pega aquí el texto bíblico...' className="w-full p-5 rounded-xl bg-slate-50 border border-slate-100 outline-none font-medium text-sm text-slate-700 min-h-[180px] focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all shadow-inner placeholder:text-slate-300" />
                                                     <button onClick={() => processImport(importText)} className="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 text-white py-4 rounded-xl font-bold uppercase text-xs shadow-lg shadow-emerald-500/30 active:scale-95 transition-all flex items-center justify-center gap-2"><i className="fa-solid fa-cloud-arrow-up"></i> Cargar Textos</button>
+                                                    
+                                                    {importStatus && (
+                                                        <div className={`mt-2 p-3 rounded-xl text-[10px] font-bold uppercase tracking-wider text-center animate-fade-in ${importStatus.startsWith('Error') ? 'bg-rose-50 text-rose-500' : 'bg-emerald-50 text-emerald-600'}`}>
+                                                            <i className={`fa-solid ${importStatus.startsWith('Error') ? 'fa-circle-exclamation' : 'fa-check'} mr-2`}></i>
+                                                            {importStatus}
+                                                        </div>
+                                                    )}
+
                                                     <div className="pt-6 border-t border-slate-100">
                                                         {showDeleteConfirm ? (
                                                             <div className="bg-rose-50 p-6 rounded-2xl border border-rose-200 text-center animate-fade-in">
                                                                 <p className="text-[10px] font-black uppercase text-rose-600 mb-4 tracking-widest"><i className="fa-solid fa-triangle-exclamation mr-2"></i>¿Confirmas borrar todo?</p>
                                                                 <div className="flex gap-3">
                                                                     <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 py-3 bg-white rounded-xl text-xs font-bold shadow-sm text-slate-500">Cancelar</button>
-                                                                    <button onClick={async () => { setBibleData({}); await db.set('bible_content', {}); setCurrentChapter({book:'', chapter:1}); setShowDeleteConfirm(false); }} className="flex-1 py-3 bg-rose-500 text-white rounded-xl text-xs font-bold shadow-md shadow-rose-500/20">Sí, borrar</button>
+                                                                    <button onClick={async () => { setBibleData({}); await db.set('bible_content', {}); setCurrentChapter({book:'', chapter:1}); setShowDeleteConfirm(false); setImportStatus("Biblioteca vaciada"); }} className="flex-1 py-3 bg-rose-500 text-white rounded-xl text-xs font-bold shadow-md shadow-rose-500/20">Sí, borrar</button>
                                                                 </div>
                                                             </div>
                                                         ) : (
@@ -1345,9 +1566,9 @@
                                 </div>
 
                                 {aiSummary && (
-                                    <div className="mb-10 p-8 bg-gradient-to-br from-emerald-600 to-emerald-700 text-white rounded-[2.5rem] shadow-xl animate-slide-up relative overflow-hidden group">
-                                        <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-1000 text-[8rem] pointer-events-none"><i className="fa-solid fa-sparkles"></i></div>
-                                        <span className="text-[9px] font-bold uppercase tracking-[0.2em] opacity-60 block mb-3">Revelación IA</span>
+                                    <div className="mb-10 p-8 bg-emerald-50/50 border border-emerald-100 text-slate-800 rounded-[2.5rem] shadow-sm animate-slide-up relative overflow-hidden group">
+                                        <div className="absolute top-0 right-0 p-8 opacity-[0.05] group-hover:scale-110 transition-transform duration-1000 text-[8rem] pointer-events-none text-emerald-600"><i className="fa-solid fa-sparkles"></i></div>
+                                        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-emerald-600/60 block mb-3">Revelación&nbsp;IA</span>
                                         <p className="text-xl font-bold leading-relaxed relative z-10">{aiSummary}</p>
                                     </div>
                                 )}
@@ -1382,5 +1603,4 @@
     </script>
 </body>
 </html>
-
 
