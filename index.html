@@ -214,16 +214,16 @@
             { title: "No temas", text: "La frase 'No temas' o sus variantes aparecen 365 veces en las Escrituras, una para cada día del año, recordándonos la providencia diaria de Dios." },
             { title: "El versículo más corto", text: "Juan 11:35, 'Jesús lloró', es conocido como el versículo más corto, mostrando la profunda humanidad y compasión de Cristo." },
             { title: "Matusalén", text: "Matusalén es la persona más longeva mencionada en la Biblia, con 969 años. Su nombre puede significar 'cuando él muera, será enviado' (el Diluvio)." },
-            { title: "Sin trinidad", text: "La palabra teológica 'Trinidad' no aparece explícitamente en la Biblia, aunque el concepto de Padre, Hijo y Espíritu Santo está presente en muchos pasajes." },
+            { title: "Sin trinidad", text: "La palabra teológica 'Trinidad' no aparece explícitamente en la Biblia, aunque el concept de Padre, Hijo y Espíritu Santo está presente en muchos pasajes." },
             { title: "Más de 40 autores", text: "La Biblia fue escrita por más de 40 autores de diferentes profesiones: reyes, pescadores, médicos, granjeros y pastores, a lo largo de 1500 años." },
             { title: "El centro de la Biblia", text: "Muchos consideran el Salmo 118:8 el centro de la Biblia: 'Mejor es confiar en Jehová que confiar en el hombre'." },
             { title: "¿Gatos?", text: "Se mencionan perros 14 veces en la Biblia, leones 55 veces, pero los gatos domésticos no se mencionan ni una sola vez." },
             { title: "El juez zurdo", text: "Aod fue un juez zurdo que liberó a Israel. La Biblia especifica su mano izquierda porque la usó para esconder su espada y sorprender al rey Eglón." },
-            { title: "Animales que hablan", text: "Solo hay dos casos de animales hablando en la Biblia: la serpiente en el Edén y la burra del profeta Balaam." },
+            { title: "Animales que hablan", text: "Solo hay dos casi de animales hablando en la Biblia: la serpiente en el Edén y la burra del profeta Balaam." },
             { title: "El cabello más pesado", text: "Absalón, hijo de David, tenía un cabello tan denso que se lo cortaba una vez al año y pesaba unos 2 kilos (200 siclos reales)." },
             { title: "Sermón mortal", text: "Un joven llamado Eutico se durmió durante un largo sermón de Pablo, cayó de un tercer piso y murió, pero Pablo bajó y lo resucitó." },
             { title: "El profeta calvo", text: "Eliseo era calvo. Un grupo de muchachos se burló de él gritándole '¡Sube, calvo!', y fueron atacados por dos osas (2 Reyes 2:23)." },
-            { title: "Fuerza sobrenatural", text: "Sansón no era necesariamente musculoso; su fuerza venía del Espíritu de Dios. Mató a mil filisteos usando solo una quijada de burro reciente." },
+            { title: "Fuerza sobrenatural", text: "Sansón no era necesariamente musculoso; su fuerza venía del Espíritu de Dios. Mató a mil filisteos usando solo una quijada de burro reciente sin problema." },
             { title: "La cama gigante", text: "La cama de Og, rey de Basán (uno de los últimos gigantes), medía 9 codos de largo, lo que equivale aproximadamente a 4 metros." },
             { title: "El Nombre", text: "El nombre personal de Dios (YHWH) aparece casi 7.000 veces en el Antiguo Testamento, más que cualquier otro título." },
             { title: "Libros perdidos", text: "La Biblia menciona libros que no están incluidos en el canon, como el 'Libro de las Batallas de Jehová' o el 'Libro de Jaser'." },
@@ -239,7 +239,7 @@
             { title: "Sin genealogía", text: "Melquisedec aparece como un tipo de Cristo: un rey y sacerdote del que no se registra padre, madre, nacimiento ni muerte." },
             { title: "Tinta insuficiente", text: "El apóstol Juan termina su evangelio diciendo que si se escribiera todo lo que hizo Jesús, no cabrían los libros en el mundo." },
             { title: "Príncipe de Paz", text: "Isaías profetizó sobre el Mesías llamándolo 'Admirable, Consejero, Dios Fuerte, Padre Eterno, Príncipe de Paz'." },
-            { title: "Vida animal", text: "El rey Nabucodonosor fue castigado con la locura, viviendo como una bestia y comiendo hierba hasta que reconoció a Dios." },
+            { title: "Vida animal", text: "El rey Nabucodonosor fue castigado con la locura, viviendo como una base, coniendo hierba hasta que reconoció a Dios." },
             { title: "El pacto", text: "El arcoíris no es solo un fenómeno óptico en la Biblia, es la señal visible del pacto de Dios de no volver a inundar la tierra." }
         ];
 
@@ -362,7 +362,9 @@
             const [dailyCuriosity, setDailyCuriosity] = useState(null);
             const [manualBookSelect, setManualBookSelect] = useState("");
             
-            // Nuevos estados para Biblioteca
+            // Estado para la PILA DE NAVEGACIÓN
+            const [navStack, setNavStack] = useState([]);
+
             const [navSearchQ, setNavSearchQ] = useState("");
             const [showNavFilters, setShowNavFilters] = useState(false);
             const [navTestamentFilter, setNavTestamentFilter] = useState("todos");
@@ -429,8 +431,16 @@
 
             useEffect(() => {
                 if (ready) {
-                    db.set('config_vBibleData', { annotations, favorites, readStatus, verseReadStatus, verseImages, versePrompts, lastPosition, fontSize, fontFamily, planProgress, streak, userApiKey })
-                      .catch(() => {});
+                    const saveConfig = async () => {
+                        try {
+                            await db.set('config_vBibleData', { 
+                                annotations, favorites, readStatus, verseReadStatus, 
+                                verseImages, versePrompts, lastPosition, fontSize, 
+                                fontFamily, planProgress, streak, userApiKey 
+                            });
+                        } catch (e) { console.error("Error al guardar config:", e); }
+                    };
+                    saveConfig();
                 }
             }, [ready, annotations, favorites, readStatus, verseReadStatus, verseImages, versePrompts, lastPosition, fontSize, fontFamily, planProgress, streak, userApiKey]);
 
@@ -792,33 +802,63 @@
 
             const handleExportBackup = async () => {
                 try {
+                    setImportStatus("");
                     const backup = { app: 'Biblia IA', version: '2.5', timestamp: new Date().toISOString(), config: { annotations, favorites, readStatus, verseReadStatus, verseImages, versePrompts, lastPosition, fontSize, fontFamily, planProgress, streak, userApiKey }, bibleData: bibleData };
                     const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a'); a.href = url; 
                     a.download = `Backup_BibliaIA_${new Date().toISOString().split('T')[0]}.json`;
                     document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-                    setImportStatus("Copia de seguridad total creada."); setTimeout(() => setImportStatus(""), 3000);
+                    
+                    setImportStatus("Copia de seguridad creada correctamente"); 
+                    setTimeout(() => setImportStatus(""), 5000);
                 } catch (e) { 
                     setImportStatus("Error exportando: " + e.message);
-                    setTimeout(() => setImportStatus(""), 4000);
+                    setTimeout(() => setImportStatus(""), 5000);
                 }
             };
 
             const handleImportBackup = (e) => {
                 const file = e.target.files[0]; if (!file) return;
+                const inputElement = e.target;
                 const reader = new FileReader(); reader.onload = async (event) => {
                     try {
+                        setImportStatus("");
                         const backup = JSON.parse(event.target.result);
                         if (backup.app !== 'Biblia IA') throw new Error("Archivo no válido.");
                         const { config, bibleData: bData } = backup;
-                        if (config) { setAnnotations(config.annotations || {}); setFavorites(config.favorites || []); setReadStatus(config.readStatus || {}); setVerseReadStatus(config.verseReadStatus || {}); setVerseImages(config.verseImages || {}); setVersePrompts(config.versePrompts || {}); setLastPosition(config.lastPosition || null); setPlanProgress(config.planProgress || {}); setStreak(config.streak || { count: 0, lastDate: null }); setFontSize(config.fontSize || 20); setFontFamily(config.fontFamily || 'sans'); setUserApiKey(config.userApiKey || ""); }
-                        if (bData) { setBibleData(bData); const first = Object.keys(bData)[0]; if (first) setCurrentChapter({ book: first, chapter: 1 }); }
-                        await db.set('config_vBibleData', config); await db.set('bible_content', bData);
-                        setImportStatus("¡Restauración completa realizada!"); setTimeout(() => setImportStatus(""), 4000);
+                        
+                        if (config) { 
+                            setAnnotations(config.annotations || {}); 
+                            setFavorites(config.favorites || []); 
+                            setReadStatus(config.readStatus || {}); 
+                            setVerseReadStatus(config.verseReadStatus || {}); 
+                            setVerseImages(config.verseImages || {}); 
+                            setVersePrompts(config.versePrompts || {}); 
+                            setLastPosition(config.lastPosition || null); 
+                            setPlanProgress(config.planProgress || {}); 
+                            setStreak(config.streak || { count: 0, lastDate: null }); 
+                            setFontSize(config.fontSize || 20); 
+                            setFontFamily(config.fontFamily || 'sans'); 
+                            
+                            if (config.userApiKey) setUserApiKey(config.userApiKey);
+                        }
+                        
+                        if (bData) { 
+                            setBibleData(bData); 
+                            await db.set('bible_content', bData);
+                            const first = Object.keys(bData)[0]; 
+                            if (first) setCurrentChapter({ book: first, chapter: 1 }); 
+                        }
+                        
+                        const count = bData ? Object.keys(bData).length : 0;
+                        setImportStatus(`Restauración exitosa: ${count} libros cargados`); 
+                        setTimeout(() => setImportStatus(""), 6000);
+                        inputElement.value = "";
                     } catch (err) { 
                         setImportStatus("Error al restaurar: " + err.message); 
-                        setTimeout(() => setImportStatus(""), 4000);
+                        setTimeout(() => setImportStatus(""), 6000);
+                        inputElement.value = "";
                     }
                 };
                 reader.readAsText(file);
@@ -864,7 +904,6 @@
 
             const filteredNavStructure = useMemo(() => {
                 return CATHOLIC_BIBLE_STRUCTURE.map(testament => {
-                    // Filtrar por testamento si no es "todos"
                     if (navTestamentFilter !== "todos" && testament.title !== navTestamentFilter) return null;
                     
                     const filteredGroups = testament.groups.map(group => {
@@ -880,6 +919,26 @@
                 }).filter(Boolean);
             }, [navSearchQ, navTestamentFilter]);
 
+            // Lógica para VOLVER EN LA PILA
+            const handleGoBack = () => {
+                if (navStack.length === 0) return;
+                const newStack = [...navStack];
+                const last = newStack.pop();
+                setNavStack(newStack);
+                setCurrentChapter({ book: last.book, chapter: last.chapter });
+                if (last.verse) {
+                    setTimeout(() => {
+                        handleToggleVerse(`${last.book}-${last.chapter}-${last.verse}`);
+                    }, 400);
+                }
+            };
+
+            const pushToStack = () => {
+                if (!currentChapter.book) return;
+                const vNum = activeV ? parseInt(activeV.split('-')[2]) : null;
+                setNavStack(prev => [...prev, { book: currentChapter.book, chapter: currentChapter.chapter, verse: vNum }]);
+            };
+
             const SectionHeader = ({ title, onClose, children }) => (
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xs font-bold text-emerald-600 uppercase tracking-[0.2em]">{title}</h2>
@@ -890,29 +949,26 @@
             const LinkifiedText = ({ content }) => {
                 if (typeof content !== 'string') return content;
                 
-                // Mapa expandido de abreviaturas para detectar enlaces (Gn, Mt, 1 Cor, etc.)
                 const REF_MAP = {
                     ...Object.values(BIBLE_BOOKS_MAP).reduce((acc, val) => ({...acc, [val]: val}), {}),
                     "Gn": "Génesis", "Gen": "Génesis", "Ex": "Éxodo", "Lv": "Levítico", "Nm": "Números", "Dt": "Deuteronomio",
                     "Jos": "Josué", "Jue": "Jueces", "Rt": "Rut", "1 Sm": "1 Samuel", "2 Sm": "2 Samuel", 
                     "1 Re": "1 Reyes", "2 Re": "2 Reyes", "1 Cr": "1 Crónicas", "2 Cr": "2 Crónicas",
-                    "Esd": "Esdras", "Neh": "Nehemías", "Est": "Ester", "Job": "Job", "Sal": "Salmos", "Prov": "Proverbios",
-                    "Ecl": "Eclesiastés", "Cant": "Cantares", "Is": "Isaías", "Jer": "Jeremías", "Lam": "Lamentaciones",
+                    "Esd": "Esdrás", "Neh": "Nehemías", "Est": "Ester", "Job": "Job", "Sal": "Salmos", "Prov": "Proverbios",
+                    "Ecl": "Eclesiastés", "Cant": "Cantar de los cantares", "Cantares": "Cantar de los cantares", "Is": "Isaías", "Jer": "Jeremías", "Lam": "Lamentaciones",
                     "Ez": "Ezequiel", "Dn": "Daniel", "Os": "Oseas", "Jl": "Joel", "Am": "Amós", "Abd": "Abdías",
-                    "Jon": "Jonás", "Miq": "Miqueas", "Nah": "Nahúm", "Hab!": "Habacuc", "Sof": "Sofonías", "Ag": "Hageo",
+                    "Jon": "Jonás", "Miq": "Miqueas", "Nah": "Nahún", "Nahúm": "Nahún", "Hab!": "Habacuc", "Sof": "Sofonías", "Ag": "Ageo",
                     "Zac": "Zacarías", "Mal": "Malaquías", "Mt": "Mateo", "Mc": "Marcos", "Lc": "Lucas", "Jn": "Juan",
                     "Hch": "Hechos", "Rom": "Romanos", "1 Cor": "1 Corintios", "2 Cor": "2 Corintios", "Gal": "Gálatas",
-                    "Ef": "Efesios", "Flp": "Filipenses", "Col": "Colosenses", "1 Tes": "1 Tesalonicenses", "2 Tes!": "2 Tesalonicenses",
+                    "Ef": "Efesios", "Flp": "Filipenses", "Col": "Colosenses", "1 Tes": "1 Tesalonicenses", "2 Tes": "2 Tesalonicenses",
                     "1 Tim": "1 Timoteo", "2 Tim": "2 Timoteo", "Tit": "Tito", "Flm": "Filemón", "Heb": "Hebreos",
-                    "Sant": "Santiago", "1 Pe": "1 Pedro", "2 Pe": "2 Pedro", "1 Jn": "1 Juan", "2 Jn": "2 Juan",
-                    "3 Jn": "3 Juan", "Jds": "Judas", "Ap": "Apocalipsis"
+                    "Sant": "Santiago", "1 Pe": "1 Pedro", "2 Pe": "2 Pedro", "1 Jn": "Juan. Cartas 1-3", "2 Jn": "Juan. Cartas 1-3",
+                    "3 Jn": "Juan. Cartas 1-3", "1 Juan": "Juan. Cartas 1-3", "2 Juan": "Juan. Cartas 1-3", "3 Juan": "Juan. Cartas 1-3", "Jds": "Judas", "Ap": "Apocalipsis"
                 };
 
-                // Ordenar claves por longitud para que "1 Juan" se detecte antes que "Juan"
+                const normalize = (s) => s ? s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\./g, '') : "";
                 const keys = Object.keys(REF_MAP).sort((a, b) => b.length - a.length);
                 const bookPattern = keys.map(b => b.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
-                
-                // Regex mejorado: Acepta abreviaturas y separadores como coma (Gn 1,1) o dos puntos (Gn 1:1)
                 const regex = new RegExp(`\\b(${bookPattern})\\s+(\\d+)(?:[:\\.,]\\s*(\\d+))?\\b`, 'gi');
                 
                 const parts = content.split(regex);
@@ -923,20 +979,25 @@
                         const detected = parts[i + 1];
                         const chap = parts[i + 2]; 
                         const ver = parts[i + 3];
-                        
-                        // Buscar el nombre canónico (el que entiende la app)
-                        const canonicalKey = Object.keys(REF_MAP).find(k => k.toLowerCase() === detected.toLowerCase());
-                        const canonicalName = canonicalKey ? REF_MAP[canonicalKey] : detected;
-
+                        const lookupKey = detected.replace(/\.$/, '');
+                        const canonicalName = REF_MAP[detected] || REF_MAP[lookupKey] || detected;
                         const displayRef = `${detected} ${chap}${ver ? ':' + ver : ''}`;
                         
                         result.push(
                             <span key={`book-${i}`} onClick={(e) => {
                                 e.stopPropagation();
-                                const targetBook = Object.values(BIBLE_BOOKS_MAP).find(b => b.toLowerCase() === canonicalName.toLowerCase());
-                                if (bibleData[targetBook]) {
-                                    const targetChapterNum = parseInt(chap); const targetVerseNum = ver ? parseInt(ver) : null;
-                                    setCurrentChapter({ book: targetBook, chapter: targetChapterNum }); setView('reading');
+                                const normCanon = normalize(canonicalName);
+                                const targetBook = Object.values(BIBLE_BOOKS_MAP).find(b => normalize(b) === normCanon);
+
+                                if (targetBook && bibleData[targetBook]) {
+                                    const targetChapterNum = parseInt(chap); 
+                                    const targetVerseNum = ver ? parseInt(ver) : null;
+                                    
+                                    // PUSH A LA PILA: Solo aquí se activa el historial de volver
+                                    pushToStack();
+
+                                    setCurrentChapter({ book: targetBook, chapter: targetChapterNum }); 
+                                    setView('reading');
                                     setTimeout(() => { if (targetVerseNum) { handleToggleVerse(`${targetBook}-${targetChapterNum}-${targetVerseNum}`); } }, 400);
                                 } else { setMissingBook(targetBook || canonicalName); }
                             }} className="text-emerald-600 font-semibold underline decoration-emerald-500/20 cursor-pointer hover:decoration-emerald-500 transition-all px-0.5">{displayRef}</span>
@@ -961,27 +1022,30 @@
                 return titles[settingsPart] || settingsPart;
             };
 
-            const NavItem = ({v, i, l}) => (
-                <button 
-                    onClick={() => { 
-                        if (v === 'reading' && !currentChapter.book) {
-                            setView('nav');
-                        } else {
-                            setView(v); 
-                        }
-                        setActivePlan(null); 
-                        setSettingsPart(null); 
-                    }} 
-                    className={`flex flex-col items-center justify-center flex-1 gap-1 transition-all ${view === v ? 'text-emerald-600' : 'text-slate-400'}`}
-                >
-                    <div className={`w-8 h-8 flex items-center justify-center rounded-xl transition-all ${view === v ? 'bg-emerald-50' : ''}`}>
-                        <i className={`fa-solid ${i} text-[18px]`}></i>
-                    </div>
-                    <span className="text-[10px] font-bold uppercase tracking-tighter">{l}</span>
-                </button>
-            );
+            const NavItem = ({v, i, l}) => {
+                const isActive = view === v || (v === 'reading' && view === 'nav');
+                return (
+                    <button 
+                        onClick={() => { 
+                            if (v === 'reading' && !currentChapter.book) {
+                                setView('nav');
+                            } else {
+                                setView(v); 
+                            }
+                            setActivePlan(null); 
+                            setSettingsPart(null); 
+                            setNavStack([]); // Limpiar historial al cambiar manualmente de sección
+                        }} 
+                        className={`flex flex-col items-center justify-center flex-1 gap-1 transition-all ${isActive ? 'text-emerald-600' : 'text-slate-400'}`}
+                    >
+                        <div className={`w-8 h-8 flex items-center justify-center rounded-xl transition-all ${isActive ? 'bg-emerald-50' : ''}`}>
+                            <i className={`fa-solid ${i} text-[18px]`}></i>
+                        </div>
+                        <span className="text-[10px] font-bold uppercase tracking-tighter">{l}</span>
+                    </button>
+                );
+            }
             
-            // Función para manejar el scroll y ocultar UI
             const handleScroll = (e) => {
                 const currentScrollY = e.currentTarget.scrollTop;
                 const delta = currentScrollY - lastScrollY.current;
@@ -1033,8 +1097,6 @@
                             <div className="flex justify-between items-center px-4 pt-3 pb-1">
                                 <div className="flex items-center gap-3">
                                     <h1 className="font-black text-lg tracking-tighter text-emerald-600 italic">Biblia IA</h1>
-                                    <div className="h-6 w-[1px] bg-slate-100"></div>
-                                    <div className="flex items-center gap-1.5"><i className="fa-solid fa-fire text-orange-500 text-xs"></i><span className="font-bold text-sm text-slate-400">{streak.count}</span></div>
                                 </div>
                             </div>
                             <div className="px-4 pb-2">
@@ -1049,6 +1111,22 @@
                             </div>
                         </div>
                     </header>
+
+                    {/* MEJORA: BOTÓN FLOTANTE DE VOLVER (ESTILO PILA) */}
+                    {navStack.length > 0 && view === 'reading' && (
+                        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 animate-slide-up w-full px-4 max-w-[90%] md:max-w-sm">
+                            <button 
+                                onClick={handleGoBack}
+                                className="w-full bg-slate-900/80 backdrop-blur-md text-white py-4 px-6 rounded-2xl shadow-2xl flex items-center justify-center gap-3 active:scale-95 transition-all border border-white/10"
+                            >
+                                <i className="fa-solid fa-arrow-left text-xs"></i>
+                                <span className="text-[11px] font-black uppercase tracking-wide leading-tight text-center">
+                                    Volver a {navStack[navStack.length-1].book} {navStack[navStack.length-1].chapter}{navStack[navStack.length-1].verse ? `:${navStack[navStack.length-1].verse}` : ''}
+                                </span>
+                                <span className="text-[10px] opacity-40 font-bold">({navStack.length})</span>
+                            </button>
+                        </div>
+                    )}
 
                     <main ref={mainRef} onScroll={handleScroll} className={`flex-grow overflow-y-auto no-scrollbar relative w-full transition-all duration-300`} 
                           style={{ paddingTop: showUI ? 'calc(105px + var(--sat))' : 'calc(45px + var(--sat))' }}>
@@ -1137,9 +1215,9 @@
                                                                                 <button key={c} onClick={() => setAnnotations({...annotations, [vId]: {...meta, color: meta.color === c ? null : c}})} className={`w-7 h-7 rounded-full highlight-${c} border-2 ${meta.color === c ? 'border-emerald-500 scale-110' : 'border-transparent shadow-sm'} transition-transform`}></button>
                                                                             ))}
                                                                         </div>
-                                                                        <div className="flex gap-1 items-center">
+                                                                        <div className="flex gap-1.5 items-center">
                                                                             <button onClick={() => handleShare(txt, `${currentChapter.book} ${currentChapter.chapter}:${i+1}`)} className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-emerald-500"><i className="fa-solid fa-share-nodes text-lg"></i></button>
-                                                                            <button onClick={() => handleGeneratePromptOnly(txt, vId)} className={`w-10 h-10 flex items-center justify-center transition-all ${versePrompts[vId] ? 'text-emerald-600' : 'text-slate-300 hover:text-emerald-500'}`}><i className="fa-solid fa-wand-sparkles text-lg"></i></button>
+                                                                            <button onClick={() => handleGeneratePromptOnly(txt, vId)} className={`w-10 h-10 flex items-center justify-center transition-all ${versePrompts[vId] ? 'text-emerald-600' : 'text-slate-300 hover:text-emerald-500'}`}><i className="fa-solid fa-image text-lg"></i></button>
                                                                             <button onClick={() => toggleFav(vId, txt, `${currentChapter.book} ${currentChapter.chapter}:${i+1}`, currentChapter.book, currentChapter.chapter)} className={`w-10 h-10 flex items-center justify-center transition-all ${isFav ? 'text-yellow-500' : 'text-slate-300'}`}><i className="fa-solid fa-star text-lg"></i></button>
                                                                         </div>
                                                                     </div>
@@ -1231,9 +1309,8 @@
                                         value={navSearchQ} 
                                         onChange={e => setNavSearchQ(e.target.value)} 
                                         placeholder="Buscar un libro..." 
-                                        className="w-full p-4 pr-12 text-base rounded-2xl bg-white border border-slate-100 outline-none focus:border-emerald-500/50 shadow-sm" 
+                                        className="w-full p-4 text-base rounded-2xl bg-white border border-slate-100 outline-none focus:border-emerald-500/50 shadow-sm" 
                                     />
-                                    <i className="fa-solid fa-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
                                 </div>
 
                                 {showNavFilters && (
@@ -1289,7 +1366,7 @@
                                                                             </div>
                                                                         </div>
                                                                         <div className={`w-full h-1 rounded-full overflow-hidden relative z-10 ${isExp ? 'bg-white/20' : 'bg-slate-100'}`}>
-                                                                            <div className={`h-full transition-all duration-700 ${isExp ? 'bg-white' : 'bg-emerald-500'}`} style={{ width: `${progress}%` }}></div>
+                                                                            <div className={`h-full transition-all duration-700 ${isExp ? 'bg-white' : 'bg-emerald-50'}`} style={{ width: `${progress}%` }}></div>
                                                                         </div>
                                                                     </button>
                                                                     {isExp && (
@@ -1298,7 +1375,6 @@
                                                                                 const isCompleted = readStatus[`${book.id}-${c}`];
                                                                                 
                                                                                 if (isLoaded) {
-                                                                                    // Capítulo disponible y activo
                                                                                     return (
                                                                                         <button key={c} onClick={() => { setCurrentChapter({book: book.id, chapter: c}); setExpandedBook(null); setView('reading'); }} className={`aspect-square relative rounded-xl text-[13px] font-bold flex items-center justify-center transition-all active:scale-90 ${isCompleted ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-slate-50 text-slate-500 border border-slate-100'}`}>
                                                                                             {c}
@@ -1306,7 +1382,6 @@
                                                                                         </button>
                                                                                     );
                                                                                 } else {
-                                                                                    // Capítulo fantasma (no cargado)
                                                                                     return (
                                                                                         <button key={c} onClick={() => setMissingBook(book.id)} className="aspect-square relative rounded-xl text-[13px] font-bold flex items-center justify-center bg-slate-50 text-slate-300 border border-dashed border-slate-200 cursor-help hover:border-emerald-200 transition-colors">
                                                                                             {c}
@@ -1452,8 +1527,9 @@
                                                         type="password" 
                                                         value={userApiKey} 
                                                         onChange={e => {
-                                                            setUserApiKey(e.target.value);
-                                                            if(e.target.value.trim()){
+                                                            const newKey = e.target.value;
+                                                            setUserApiKey(newKey);
+                                                            if(newKey.trim()){
                                                                 setImportStatus("API Key registrada correctamente");
                                                             } else {
                                                                 setImportStatus("");
@@ -1481,6 +1557,7 @@
                                                         </button>
                                                         <input ref={backupInputRef} type="file" accept=".json" onChange={handleImportBackup} className="hidden" />
                                                     </div>
+                                                    
                                                     {importStatus && (
                                                         <div className={`mt-4 p-3 rounded-xl text-[10px] font-bold uppercase tracking-wider animate-fade-in ${importStatus.startsWith('Error') ? 'bg-rose-50 text-rose-500' : 'bg-emerald-50 text-emerald-600'}`}>
                                                             <i className={`fa-solid ${importStatus.startsWith('Error') ? 'fa-circle-exclamation' : 'fa-check'} mr-2`}></i>
@@ -1491,14 +1568,19 @@
                                             )}
                                             {settingsPart === 'biblioteca' && (
                                                 <div className="p-8 rounded-[2rem] bg-white shadow-xl border border-slate-100 space-y-6">
-                                                    <button onClick={() => fileInputRef.current.click()} className="w-full py-6 rounded-2xl border-2 border-dashed border-emerald-200 text-emerald-600 font-bold text-xs uppercase tracking-widest bg-emerald-50/30 hover:bg-emerald-50 transition-colors flex flex-col items-center gap-2"><i className="fa-solid fa-file-arrow-up text-xl mb-1"></i>Elegir archivo (.json, .txt)</button>
-                                                    <input ref={fileInputRef} type="file" accept=".json,.txt,.sql" onChange={handleFileUpload} className="hidden" />
-                                                    <div className="relative"><select value={manualBookSelect} onChange={e => setManualBookSelect(e.target.value)} className="w-full p-4 rounded-xl bg-slate-50 border border-slate-100 focus:border-emerald-500 outline-none text-sm font-bold text-slate-600 appearance-none shadow-sm transition-all"><option value="">✨ Auto-detectar libro</option>{CANONICAL_ORDER.map(b => <option key={b} value={b}>{b}</option>)}</select><i className="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i></div>
-                                                    <textarea value={importText} onChange={e => setImportText(e.target.value)} placeholder='Pega aquí el texto bíblico...' className="w-full p-5 rounded-xl bg-slate-50 border border-slate-100 outline-none font-medium text-sm text-slate-700 min-h-[180px] focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all shadow-inner placeholder:text-slate-300" />
-                                                    <button onClick={() => processImport(importText)} className="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 text-white py-4 rounded-xl font-bold uppercase text-xs shadow-lg shadow-emerald-500/30 active:scale-95 transition-all flex items-center justify-center gap-2"><i className="fa-solid fa-cloud-arrow-up"></i> Cargar Textos</button>
-                                                    
+                                                    <div className="space-y-4">
+                                                        <button onClick={() => fileInputRef.current.click()} className="w-full py-6 rounded-2xl border-2 border-dashed border-emerald-200 text-emerald-600 font-bold text-xs uppercase tracking-widest bg-emerald-50/30 hover:bg-emerald-50 transition-colors flex flex-col items-center gap-2"><i className="fa-solid fa-file-arrow-up text-xl mb-1"></i>Elegir archivo (.json, .txt)</button>
+                                                        <input ref={fileInputRef} type="file" accept=".json,.txt,.sql" onChange={handleFileUpload} className="hidden" />
+                                                        <div className="relative"><select value={manualBookSelect} onChange={e => setManualBookSelect(e.target.value)} className="w-full p-4 rounded-xl bg-slate-50 border border-slate-100 focus:border-emerald-500 outline-none text-sm font-bold text-slate-600 appearance-none shadow-sm transition-all"><option value="">✨ Auto-detectar libro</option>{CANONICAL_ORDER.map(b => <option key={b} value={b}>{b}</option>)}</select><i className="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i></div>
+                                                        <textarea value={importText} onChange={e => setImportText(e.target.value)} placeholder='Pega aquí el texto bíblico...' className="w-full p-5 rounded-xl bg-slate-50 border border-slate-100 outline-none font-medium text-sm text-slate-700 min-h-[180px] focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all shadow-inner placeholder:text-slate-300" />
+                                                        <div className="flex gap-2">
+                                                            <button onClick={() => setImportText("")} className="w-14 h-14 bg-slate-100 text-slate-400 rounded-xl font-bold uppercase text-xs active:scale-95 transition-all flex items-center justify-center shrink-0 hover:bg-slate-200" title="Borrar texto"><i className="fa-solid fa-eraser text-lg"></i></button>
+                                                            <button onClick={() => { setImportStatus(""); processImport(importText); }} className="flex-grow bg-gradient-to-r from-emerald-600 to-emerald-500 text-white py-4 rounded-xl font-bold uppercase text-xs shadow-lg shadow-emerald-500/30 active:scale-95 transition-all flex items-center justify-center gap-2"><i className="fa-solid fa-cloud-arrow-up"></i> Cargar Textos</button>
+                                                        </div>
+                                                    </div>
+
                                                     {importStatus && (
-                                                        <div className={`mt-2 p-3 rounded-xl text-[10px] font-bold uppercase tracking-wider text-center animate-fade-in ${importStatus.startsWith('Error') ? 'bg-rose-50 text-rose-500' : 'bg-emerald-50 text-emerald-600'}`}>
+                                                        <div className={`mt-4 p-3 rounded-xl text-[10px] font-bold uppercase tracking-wider text-center animate-fade-in ${importStatus.startsWith('Error') ? 'bg-rose-50 text-rose-500' : 'bg-emerald-50 text-emerald-600'}`}>
                                                             <i className={`fa-solid ${importStatus.startsWith('Error') ? 'fa-circle-exclamation' : 'fa-check'} mr-2`}></i>
                                                             {importStatus}
                                                         </div>
@@ -1531,12 +1613,31 @@
                                     <button onClick={() => { setSearchQ(""); setSearchRes([]); setAiSummary(""); }} className="w-9 h-9 flex items-center justify-center bg-slate-100 text-slate-400 rounded-full hover:text-rose-500 active:scale-95 transition-all"><i className="fa-solid fa-trash-can text-sm"></i></button>
                                     <button onClick={() => setShowSearchFilters(!showSearchFilters)} className={`w-9 h-9 flex items-center justify-center rounded-full border transition-all ${showSearchFilters ? 'bg-emerald-600 text-white border-emerald-600 shadow-md' : 'text-slate-400 border-slate-200'}`}><i className="fa-solid fa-sliders-h text-sm"></i></button>
                                 </SectionHeader>
-                                <div className="flex gap-3 mb-6">
+                                <div className="flex gap-2.5 mb-6">
                                     <div className="relative flex-grow">
-                                        <input value={searchQ} onChange={e => setSearchQ(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleConceptualSearch()} placeholder="Palabras o temas espirituales..." className="w-full p-4 pr-12 text-base rounded-2xl bg-white border border-slate-100 outline-none focus:border-emerald-500/50 shadow-sm" />
-                                        <button onClick={() => handleConceptualSearch()} className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 text-slate-400 hover:text-emerald-600 transition-colors flex items-center justify-center"><i className="fa-solid fa-magnifying-glass text-lg"></i></button>
+                                        <input 
+                                            value={searchQ} 
+                                            onChange={e => setSearchQ(e.target.value)} 
+                                            onKeyDown={e => e.key === 'Enter' && handleSearch()} 
+                                            placeholder="Palabras o temas espirituales..." 
+                                            className="w-full p-4 text-base rounded-2xl bg-white border border-slate-100 outline-none focus:border-emerald-500/50 shadow-sm" 
+                                        />
                                     </div>
-                                    <button onClick={() => handleConceptualSearch()} disabled={aiLoading} className="bg-emerald-600 text-white px-5 rounded-2xl shadow-xl shadow-emerald-600/20 active:scale-90 transition-all flex items-center justify-center"><i className={aiLoading ? "fa-solid fa-circle-notch fa-spin text-lg" : "fa-solid fa-brain text-lg"}></i></button>
+                                    <button 
+                                        onClick={() => handleSearch()} 
+                                        className="bg-emerald-50 text-emerald-600 border border-emerald-100 w-14 h-14 rounded-2xl shadow-sm active:scale-90 transition-all flex items-center justify-center shrink-0"
+                                        title="Búsqueda exacta"
+                                    >
+                                        <i className="fa-solid fa-magnifying-glass text-lg"></i>
+                                    </button>
+                                    <button 
+                                        onClick={() => handleConceptualSearch()} 
+                                        disabled={aiLoading} 
+                                        className="bg-emerald-600 text-white w-14 h-14 rounded-2xl shadow-xl shadow-emerald-600/20 active:scale-90 transition-all flex items-center justify-center shrink-0"
+                                        title="Búsqueda con IA"
+                                    >
+                                        <i className={aiLoading ? "fa-solid fa-circle-notch fa-spin text-lg" : "fa-solid fa-brain text-lg"}></i>
+                                    </button>
                                 </div>
 
                                 {showSearchFilters && (
@@ -1570,15 +1671,15 @@
                                     <div className="mb-10 p-8 bg-emerald-50/50 border border-emerald-100 text-slate-800 rounded-[2.5rem] shadow-sm animate-slide-up relative overflow-hidden group">
                                         <div className="absolute top-0 right-0 p-8 opacity-[0.05] group-hover:scale-110 transition-transform duration-1000 text-[8rem] pointer-events-none text-emerald-600"><i className="fa-solid fa-sparkles"></i></div>
                                         <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-emerald-600/60 block mb-3">Revelación&nbsp;IA</span>
-                                        <p className="text-xl font-bold leading-relaxed relative z-10">{aiSummary}</p>
+                                        <p className="text-lg font-medium leading-relaxed relative z-10 text-slate-700"><LinkifiedText content={aiSummary} /></p>
                                     </div>
                                 )}
                                 <div className="space-y-4">
                                     {searchRes.length > 0 ? searchRes.map((r, i) => (
-                                        <div key={i} onClick={() => { if (bibleData[r.b]) { setCurrentChapter({book:r.b, chapter:r.c}); setView('reading'); setTimeout(() => { handleToggleVerse(`${r.b}-${r.c}-${r.v}`); }, 400); } else setMissingBook(r.b); }} className="p-6 rounded-[1.8rem] bg-white border border-slate-100 shadow-sm active:scale-[0.99] transition-all hover:shadow-md cursor-pointer">
+                                        <div key={i} onClick={() => { if (bibleData[r.b]) { pushToStack(); setCurrentChapter({book:r.b, chapter:r.c}); setView('reading'); setTimeout(() => { handleToggleVerse(`${r.b}-${r.c}-${r.v}`); }, 400); } else setMissingBook(r.b); }} className="p-6 rounded-[1.8rem] bg-white border border-slate-100 shadow-sm active:scale-[0.99] transition-all hover:shadow-md cursor-pointer">
                                             <div className="flex justify-between items-center mb-3"><span className="text-[10px] font-black italic text-emerald-600 tracking-widest uppercase">{r.b} {r.c}:{r.v}</span></div>
-                                            <p className="text-[17px] text-slate-800 font-medium leading-relaxed">{r.t}</p>
-                                            {r.iaComment && <p className="mt-4 text-xs italic text-slate-500 border-t pt-4 leading-relaxed"><i className="fa-solid fa-lightbulb mr-2 text-emerald-500/50"></i>{r.iaComment}</p>}
+                                            <p className="text-[17px] text-slate-800 font-medium leading-relaxed"><LinkifiedText content={r.t} /></p>
+                                            {r.iaComment && <p className="mt-4 text-xs italic text-slate-500 border-t pt-4 leading-relaxed"><i className="fa-solid fa-lightbulb mr-2 text-emerald-500/50"></i><LinkifiedText content={r.iaComment} /></p>}
                                         </div>
                                     )) : searchQ && !aiLoading && <div className="text-center py-10 text-slate-400 italic">No se encontraron resultados literales.</div>}
                                 </div>
@@ -1586,12 +1687,12 @@
                         )}
                     </main>
 
-                    {/* Barra de Navegación Inferior Dinámica */}
                     <nav className={`fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-100 z-50 px-4 md:max-w-3xl md:mx-auto flex items-center justify-between transition-transform duration-300 ${showUI ? 'translate-y-0' : 'translate-y-full'}`}
                          style={{ height: 'calc(4rem + var(--sab))', paddingBottom: 'var(--sab)' }}>
                         <NavItem v="home" i="fa-house" l="Inicio" />
                         <NavItem v="reading" i="fa-bible" l="Biblia" />
                         <NavItem v="search" i="fa-search" l="Buscar" />
+                        <NavItem v="assistant" i="fa-wand-magic-sparkles" l="Asistente" />
                         <NavItem v="plans" i="fa-calendar-check" l="Planes" />
                         <NavItem v="favorites" i="fa-bookmark" l="Favs" />
                         <NavItem v="settings" i="fa-gear" l="Ajustes" />
