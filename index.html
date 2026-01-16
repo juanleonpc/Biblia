@@ -183,15 +183,15 @@
             61: "2 Pedro", 62: "Juan. Cartas 1-3", 65: "Judas", 66: "Apocalipsis"
         };
         
-        // Orden canónico actualizado
+        // Orden canónico actualizado para incluir todos los libros presentes en la estructura
         const CANONICAL_ORDER = [
             "Génesis", "Éxodo", "Levítico", "Números", "Deuteronomio", "Josué", "Jueces", "Rut", "1 Samuel", "2 Samuel",
-            "1 Reyes", "2 Reyes", "1 Crónicas", "2 Crónicas", "Esdrás", "Nehemías", "Ester", "Job", "Salmos", "Proverbios",
-            "Eclesiastés", "Cantar de los cantares", "Isaías", "Jeremías", "Lamentaciones", "Ezequiel", "Daniel", "Oseas", "Joel", "Amós",
-            "Abdías", "Jonás", "Miqueas", "Nahún", "Habacuc", "Sofonías", "Ageo", "Zacarías", "Malaquías", "Mateo",
-            "Marcos", "Lucas", "Juan", "Hechos", "Romanos", "1 Corintios", "2 Corintios", "Gálatas", "Efesios", "Filipenses",
-            "Colosenses", "1 Tesalonicenses", "2 Tesalonicenses", "1 Timoteo", "2 Timoteo", "Tito", "Filemón", "Hebreos", "Santiago", "1 Pedro",
-            "2 Pedro", "Juan. Cartas 1-3", "Judas", "Apocalipsis"
+            "1 Reyes", "2 Reyes", "1 Crónicas", "2 Crónicas", "Esdrás", "Nehemías", "Tobías", "Judit", "Ester", "1 Macabeos", "2 Macabeos",
+            "Job", "Salmos", "Proverbios", "Eclesiastés", "Cantar de los cantares", "Sabiduría", "Eclesiástico", 
+            "Isaías", "Jeremías", "Lamentaciones", "Baruc", "Ezequiel", "Daniel", "Oseas", "Joel", "Amós", "Abdías", "Jonás", "Miqueas", "Nahún", "Habacuc", "Sofonías", "Ageo", "Zacarías", "Malaquías",
+            "Mateo", "Marcos", "Lucas", "Juan", "Hechos", "Romanos", "1 Corintios", "2 Corintios", "Gálatas", "Efesios", "Filipenses",
+            "Colosenses", "1 Tesalonicenses", "2 Tesalonicenses", "1 Timoteo", "2 Timoteo", "Tito", "Filemón", "Hebreos", 
+            "Santiago", "1 Pedro", "2 Pedro", "Juan. Cartas 1-3", "Judas", "Apocalipsis"
         ];
 
         const PREDEFINED_PLANS = [
@@ -925,18 +925,47 @@
                 const newStack = [...navStack];
                 const last = newStack.pop();
                 setNavStack(newStack);
+                
+                // Restaurar la vista anterior (Buscador, Asistente, Biblia...)
+                const targetView = last.fromView || 'reading';
+                setView(targetView);
+                
+                // Restaurar coordenadas bíblicas
                 setCurrentChapter({ book: last.book, chapter: last.chapter });
-                if (last.verse) {
+
+                // Restaurar estados específicos de lectura si volvemos a la Biblia
+                if (targetView === 'reading') {
+                    setActiveV(last.activeV || null);
+                    setAiVersePanel(last.aiVersePanel || null);
+                    setExegesisList(last.exegesisList || []);
+                    setStudyVerseId(last.studyVerseId || null);
+                }
+
+                // Restaurar la posición exacta del scroll guardada
+                if (last.scrollPos !== undefined) {
                     setTimeout(() => {
-                        handleToggleVerse(`${last.book}-${last.chapter}-${last.verse}`);
-                    }, 400);
+                        if (mainRef.current) {
+                            mainRef.current.scrollTo({ top: last.scrollPos, behavior: 'instant' });
+                        }
+                    }, 150); // Delay mínimo para que el cambio de vista surta efecto en el DOM
                 }
             };
 
             const pushToStack = () => {
                 if (!currentChapter.book) return;
-                const vNum = activeV ? parseInt(activeV.split('-')[2]) : null;
-                setNavStack(prev => [...prev, { book: currentChapter.book, chapter: currentChapter.chapter, verse: vNum }]);
+                const scrollPos = mainRef.current ? mainRef.current.scrollTop : 0;
+                
+                // Guardamos el versículo actual, la vista, scroll Y el estado del estudio profundo/exégesis
+                setNavStack(prev => [...prev, { 
+                    book: currentChapter.book, 
+                    chapter: currentChapter.chapter, 
+                    activeV: activeV,
+                    aiVersePanel: aiVersePanel,
+                    exegesisList: exegesisList,
+                    studyVerseId: studyVerseId,
+                    fromView: view,
+                    scrollPos: scrollPos
+                }]);
             };
 
             const SectionHeader = ({ title, onClose, children }) => (
@@ -960,7 +989,7 @@
                     "Jon": "Jonás", "Miq": "Miqueas", "Nah": "Nahún", "Nahúm": "Nahún", "Hab!": "Habacuc", "Sof": "Sofonías", "Ag": "Ageo",
                     "Zac": "Zacarías", "Mal": "Malaquías", "Mt": "Mateo", "Mc": "Marcos", "Lc": "Lucas", "Jn": "Juan",
                     "Hch": "Hechos", "Rom": "Romanos", "1 Cor": "1 Corintios", "2 Cor": "2 Corintios", "Gal": "Gálatas",
-                    "Ef": "Efesios", "Flp": "Filipenses", "Col": "Colosenses", "1 Tes": "1 Tesalonicenses", "2 Tes": "2 Tesalonicenses",
+                    "Ef": "Efesios", "Flp": "Filipenses", "Col": "Colosenses", "1 Tes": "1 Tesalonicenses", "2 Tes!": "2 Tesalonicenses",
                     "1 Tim": "1 Timoteo", "2 Tim": "2 Timoteo", "Tit": "Tito", "Flm": "Filemón", "Heb": "Hebreos",
                     "Sant": "Santiago", "1 Pe": "1 Pedro", "2 Pe": "2 Pedro", "1 Jn": "Juan. Cartas 1-3", "2 Jn": "Juan. Cartas 1-3",
                     "3 Jn": "Juan. Cartas 1-3", "1 Juan": "Juan. Cartas 1-3", "2 Juan": "Juan. Cartas 1-3", "3 Juan": "Juan. Cartas 1-3", "Jds": "Judas", "Ap": "Apocalipsis"
@@ -993,7 +1022,7 @@
                                     const targetChapterNum = parseInt(chap); 
                                     const targetVerseNum = ver ? parseInt(ver) : null;
                                     
-                                    // PUSH A LA PILA: Solo aquí se activa el historial de volver
+                                    // PUSH A LA PILA: Guardamos el estado y el scroll actual antes de navegar
                                     pushToStack();
 
                                     setCurrentChapter({ book: targetBook, chapter: targetChapterNum }); 
@@ -1112,18 +1141,15 @@
                         </div>
                     </header>
 
-                    {/* MEJORA: BOTÓN FLOTANTE DE VOLVER (ESTILO PILA) */}
+                    {/* MEJORA: BOTÓN FLOTANTE DE VOLVER SIMPLIFICADO Y CON MEMORIA DE SCROLL Y ESTUDIO */}
                     {navStack.length > 0 && view === 'reading' && (
-                        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 animate-slide-up w-full px-4 max-w-[90%] md:max-w-sm">
+                        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 animate-slide-up w-auto">
                             <button 
                                 onClick={handleGoBack}
-                                className="w-full bg-slate-900/80 backdrop-blur-md text-white py-4 px-6 rounded-2xl shadow-2xl flex items-center justify-center gap-3 active:scale-95 transition-all border border-white/10"
+                                className="bg-slate-900/80 backdrop-blur-md text-white py-3 px-8 rounded-full shadow-2xl flex items-center justify-center gap-3 active:scale-95 transition-all border border-white/10"
                             >
                                 <i className="fa-solid fa-arrow-left text-xs"></i>
-                                <span className="text-[11px] font-black uppercase tracking-wide leading-tight text-center">
-                                    Volver a {navStack[navStack.length-1].book} {navStack[navStack.length-1].chapter}{navStack[navStack.length-1].verse ? `:${navStack[navStack.length-1].verse}` : ''}
-                                </span>
-                                <span className="text-[10px] opacity-40 font-bold">({navStack.length})</span>
+                                <span className="text-[11px] font-black uppercase tracking-widest">Volver</span>
                             </button>
                         </div>
                     )}
@@ -1383,7 +1409,7 @@
                                                                                     );
                                                                                 } else {
                                                                                     return (
-                                                                                        <button key={c} onClick={() => setMissingBook(book.id)} className="aspect-square relative rounded-xl text-[13px] font-bold flex items-center justify-center bg-slate-50 text-slate-300 border border-dashed border-slate-200 cursor-help hover:border-emerald-200 transition-colors">
+                                                                                        <button key={c} onClick={() => setMissingBook(book.id)} className="aspect-square relative rounded-xl text-[13px] font-bold flex items-center justify-center bg-slate-300 text-white bg-slate-50 border border-dashed border-slate-200 cursor-help hover:border-emerald-200 transition-colors">
                                                                                             {c}
                                                                                         </button>
                                                                                     );
@@ -1486,7 +1512,7 @@
                                         {filteredFavorites.map(f => (
                                             <div key={f.id} className="p-6 rounded-3xl bg-white border border-slate-100 shadow-sm active:scale-[0.99] transition-all hover:shadow-md">
                                                 <div className="flex justify-between items-center mb-3">
-                                                    <span onClick={() => { setCurrentChapter({book: f.b, chapter: f.c}); setView('reading'); setTimeout(() => { handleToggleVerse(f.id); }, 400); }} className="text-[11px] font-black text-emerald-600 cursor-pointer tracking-widest uppercase hover:underline">{f.ref}</span>
+                                                    <span onClick={() => { pushToStack(); setCurrentChapter({book: f.b, chapter: f.c}); setView('reading'); setTimeout(() => { handleToggleVerse(f.id); }, 400); }} className="text-[11px] font-black text-emerald-600 cursor-pointer tracking-widest uppercase hover:underline">{f.ref}</span>
                                                     <div className="flex gap-1.5"><button onClick={() => handleShare(f.text, f.ref)} className="p-2 text-slate-300 hover:text-emerald-500 transition-colors"><i className="fa-solid fa-share-nodes text-base"></i></button><button onClick={() => toggleFav(f.id, f.text, f.ref, f.b, f.c)} className="p-2 text-rose-300 hover:text-rose-500 transition-colors"><i className="fa-solid fa-trash-can text-base"></i></button></div>
                                                 </div>
                                                 <p className="text-lg text-slate-700 font-medium leading-relaxed italic">"{f.text}"</p>
@@ -1569,9 +1595,11 @@
                                             {settingsPart === 'biblioteca' && (
                                                 <div className="p-8 rounded-[2rem] bg-white shadow-xl border border-slate-100 space-y-6">
                                                     <div className="space-y-4">
-                                                        <button onClick={() => fileInputRef.current.click()} className="w-full py-6 rounded-2xl border-2 border-dashed border-emerald-200 text-emerald-600 font-bold text-xs uppercase tracking-widest bg-emerald-50/30 hover:bg-emerald-50 transition-colors flex flex-col items-center gap-2"><i className="fa-solid fa-file-arrow-up text-xl mb-1"></i>Elegir archivo (.json, .txt)</button>
+                                                        <button onClick={() => fileInputRef.current.click()} className="w-full py-4 bg-emerald-50 text-emerald-600 rounded-xl font-bold uppercase text-xs shadow-sm flex items-center justify-center gap-3 hover:bg-emerald-100 transition-colors">
+                                                            <i className="fa-solid fa-file-arrow-up"></i> Elegir archivo (.json, .txt)
+                                                        </button>
                                                         <input ref={fileInputRef} type="file" accept=".json,.txt,.sql" onChange={handleFileUpload} className="hidden" />
-                                                        <div className="relative"><select value={manualBookSelect} onChange={e => setManualBookSelect(e.target.value)} className="w-full p-4 rounded-xl bg-slate-50 border border-slate-100 focus:border-emerald-500 outline-none text-sm font-bold text-slate-600 appearance-none shadow-sm transition-all"><option value="">✨ Auto-detectar libro</option>{CANONICAL_ORDER.map(b => <option key={b} value={b}>{b}</option>)}</select><i className="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i></div>
+                                                        <div className="relative"><select value={manualBookSelect} onChange={e => setManualBookSelect(e.target.value)} className="w-full p-4 rounded-xl bg-slate-50 border border-slate-100 focus:border-emerald-500 outline-none text-sm font-bold text-slate-600 appearance-none shadow-sm transition-all"><option value="" disabled>Selecciona el libro...</option>{CANONICAL_ORDER.map(b => <option key={b} value={b}>{b}</option>)}</select><i className="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i></div>
                                                         <textarea value={importText} onChange={e => setImportText(e.target.value)} placeholder='Pega aquí el texto bíblico...' className="w-full p-5 rounded-xl bg-slate-50 border border-slate-100 outline-none font-medium text-sm text-slate-700 min-h-[180px] focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all shadow-inner placeholder:text-slate-300" />
                                                         <div className="flex gap-2">
                                                             <button onClick={() => setImportText("")} className="w-14 h-14 bg-slate-100 text-slate-400 rounded-xl font-bold uppercase text-xs active:scale-95 transition-all flex items-center justify-center shrink-0 hover:bg-slate-200" title="Borrar texto"><i className="fa-solid fa-eraser text-lg"></i></button>
