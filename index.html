@@ -62,7 +62,6 @@
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: #10b981; border: 4px solid white; margin-top: -9px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; background: rgba(0,0,0,0.08); border-radius: 3px; }
 
-        /* Evitar zoom automático en móviles forzando 16px en inputs */
         input:not([type="range"]), textarea, select { font-size: 16px !important; }
 
         .app-shadow { box-shadow: 0 2px 12px -2px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.02); }
@@ -595,11 +594,12 @@
                 const result = await fetchGemini(userApiKey, prompt, 5, true);
                 if (result.data) {
                     try {
-                        const parsed = JSON.parse(result.data);
+                        const cleanJson = result.data.replace(/```json|```/gi, "").trim();
+                        const parsed = JSON.parse(cleanJson);
                         setAiSummary(parsed.reflexion || "");
                         const mapped = [];
                         (parsed.resultados || []).forEach(res => {
-                            const match = res.ref.match(/^(.+?)\s+(\d+)[:\s](\d+)$/);
+                            const match = res.ref.match(/^(.+?)\s+(\d+)[:\.,\s](\d+)$/);
                             if (match) { 
                                 const [_, b, c, v] = match; 
                                 const bookData = bibleData[b]; const text = bookData?.[c]?.[parseInt(v)-1];
@@ -615,14 +615,17 @@
             };
 
             const handleSynthesis = async (txt) => {
-                if (studyVerseId !== activeV) { setExegesisList([]); setStudyVerseId(activeV); }
-                else if (aiVersePanel) { return; }
+                setAiVersePanel(null); // Limpiar panel anterior inmediatamente
+                setExegesisList([]);
+                setStudyVerseId(activeV);
                 setAiLoading(true); setApiError("");
+                
                 const prompt = `Analiza profundamente el siguiente versículo bíblico desde cuatro perspectivas. Responde EXCLUSIVAMENTE en un objeto JSON válido con estas claves exactas: "teologo", "historiador", "pastor", "referencias". Versículo a analizar: "${txt}"`;
                 const result = await fetchGemini(userApiKey, prompt, 5, true);
                 if (result.data) {
                     try {
-                        const rawParsed = JSON.parse(result.data);
+                        const cleanJson = result.data.replace(/```json|```/gi, "").trim();
+                        const rawParsed = JSON.parse(cleanJson);
                         const normalized = {};
                         const mapping = { 'teologo': ['teologo', 'teólogo', 'teologia', 'teología'], 'historiador': ['historiador', 'historia'], 'pastor': ['pastor', 'pastoral', 'aplicacion', 'aplicación'], 'referencias': ['referencias', 'ref', 'citas'] };
                         Object.keys(rawParsed).forEach(k => {
@@ -638,14 +641,16 @@
 
             const handleExegesis = async (txt) => {
                 if (!exegesisWord.trim()) return;
+                setAiVersePanel(null); // Cerrar panel de estudio si se pide diccionario
                 const wordToSearch = exegesisWord.trim();
                 setAiLoading(true); setApiError("");
                 const prompt = `Analiza únicamente el significado de la palabra "${wordToSearch}" en el contexto de este versículo: "${txt}". Responde EXCLUSIVAMENTE en un objeto JSON válido con estas claves exactas: "original" (palabra en su idioma fuente y transliteración), "significado" (definición clara y concisa).`;
                 const result = await fetchGemini(userApiKey, prompt, 5, true);
                 if (result.data) {
                     try {
-                        const parsed = JSON.parse(result.data);
-                        if (studyVerseId !== activeV) { setAiVersePanel(null); setExegesisList([{ ...parsed, word: wordToSearch }]); setStudyVerseId(activeV); }
+                        const cleanJson = result.data.replace(/```json|```/gi, "").trim();
+                        const parsed = JSON.parse(cleanJson);
+                        if (studyVerseId !== activeV) { setExegesisList([{ ...parsed, word: wordToSearch }]); setStudyVerseId(activeV); }
                         else { setExegesisList(prev => [...prev, { ...parsed, word: wordToSearch }]); }
                         setShowExegesisInput(false); setExegesisWord("");
                     } catch (e) { setApiError("Error en formato de diccionario."); }
@@ -669,7 +674,8 @@
                 const result = await fetchGemini(userApiKey, prompt, 5, true);
                 if (result.data) {
                     try {
-                        const parsed = JSON.parse(result.data);
+                        const cleanJson = result.data.replace(/```json|```/gi, "").trim();
+                        const parsed = JSON.parse(cleanJson);
                         const newPlan = { id: `ia-${Date.now()}`, title: parsed.title, days: parsed.days, category: 'IA Personalizado', icon: 'fa-wand-magic-sparkles', custom: true, duration: 7 };
                         setActivePlan(newPlan); PREDEFINED_PLANS.unshift(newPlan); setIaEmotion("");
                     } catch (e) { setApiError("Error generando el plan."); }
@@ -916,7 +922,7 @@
                 const normalize = (s) => s ? s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\./g, '') : "";
                 const keys = Object.keys(REF_MAP).sort((a, b) => b.length - a.length);
                 const bookPattern = keys.map(b => b.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
-                const regex = new RegExp(`\\b(${bookPattern})\\s+(\\d+)(?:[:\\.,]\\s*(\\d+))?\\b`, 'gi');
+                const regex = new RegExp(`\\b(${bookPattern})\\.?\\s+(\\d+)(?:[:\\.,\\s]*(\\d+))?\\b`, 'gi');
                 const parts = content.split(regex);
                 const result = [];
                 for (let i = 0; i < parts.length; i += 4) {
