@@ -227,7 +227,23 @@
             { title: "Tinta insuficiente", text: "El apóstol Juan termina su evangelio diciendo que si se escribiera todo lo que hizo Jesús, no cabrían los libros en el mundo." },
             { title: "Príncipe de Paz", text: "Isaías profetizó sobre el Mesías llamándolo 'Admirable, Consejero, Dios Fuerte, Padre Eterno, Príncipe de Paz'." },
             { title: "Vida animal", text: "El rey Nabucodonosor fue castigado con la locura, viviendo como una base, coniendo hierba hasta que reconoció a Dios." },
-            { title: "El pacto", text: "El arcoíris no es solo un fenómeno óptico en la Biblia, es la señal visible del pacto de Dios de no volver a inundar la tierra." }
+            { title: "El pacto", text: "El arcoíris no es solo un fenómeno óptico en la Biblia, es la señal visible del pacto de Dios de no volver a inundar la tierra." },
+            { title: "El hombre más sabio", text: "Salomón pidió sabiduría en lugar de riquezas, y Dios le dio ambas. Se dice que escribió más de 3.000 proverbios y 1.000 cánticos." },
+            { title: "La mujer profetisa", text: "Débora fue la única mujer juez mencionada en el libro de Jueces. Lideró a Israel hacia una gran victoria militar contra el general Sísara." },
+            { title: "Nombre más largo", text: "Maher-salal-has-baz es el nombre más largo registrado en la Biblia. Aparece en Isaías 8:1 y significa 'el despojo es rápido, la presa es veloz'." },
+            { title: "Zaqueo", text: "Era un recaudador de impuestos rico pero de baja estatura. Se subió a un sicómoro para poder ver a Jesús sobre la multitud que le rodeaba." },
+            { title: "El primer milagro", text: "Jesús convirtió el agua en vino en las bodas de Caná. Lo hizo a petición de su madre, marcando el inicio público de su ministerio." },
+            { title: "Siete vueltas", text: "Los muros de Jericó no cayeron por armas, sino después de que los israelitas marcharan alrededor de ellos siete veces el séptimo día, tocando trompetas." },
+            { title: "Cuervo y paloma", text: "Noé envió primero un cuervo y luego una paloma desde el arca. La paloma regresó con una rama de olivo, señal de que la tierra se estaba secando." },
+            { title: "Treinta monedas", text: "Judas traicionó a Jesús por 30 piezas de plata. Curiosamente, ese era el precio legal compensatorio por la muerte de un esclavo en aquella época." },
+            { title: "La zarza ardiente", text: "Moisés vio una zarza que ardía pero no se consumía. Allí Dios le reveló Su nombre: 'Yo soy el que soy'." },
+            { title: "Gedeón y la lana", text: "Gedeón pidió dos señales a Dios usando un vellón de lana: primero que la lana estuviera mojada y el suelo seco, y luego lo opuesto." },
+            { title: "El gran pez", text: "Jonás pasó tres días en el vientre de una criatura marina. Jesús usó este hecho como señal de Su propia muerte y resurrección tres días después." },
+            { title: "Huesos secos", text: "Ezequiel tuvo una visión de un valle lleno de huesos que cobraban vida cuando él profetizaba. Representaba la restauración espiritual de Israel." },
+            { title: "Naufragio en Malta", text: "Tras un naufragio, Pablo fue mordido por una víbora mientras recogía leña. Los habitantes esperaban que muriera, pero no sufrió ningún daño." },
+            { title: "Siete iglesias", text: "El Apocalipsis contiene cartas específicas para siete iglesias de Asia. Cada una recibe elogios, advertencias y una promesa única." },
+            { title: "Torre de Babel", text: "Antes de este evento, se dice que 'toda la tierra hablaba un mismo idioma'. La confusión de lenguas fue el castigo por el orgullo humano." },
+            { title: "El sueño de Jacob", text: "Jacob vio una escalera que unía la tierra con el cielo, con ángeles subiendo y bajando. Dios allí le confirmó Su promesa patriarcal." }
         ];
 
         const SEARCH_TAGS = ["Paz", "Ansiedad", "Familia", "Perdón", "Sabiduría", "Fortaleza", "Esperanza", "Miedo", "Amor", "Justicia"];
@@ -289,7 +305,12 @@
         const PREDEFINED_PLANS = [
             { id: 'general-1', title: 'Leyendo el Pentateuco', category: 'Estudio Profundo', icon: 'fa-scroll', duration: 15, bookRef: 'Génesis', desc: 'Recorre los fundamentos de la fe a través de los primeros cinco libros de la Biblia.' },
             { id: 'general-2', title: 'Sabiduría de los Salmos', category: 'Devocional', icon: 'fa-music', duration: 30, bookRef: 'Salmos', desc: 'Un viaje espiritual diario a través de las oraciones y cánticos del pueblo de Dios.' },
-            { id: 'general-3', title: 'Vida de Jesús', category: 'Evangelio', icon: 'fa-cross', duration: 21, bookRef: 'Juan', desc: 'Conoce profundamente al Maestro a través del Evangelio de San Juan.' }
+            { id: 'general-3', title: 'Vida de Jesús', category: 'Evangelio', icon: 'fa-cross', duration: 21, bookRef: 'Juan', desc: 'Conoce profundamente al Maestro a través del Evangelio de San Juan.' },
+            { id: 'general-4', title: 'Sabiduría de Proverbios', category: 'Consejo Diario', icon: 'fa-lightbulb', duration: 31, bookRef: 'Proverbios', desc: 'Un consejo de Dios para cada día del mes para vivir con rectitud y prudencia.' },
+            { id: 'general-5', title: 'Fe en Acción (Santiago)', category: 'Epístolas', icon: 'fa-person-walking', duration: 5, bookRef: 'Santiago', desc: 'Aprende a poner en práctica tu fe a través de las enseñanzas prácticas del apóstol Santiago.' },
+            { id: 'general-6', title: 'El Sermón del Monte', category: 'Enseñanzas', icon: 'fa-mountain', duration: 3, bookRef: 'Mateo', desc: 'Profundiza en el discurso más famoso de Jesús sobre las bienaventuranzas y el Reino.' },
+            { id: 'general-7', title: 'El Consuelo de Isaías', category: 'Profetas', icon: 'fa-feather', duration: 10, bookRef: 'Isaías', desc: 'Encuentra esperanza y consuelo en las promesas mesiánicas del profeta Isaías.' },
+            { id: 'general-8', title: 'Caminando con Pablo', category: 'Misión', icon: 'fa-earth-americas', duration: 14, bookRef: 'Hechos', desc: 'Sigue los viajes misioneros y la pasión por el Evangelio del apóstol de los gentiles.' }
         ];
 
         function App() {
@@ -447,6 +468,13 @@
                     setShowExegesisInput(false);
                     setActiveV(vId); 
                     setEditingNoteId(null); 
+                    const isNewVerse = studyVerseId && studyVerseId !== vId;
+                    if (isNewVerse) {
+                        setAiVersePanel(null);
+                        setExegesisList([]);
+                        setStudyVerseId(null);
+                    }
+
                     setTimeout(() => { 
                         const el = document.getElementById(vId); 
                         if (el && mainRef.current) {
@@ -615,8 +643,6 @@
             };
 
             const handleSynthesis = async (txt) => {
-                setAiVersePanel(null); // Limpiar panel anterior inmediatamente
-                setExegesisList([]);
                 setStudyVerseId(activeV);
                 setAiLoading(true); setApiError("");
                 
@@ -641,7 +667,6 @@
 
             const handleExegesis = async (txt) => {
                 if (!exegesisWord.trim()) return;
-                setAiVersePanel(null); // Cerrar panel de estudio si se pide diccionario
                 const wordToSearch = exegesisWord.trim();
                 setAiLoading(true); setApiError("");
                 const prompt = `Analiza únicamente el significado de la palabra "${wordToSearch}" en el contexto de este versículo: "${txt}". Responde EXCLUSIVAMENTE en un objeto JSON válido con estas claves exactas: "original" (palabra en su idioma fuente y transliteración), "significado" (definición clara y concisa).`;
@@ -650,8 +675,13 @@
                     try {
                         const cleanJson = result.data.replace(/```json|```/gi, "").trim();
                         const parsed = JSON.parse(cleanJson);
-                        if (studyVerseId !== activeV) { setExegesisList([{ ...parsed, word: wordToSearch }]); setStudyVerseId(activeV); }
-                        else { setExegesisList(prev => [...prev, { ...parsed, word: wordToSearch }]); }
+                        if (studyVerseId !== activeV) { 
+                            setExegesisList([{ ...parsed, word: wordToSearch }]); 
+                            setStudyVerseId(activeV); 
+                        }
+                        else { 
+                            setExegesisList(prev => [...prev, { ...parsed, word: wordToSearch }]); 
+                        }
                         setShowExegesisInput(false); setExegesisWord("");
                     } catch (e) { setApiError("Error en formato de diccionario."); }
                 } else if (result.error) { setApiError(result.error); }
@@ -918,18 +948,59 @@
 
             const LinkifiedText = ({ content }) => {
                 if (typeof content !== 'string') return content;
-                const REF_MAP = { ...Object.values(BIBLE_BOOKS_MAP).reduce((acc, val) => ({...acc, [val]: val}), {}), "Gn": "Génesis", "Gen": "Génesis", "Ex": "Éxodo", "Lv": "Levítico", "Nm": "Números", "Dt": "Deuteronomio", "Jos": "Josué", "Jue": "Jueces", "Rt": "Rut", "1 Sm": "1 Samuel", "2 Sm": "2 Samuel", "1 Re": "1 Reyes", "2 Re": "2 Reyes", "1 Cr": "1 Crónicas", "2 Cr": "2 Crónicas", "Esd": "Esdrás", "Neh": "Nehemías", "Est": "Ester", "Job": "Job", "Sal": "Salmos", "Prov": "Proverbios", "Ecl": "Eclesiastés", "Cant": "Cantar de los cantares", "Cantares": "Cantar de los cantares", "Is": "Isaías", "Jer": "Jeremías", "Lam": "Lamentaciones", "Ez": "Ezequiel", "Dn": "Daniel", "Os": "Oseas", "Jl": "Joel", "Am": "Amós", "Abd": "Abdías", "Jon": "Jonás", "Miq": "Miqueas", "Nah": "Nahún", "Nahúm": "Nahún", "Hab!": "Habacuc", "Sof": "Sofonías", "Ag": "Ageo", "Zac": "Zacarías", "Mal": "Malaquías", "Mt": "Mateo", "Mc": "Marcos", "Lc": "Lucas", "Jn": "Juan", "Hch": "Hechos", "Rom": "Romanos", "1 Cor": "1 Corintios", "2 Cor": "2 Corintios", "Gal": "Gálatas", "Ef": "Efesios", "Flp": "Filipenses", "Col": "Colosenses", "1 Tes": "1 Tesalonicenses", "2 Tes!": "2 Tesalonicenses", "1 Tim": "1 Timoteo", "2 Tim": "2 Timoteo", "Tit": "Tito", "Flm": "Filemón", "Heb": "Hebreos", "Sant": "Santiago", "1 Pe": "1 Pedro", "2 Pe": "2 Pedro", "1 Jn": "Juan. Cartas 1-3", "2 Jn": "Juan. Cartas 1-3", "3 Jn": "Juan. Cartas 1-3", "1 Juan": "Juan. Cartas 1-3", "2 Juan": "Juan. Cartas 1-3", "3 Juan": "Juan. Cartas 1-3", "Jds": "Judas", "Ap": "Apocalipsis" };
+                
+                const REF_MAP = { 
+                    ...Object.values(BIBLE_BOOKS_MAP).reduce((acc, val) => ({...acc, [val]: val}), {}), 
+                    "Gn": "Génesis", "Gen": "Génesis", "Gén": "Génesis", "Ex": "Éxodo", "Exo": "Éxodo", "Éx": "Éxodo", "Lv": "Levítico", "Lev": "Levítico", "Nm": "Números", "Num": "Números", "Núm": "Números", "Dt": "Deuteronomio", "Deut": "Deuteronomio", "Jos": "Josué", "Jue": "Jueces", "Rt": "Rut", "Rut": "Rut", "1 Sm": "1 Samuel", "1Sm": "1 Samuel", "2 Sm": "2 Samuel", "2Sm": "2 Samuel", "1 Re": "1 Reyes", "1Re": "1 Reyes", "2 Re": "2 Reyes", "2Re": "2 Reyes", "1 Cr": "1 Crónicas", "1Cr": "1 Crónicas", "2 Cr": "2 Crónicas", "2Cr": "2 Crónicas", "Esd": "Esdrás", "Neh": "Nehemías", "Est": "Ester", "Tob": "Tobías", "Jdt": "Judit", "1 Mac": "1 Macabeos", "1Mac": "1 Macabeos", "2 Mac": "2 Macabeos", "2Mac": "2 Macabeos", "Job": "Job", "Sal": "Salmos", "Prov": "Proverbios", "Ecl": "Eclesiastés", "Cant": "Cantar de los cantares", "Cantares": "Cantar de los cantares", "Sab": "Sabiduría", "Eclo": "Eclesiástico", "Sir": "Eclesiástico", "Is": "Isaías", "Jer": "Jeremías", "Lam": "Lamentaciones", "Ez": "Ezequiel", "Dn": "Daniel", "Os": "Oseas", "Jl": "Joel", "Am": "Amós", "Abd": "Abdías", "Jon": "Jonás", "Miq": "Miqueas", "Nah": "Nahún", "Hab": "Habacuc", "Sof": "Sofonías", "Ag": "Ageo", "Zac": "Zacarías", "Mal": "Malaquías", "Mt": "Mateo", "Mc": "Marcos", "Lc": "Lucas", "Jn": "Juan", "Hch": "Hechos", "Rom": "Romanos", "1 Cor": "1 Corintios", "1Cor": "1 Corintios", "2 Cor": "2 Corintios", "2Cor": "2 Corintios", "Gal": "Gálatas", "Gál": "Gálatas", "Ef": "Efesios", "Flp": "Filipenses", "Col": "Colosenses", "1 Tes": "1 Tesalonicenses", "1Tes": "1 Tesalonicenses", "2 Tes": "2 Tesalonicenses", "2Tes": "2 Tesalonicenses", "1 Tim": "1 Timoteo", "1Tim": "1 Timoteo", "2 Tim": "2 Timoteo", "2Tim": "2 Timoteo", "Tit": "Tito", "Flm": "Filemón", "Heb": "Hebreos", "Sant": "Santiago", "1 Pe": "1 Pedro", "1Pe": "1 Pedro", "2 Pe": "2 Pedro", "2Pe": "2 Pedro", "1 Jn": "Juan. Cartas 1-3", "1Jn": "Juan. Cartas 1-3", "2 Jn": "Juan. Cartas 1-3", "2Jn": "Juan. Cartas 1-3", "3 Jn": "Juan. Cartas 1-3", "3Jn": "Juan. Cartas 1-3", "1 Juan": "Juan. Cartas 1-3", "2 Juan": "Juan. Cartas 1-3", "3 Juan": "Juan. Cartas 1-3", "Jds": "Judas", "Ap": "Apocalipsis", "Apoc": "Apocalipsis" 
+                };
+
                 const normalize = (s) => s ? s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\./g, '') : "";
+                
                 const keys = Object.keys(REF_MAP).sort((a, b) => b.length - a.length);
                 const bookPattern = keys.map(b => b.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
-                const regex = new RegExp(`\\b(${bookPattern})\\.?\\s+(\\d+)(?:[:\\.,\\s]*(\\d+))?\\b`, 'gi');
+                
+                const regex = new RegExp(`\\b(${bookPattern})\\.?\\s*(\\d+)(?:[:\\.,\\s]+(\\d+))?`, 'gi');
                 const parts = content.split(regex);
                 const result = [];
+                
                 for (let i = 0; i < parts.length; i += 4) {
                     result.push(parts[i]);
                     if (i + 1 < parts.length) {
-                        const detected = parts[i + 1]; const chap = parts[i + 2]; const ver = parts[i + 3]; const lookupKey = detected.replace(/\.$/, ''); const canonicalName = REF_MAP[detected] || REF_MAP[lookupKey] || detected; const displayRef = `${detected} ${chap}${ver ? ':' + ver : ''}`;
-                        result.push(<span key={`book-${i}`} onClick={(e) => { e.stopPropagation(); const normCanon = normalize(canonicalName); const targetBook = Object.values(BIBLE_BOOKS_MAP).find(b => normalize(b) === normCanon); if (targetBook && bibleData[targetBook]) { const targetChapterNum = parseInt(chap); const targetVerseNum = ver ? parseInt(ver) : null; pushToStack(); setCurrentChapter({ book: targetBook, chapter: targetChapterNum }); setView('reading'); setTimeout(() => { if (targetVerseNum) { handleToggleVerse(`${targetBook}-${targetChapterNum}-${targetVerseNum}`); } }, 400); } else { setMissingBook(targetBook || canonicalName); } }} className="text-emerald-600 font-semibold underline decoration-emerald-500/20 cursor-pointer hover:decoration-emerald-500 transition-all px-0.5">{displayRef}</span>);
+                        const detected = parts[i + 1]; 
+                        const chap = parts[i + 2]; 
+                        const ver = parts[i + 3]; 
+                        const lookupKey = detected.replace(/\.$/, ''); 
+                        const canonicalName = REF_MAP[detected] || REF_MAP[lookupKey] || detected; 
+                        const displayRef = `${detected}${ver ? ' ' + chap + ':' + ver : ' ' + chap}`;
+                        
+                        result.push(
+                            <span 
+                                key={`book-${i}`} 
+                                onClick={(e) => { 
+                                    e.stopPropagation(); 
+                                    const normCanon = normalize(canonicalName); 
+                                    const targetBook = Object.values(BIBLE_BOOKS_MAP).find(b => normalize(b) === normCanon); 
+                                    
+                                    if (targetBook && bibleData[targetBook]) { 
+                                        const targetChapterNum = parseInt(chap); 
+                                        const targetVerseNum = ver ? parseInt(ver) : null; 
+                                        pushToStack(); 
+                                        setCurrentChapter({ book: targetBook, chapter: targetChapterNum }); 
+                                        setView('reading'); 
+                                        setTimeout(() => { 
+                                            if (targetVerseNum) { 
+                                                handleToggleVerse(`${targetBook}-${targetChapterNum}-${targetVerseNum}`); 
+                                            } 
+                                        }, 400); 
+                                    } else { 
+                                        setMissingBook(targetBook || canonicalName); 
+                                    } 
+                                }} 
+                                className="text-emerald-600 font-semibold underline decoration-emerald-500/20 cursor-pointer hover:decoration-emerald-500 transition-all px-0.5"
+                            >
+                                {displayRef}
+                            </span>
+                        );
                     }
                 }
                 return <>{result}</>;
@@ -1025,8 +1096,42 @@
                                                                     {showExegesisInput && (<div className="flex gap-2 mb-6 animate-slide-up bg-slate-50 p-1.5 rounded-xl border border-slate-100 items-center"><input autoFocus value={exegesisWord} onChange={e => setExegesisWord(e.target.value)} placeholder="Palabra clave..." className="flex-grow p-3 rounded-lg outline-none text-sm font-bold bg-transparent min-w-0" /><button onClick={() => handleExegesis(txt)} className="bg-emerald-600 text-white h-10 px-5 rounded-lg font-bold text-[10px] uppercase shadow-md transition-transform active:scale-95">Analizar</button></div>)}
                                                                     {aiLoading && <div className="text-center py-4 text-emerald-500 animate-pulse font-bold uppercase text-[10px] tracking-widest flex items-center justify-center gap-3"><i className="fa-solid fa-sparkles"></i>Obteniendo revelación...</div>}
                                                                     {apiError && <div className="mb-6 p-4 text-rose-500 bg-rose-50 rounded-xl border border-rose-100 text-xs font-bold italic">{apiError}</div>}
-                                                                    {exegesisList.length > 0 && studyVerseId === activeV && (<div className="animate-fade-in w-full border-t border-slate-100 pt-6 space-y-4"><div className="flex justify-between items-center px-1"><div className="flex items-center gap-2"><i className="fa-solid fa-book-atlas text-emerald-600 text-sm"></i><h3 className="text-[11px] font-bold text-slate-800 uppercase tracking-widest">Glosario IA</h3></div><button onClick={() => setExegesisList([])} className="text-[9px] font-bold uppercase text-rose-400 tracking-tighter">Limpiar</button></div>{exegesisList.map((item, idx) => (<div key={idx} className="space-y-1 animate-fade-in"><div className="flex items-center gap-2 ml-2 mb-2"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div><span className="text-xs font-bold text-slate-800 uppercase tracking-tighter">{item.word}</span></div><ExpertItem icon="fa-language" title="Original" text={item.original} color="emerald" /><ExpertItem icon="fa-book-open" title="Significado" text={item.significado} color="emerald" /></div>))}</div>)}
-                                                                    {aiVersePanel && studyVerseId === activeV && (<div className="animate-fade-in w-full border-t border-slate-100 pt-6"><div className="flex justify-between items-center mb-5 px-1"><div className="flex items-center gap-2"><i className="fa-solid fa-brain text-emerald-600 text-sm"></i><h3 className="text-[11px] font-bold text-slate-800 uppercase tracking-widest">Estudio Profundo</h3></div><button onClick={() => setAiVersePanel(null)} className="text-slate-300 hover:text-rose-400 transition-colors"><i className="fa-solid fa-xmark"></i></button></div><div className="space-y-1.5"><ExpertItem icon="fa-scroll" title="Teólogo" text={aiVersePanel.teologo} color="blue" /><ExpertItem icon="fa-landmark" title="Historiador" text={aiVersePanel.historiador} color="amber" /><ExpertItem icon="fa-hands-praying" title="Pastor" text={aiVersePanel.pastor} color="emerald" /><ExpertItem icon="fa-link" title="Referencias" text={aiVersePanel.referencias} color="indigo" /></div></div>)}
+                                                                    
+                                                                    {/* SECCIÓN DE GLOSARIO/DICCIONARIO */}
+                                                                    {exegesisList.length > 0 && studyVerseId === activeV && (
+                                                                        <div className="animate-fade-in w-full border-t border-slate-100 pt-6 space-y-4 mb-4">
+                                                                            <div className="flex justify-between items-center px-1">
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <i className="fa-solid fa-book-atlas text-emerald-600 text-sm"></i>
+                                                                                    <h3 className="text-[11px] font-bold text-slate-800 uppercase tracking-widest">Glosario IA</h3>
+                                                                                </div>
+                                                                                <button onClick={() => setExegesisList([])} className="text-[9px] font-bold uppercase text-rose-400 tracking-tighter">Limpiar</button>
+                                                                            </div>
+                                                                            {exegesisList.map((item, idx) => (
+                                                                                <div key={idx} className="space-y-1 animate-fade-in">
+                                                                                    <div className="flex items-center gap-2 ml-2 mb-2"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div><span className="text-xs font-bold text-slate-800 uppercase tracking-tighter">{item.word}</span></div>
+                                                                                    <ExpertItem icon="fa-language" title="Original" text={item.original} color="emerald" />
+                                                                                    <ExpertItem icon="fa-book-open" title="Significado" text={item.significado} color="emerald" />
+                                                                                </div>
+                                                                            ))}
+                                                                        </div>
+                                                                    )}
+
+                                                                    {/* SECCIÓN DE ESTUDIO PROFUNDO */}
+                                                                    {aiVersePanel && studyVerseId === activeV && (
+                                                                        <div className="animate-fade-in w-full border-t border-slate-100 pt-6">
+                                                                            <div className="flex justify-between items-center mb-5 px-1">
+                                                                                <div className="flex items-center gap-2"><i className="fa-solid fa-brain text-emerald-600 text-sm"></i><h3 className="text-[11px] font-bold text-slate-800 uppercase tracking-widest">Estudio Profundo</h3></div>
+                                                                                <button onClick={() => setAiVersePanel(null)} className="text-slate-300 hover:text-rose-400 transition-colors"><i className="fa-solid fa-xmark"></i></button>
+                                                                            </div>
+                                                                            <div className="space-y-1.5">
+                                                                                <ExpertItem icon="fa-scroll" title="Teólogo" text={aiVersePanel.teologo} color="blue" />
+                                                                                <ExpertItem icon="fa-landmark" title="Historiador" text={aiVersePanel.historiador} color="amber" />
+                                                                                <ExpertItem icon="fa-hands-praying" title="Pastor" text={aiVersePanel.pastor} color="emerald" />
+                                                                                <ExpertItem icon="fa-link" title="Referencias" text={aiVersePanel.referencias} color="indigo" />
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
                                                                 </div>
                                                             )}
                                                         </div>
@@ -1081,7 +1186,7 @@
                         {view === 'plans' && (
                             <div className="animate-fade-in px-6 pt-2 pb-32">
                                 {activePlan ? (
-                                    <div className="animate-slide-up"><div className="flex justify-between items-center mb-6 px-1"><button onClick={() => setActivePlan(null)} className="flex items-center gap-2 text-emerald-600 font-bold uppercase text-[10px] tracking-widest"><i className="fa-solid fa-arrow-left"></i> Volver</button><button onClick={closeToReading} className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 text-slate-400"><i className="fa-solid fa-xmark text-lg"></i></button></div><div className="p-8 rounded-[2.5rem] bg-white shadow-xl border mb-8 relative overflow-hidden"><span className="absolute top-4 right-6 text-[9px] font-bold uppercase text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">{activePlan.category} • {activePlan.duration} días</span><div className="flex items-center gap-5 mb-5 pr-10"><div className="w-16 h-16 rounded-[1.5rem] bg-emerald-50 flex items-center justify-center text-emerald-600"><i className="fa-solid fa-book-bookmark text-2xl"></i></div><h3 className="font-black text-2xl text-slate-800 leading-tight flex-1">{activePlan.title}</h3></div><p className="text-slate-500 text-[15px] leading-relaxed">{activePlan.desc}</p></div><div className="space-y-3.5">{Array.from({ length: activePlan.duration }).map((_, i) => { const isCompleted = (planProgress[activePlan.id] || []).includes(i); return (<div key={i} className={`p-5 rounded-2xl border-2 flex items-center justify-between transition-all ${isCompleted ? 'bg-emerald-50/50 border-emerald-500/20' : 'bg-white border-transparent'}`}><div className="flex items-center gap-4"><button onClick={() => togglePlanDay(activePlan.id, i)} className={`w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all ${isCompleted ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-100'}`}>{isCompleted && <i className="fa-solid fa-check text-[11px]"></i>}</button><div><span className={`text-[13px] font-bold ${isCompleted ? 'text-emerald-700' : 'text-slate-400'}`}>Día {i + 1}</span><p className="text-[10px] font-semibold text-slate-400 uppercase tracking-tighter">Lectura diaria</p></div></div><button onClick={() => { const book = activePlan.custom ? (activePlan.days?.[i]?.b || activePlan.bookRef) : activePlan.bookRef; const cap = activePlan.custom ? (activePlan.days?.[i]?.c || 1) : (i % 22 + 1); if (bibleData[book]) { pushToStack(); setCurrentChapter({book, chapter: cap}); setView('reading'); } else { setMissingBook(book); } }} className={`px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase transition-all shadow-sm ${isCompleted ? 'bg-white text-emerald-600' : 'bg-emerald-600 text-white'}`}>Leer ahora</button></div>); })}</div></div>
+                                    <div className="animate-slide-up"><div className="flex justify-between items-center mb-6 px-1"><button onClick={() => setActivePlan(null)} className="flex items-center gap-2 text-emerald-600 font-bold uppercase text-[10px] tracking-widest"><i className="fa-solid fa-arrow-left"></i> Volver</button><button onClick={closeToReading} className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 text-slate-400"><i className="fa-solid fa-xmark text-lg"></i></button></div><div className="p-8 rounded-[2.5rem] bg-white shadow-xl border mb-8 relative overflow-hidden"><span className="absolute top-4 right-6 text-[9px] font-bold uppercase text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">{activePlan.category} • {activePlan.duration} días</span><div className="flex items-center gap-5 mb-5 pr-10"><div className="w-16 h-16 rounded-[1.5rem] bg-emerald-50 flex items-center justify-center text-emerald-600"><i className={`fa-solid ${activePlan.icon} text-2xl`}></i></div><h3 className="font-black text-2xl text-slate-800 leading-tight flex-1">{activePlan.title}</h3></div><p className="text-slate-500 text-[15px] leading-relaxed">{activePlan.desc}</p></div><div className="space-y-3.5">{Array.from({ length: activePlan.duration }).map((_, i) => { const isCompleted = (planProgress[activePlan.id] || []).includes(i); return (<div key={i} className={`p-5 rounded-2xl border-2 flex items-center justify-between transition-all ${isCompleted ? 'bg-emerald-50/50 border-emerald-500/20' : 'bg-white border-transparent'}`}><div className="flex items-center gap-4"><button onClick={() => togglePlanDay(activePlan.id, i)} className={`w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all ${isCompleted ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-100'}`}>{isCompleted && <i className="fa-solid fa-check text-[11px]"></i>}</button><div><span className={`text-[13px] font-bold ${isCompleted ? 'text-emerald-700' : 'text-slate-400'}`}>Día {i + 1}</span><p className="text-[10px] font-semibold text-slate-400 uppercase tracking-tighter">Lectura diaria</p></div></div><button onClick={() => { const book = activePlan.custom ? (activePlan.days?.[i]?.b || activePlan.bookRef) : activePlan.bookRef; const cap = activePlan.custom ? (activePlan.days?.[i]?.c || 1) : (i % 22 + 1); if (bibleData[book]) { pushToStack(); setCurrentChapter({book, chapter: cap}); setView('reading'); } else { setMissingBook(book); } }} className={`px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase transition-all shadow-sm ${isCompleted ? 'bg-white text-emerald-600' : 'bg-emerald-600 text-white'}`}>Leer ahora</button></div>); })}</div></div>
                                 ) : (
                                     <>
                                         <SectionHeader title="Planes y Devocionales" onClose={closeToReading} /><div className="mb-10 p-8 rounded-[2.5rem] bg-white border border-slate-100 shadow-sm relative overflow-hidden group"><div className="absolute top-0 right-0 p-10 opacity-[0.03] text-slate-900 pointer-events-none group-hover:scale-110 transition-transform duration-1000"><i className="fa-solid fa-wand-magic-sparkles text-[10rem]"></i></div><div className="flex items-center gap-4 mb-3 relative z-10"><i className="fa-solid fa-sparkles text-xl text-emerald-600"></i><h3 className="font-black text-2xl text-slate-800 flex-1">Generar Devocional&nbsp;IA</h3></div><p className="text-slate-500 text-[15px] mb-6 leading-relaxed relative z-10">Cuéntame cómo te sientes o sobre qué tema quieres aprender, y crearé un plan de 7 días solo para ti.</p><div className="flex gap-2.5 relative z-10"><input value={iaEmotion} onChange={e => setIaEmotion(e.target.value)} placeholder="Ej: Busco paz en la tormenta..." className="flex-grow p-4 rounded-xl bg-slate-50 border border-slate-100 outline-none text-base font-bold text-slate-700 placeholder:text-slate-300 focus:bg-white focus:border-emerald-500/30 transition-all" /><button onClick={handleGenerateSituationalPlan} disabled={aiLoading} className="bg-emerald-600 text-white w-14 h-14 rounded-xl shadow-lg active:scale-90 transition-all disabled:opacity-50 flex items-center justify-center"><i className={aiLoading ? "fa-solid fa-circle-notch fa-spin" : "fa-solid fa-plus"}></i></button></div></div><h3 className="text-[10px] font-bold uppercase text-slate-400 mb-5 tracking-[0.2em] px-1">Planes Sugeridos</h3><div className="grid gap-5">{PREDEFINED_PLANS.map(plan => (<div key={plan.id} onClick={() => setActivePlan(plan)} className="p-6 rounded-[2rem] bg-white border border-slate-100 shadow-sm relative overflow-hidden active:scale-[0.99] transition-all group cursor-pointer hover:shadow-md"><div className="absolute -top-4 -right-4 opacity-[0.03] text-slate-900 text-8xl group-hover:rotate-6 transition-transform"><i className="fa-solid fa-bookmark"></i></div><span className="absolute top-4 right-6 text-[8px] font-black uppercase text-slate-500">{plan.category}</span><div className="flex items-center gap-4 mb-4"><div className="w-12 h-12 shrink-0 rounded-2xl bg-slate-50 flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all"><i className={`fa-solid ${plan.icon} text-lg`}></i></div><h4 className="font-bold text-lg text-slate-800 leading-tight flex-1">{plan.title}</h4></div><p className="text-slate-400 text-sm mb-4 line-clamp-2 leading-relaxed">{plan.desc}</p><div className="flex items-center justify-between"><span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">{plan.duration} días</span><button className="text-emerald-600 font-black text-[10px] uppercase tracking-tighter">Ver más <i className="fa-solid fa-chevron-right ml-1"></i></button></div></div>))}</div>
