@@ -1063,7 +1063,7 @@
 
                     <main ref={mainRef} onScroll={handleScroll} className={`flex-grow overflow-y-auto no-scrollbar relative w-full transition-all duration-300`} style={{ 
                         paddingTop: showUI ? 'calc(6.5rem + var(--sat))' : 'calc(1.5rem + var(--sat))',
-                        paddingBottom: showUI ? 'calc(3.5rem + var(--sab))' : 'calc(1.5rem + var(--sab))'
+                        paddingBottom: showUI ? 'calc(2.1rem + var(--sab))' : 'calc(1.5rem + var(--sab))'
                     }}>
                         {view === 'home' && (
                             <div className="animate-fade-in px-6 pt-2">
@@ -1253,8 +1253,8 @@
                         )}
                     </main>
 
-                    <nav className={`fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-100 z-50 px-4 md:max-w-3xl md:mx-auto transition-transform duration-300 ${showUI ? 'translate-y-0' : 'translate-y-full'}`} style={{ height: `calc(3.5rem + var(--sab))` }}>
-                        <div className="flex items-start justify-between h-full pt-1" style={{ paddingBottom: 'var(--sab)' }}>
+                    <nav className={`fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-100 z-50 px-4 md:max-w-3xl md:mx-auto transition-transform duration-300 ${showUI ? 'translate-y-0' : 'translate-y-full'}`} style={{ height: `calc(2.1rem + var(--sab))` }}>
+                        <div className="flex items-start justify-between h-full pt-0.5" style={{ paddingBottom: 'var(--sab)' }}>
                             <NavItem v="home" i="fa-house" l="Inicio" /><NavItem v="reading" i="fa-bible" l="Biblia" /><NavItem v="search" i="fa-search" l="Buscar" /><NavItem v="assistant" i="fa-wand-magic-sparkles" l="Asistente" /><NavItem v="plans" i="fa-calendar-check" l="Planes" /><NavItem v="favorites" i="fa-bookmark" l="Favs" /><NavItem v="settings" i="fa-gear" l="Ajustes" />
                         </div>
                     </nav>
