@@ -45,6 +45,7 @@
         :root { --sat: env(safe-area-inset-top); --sab: env(safe-area-inset-bottom); }
         body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; overflow-x: hidden; background-color: #f9f9f9; height: 100dvh; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        .safe-top { padding-top: var(--sat); }
         
         .font-reading-sans { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         .font-reading-serif { font-family: "Ibarra Real Nova", "Georgia", serif; }
@@ -1020,9 +1021,9 @@
             const NavItem = ({v, i, l}) => {
                 const isActive = view === v || (v === 'reading' && view === 'nav');
                 return (
-                    <button onClick={() => { if (v === 'reading' && !currentChapter.book) setView('nav'); else setView(v); setActivePlan(null); setSettingsPart(null); setNavStack([]); }} className={`flex flex-col items-center justify-center flex-1 gap-1 transition-all h-full ${isActive ? 'text-emerald-600' : 'text-slate-400'}`}>
+                    <button onClick={() => { if (v === 'reading' && !currentChapter.book) setView('nav'); else setView(v); setActivePlan(null); setSettingsPart(null); setNavStack([]); }} className={`flex flex-col items-center justify-center flex-1 gap-0.5 transition-all h-full ${isActive ? 'text-emerald-600' : 'text-slate-400'}`}>
                         <div className={`w-8 h-8 flex items-center justify-center rounded-xl transition-all ${isActive ? 'bg-emerald-50' : ''}`}><i className={`fa-solid ${i} text-[18px]`}></i></div>
-                        <span className="text-[10px] font-bold uppercase tracking-tighter">{l}</span>
+                        <span className="text-[9px] font-bold uppercase tracking-tighter">{l}</span>
                     </button>
                 );
             }
@@ -1042,8 +1043,8 @@
                     {importStatus && view !== 'settings' && (<div onClick={() => setImportStatus("")} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 bg-slate-900/95 backdrop-blur-md text-white rounded-full shadow-2xl animate-slide-up flex items-center gap-3 cursor-pointer hover:bg-slate-800 active:scale-95 transition-all"><i className={`fa-solid ${importStatus.startsWith('Error') ? 'fa-circle-exclamation text-rose-400' : 'fa-check text-emerald-400'} text-sm`}></i><span className="text-xs font-bold uppercase tracking-wider">{importStatus}</span><span className="ml-2 text-[10px] opacity-40 uppercase">(Cerrar)</span></div>)}
                     {missingBook && (<div className="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-fade-in"><div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setMissingBook(null)}></div><div className="bg-white w-full max-sm rounded-[2rem] p-8 shadow-2xl relative z-10 animate-slide-up text-center border"><div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600 mx-auto mb-5"><i className="fa-solid fa-book-open text-2xl"></i></div><h3 className="text-lg font-bold text-slate-800 mb-2">Libro no disponible</h3><p className="text-slate-500 text-sm mb-6 leading-relaxed">El libro <span className="font-bold text-emerald-600">"{missingBook}"</span> no está en tu biblioteca. Súbelo para comenzar.</p><div className="space-y-2"><button onClick={() => { setView('settings'); setMissingBook(null); }} className="w-full py-4 bg-emerald-600 text-white font-bold uppercase text-[11px] rounded-xl shadow-lg active:scale-95 transition-all">Ir a ajustes</button><button onClick={() => setMissingBook(null)} className="w-full py-4 text-slate-400 font-bold uppercase text-[11px]">Cerrar</button></div></div></div>)}
 
-                    <header className={`fixed top-0 left-0 right-0 md:max-w-3xl md:mx-auto bg-white border-b border-slate-100 z-40 transition-transform duration-300 ${showUI ? 'translate-y-0' : '-translate-y-full'}`} style={{ height: `calc(5.5rem + var(--sat))` }}>
-                        <div className="safe-top h-full flex flex-col justify-end pb-3 px-4" style={{ paddingTop: '2rem' }}>
+                    <header className={`fixed top-0 left-0 right-0 md:max-w-3xl md:mx-auto bg-white border-b border-slate-100 z-40 transition-transform duration-300 ${showUI ? 'translate-y-0' : '-translate-y-full'}`} style={{ height: `calc(6.5rem + var(--sat))` }}>
+                        <div className="safe-top h-full flex flex-col justify-end pb-3 px-4" style={{ paddingTop: '2.5rem' }}>
                             <div className="flex justify-between items-center pb-1">
                                 <h1 className="font-black text-lg tracking-tighter text-emerald-600 italic">Biblia IA</h1>
                             </div>
@@ -1061,8 +1062,8 @@
                     </header>
 
                     <main ref={mainRef} onScroll={handleScroll} className={`flex-grow overflow-y-auto no-scrollbar relative w-full transition-all duration-300`} style={{ 
-                        paddingTop: showUI ? 'calc(5.5rem + var(--sat))' : 'calc(10px + var(--sat))',
-                        paddingBottom: showUI ? 'calc(4rem + var(--sab))' : 'calc(10px + var(--sab))'
+                        paddingTop: showUI ? 'calc(6.5rem + var(--sat))' : 'calc(1.5rem + var(--sat))',
+                        paddingBottom: showUI ? 'calc(3.5rem + var(--sab))' : 'calc(1.5rem + var(--sab))'
                     }}>
                         {view === 'home' && (
                             <div className="animate-fade-in px-6 pt-2">
@@ -1117,7 +1118,10 @@
                                                                     {exegesisList.length > 0 && studyVerseId === activeV && (
                                                                         <div className="animate-fade-in w-full border-t border-slate-100 pt-6 space-y-4 mb-4">
                                                                             <div className="flex justify-between items-center px-1">
-                                                                                <div className="flex items-center gap-2"><i className="fa-solid fa-book-atlas text-emerald-600 text-sm"></i><h3 className="text-[11px] font-bold text-slate-800 uppercase tracking-widest">Glosario IA</h3></div>
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <i className="fa-solid fa-book-atlas text-emerald-600 text-sm"></i>
+                                                                                    <h3 className="text-[11px] font-bold text-slate-800 uppercase tracking-widest">Glosario IA</h3>
+                                                                                </div>
                                                                                 <button onClick={() => setExegesisList([])} className="text-[9px] font-bold uppercase text-rose-400 tracking-tighter">Limpiar</button>
                                                                             </div>
                                                                             {exegesisList.map((item, idx) => (
@@ -1249,8 +1253,8 @@
                         )}
                     </main>
 
-                    <nav className={`fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-100 z-50 px-4 md:max-w-3xl md:mx-auto transition-transform duration-300 ${showUI ? 'translate-y-0' : 'translate-y-full'}`} style={{ height: `calc(4rem + var(--sab))` }}>
-                        <div className="flex items-start justify-between h-full pt-1.5" style={{ paddingBottom: 'var(--sab)' }}>
+                    <nav className={`fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-100 z-50 px-4 md:max-w-3xl md:mx-auto transition-transform duration-300 ${showUI ? 'translate-y-0' : 'translate-y-full'}`} style={{ height: `calc(3.5rem + var(--sab))` }}>
+                        <div className="flex items-start justify-between h-full pt-1" style={{ paddingBottom: 'var(--sab)' }}>
                             <NavItem v="home" i="fa-house" l="Inicio" /><NavItem v="reading" i="fa-bible" l="Biblia" /><NavItem v="search" i="fa-search" l="Buscar" /><NavItem v="assistant" i="fa-wand-magic-sparkles" l="Asistente" /><NavItem v="plans" i="fa-calendar-check" l="Planes" /><NavItem v="favorites" i="fa-bookmark" l="Favs" /><NavItem v="settings" i="fa-gear" l="Ajustes" />
                         </div>
                     </nav>
