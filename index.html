@@ -1022,8 +1022,8 @@
                 const isActive = view === v || (v === 'reading' && view === 'nav');
                 return (
                     <button onClick={() => { if (v === 'reading' && !currentChapter.book) setView('nav'); else setView(v); setActivePlan(null); setSettingsPart(null); setNavStack([]); }} className={`flex flex-col items-center justify-center flex-1 transition-all h-full ${isActive ? 'text-emerald-600' : 'text-slate-400'}`}>
-                        <div className={`w-8 h-8 flex items-center justify-center rounded-xl transition-all ${isActive ? 'bg-emerald-50' : ''}`}><i className={`fa-solid ${i} text-[18px]`}></i></div>
-                        <span className="text-[8px] font-black uppercase tracking-tighter">{l}</span>
+                        <div className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${isActive ? 'bg-emerald-50' : ''}`}><i className={`fa-solid ${i} text-[22px]`}></i></div>
+                        <span className="text-[9px] font-bold uppercase tracking-tighter">{l}</span>
                     </button>
                 );
             }
@@ -1063,7 +1063,7 @@
 
                     <main ref={mainRef} onScroll={handleScroll} className={`flex-grow overflow-y-auto no-scrollbar relative w-full transition-all duration-300`} style={{ 
                         paddingTop: showUI ? 'calc(5.5rem + var(--sat))' : 'calc(10px + var(--sat))',
-                        paddingBottom: showUI ? 'calc(3rem + var(--sab))' : 'calc(10px + var(--sab))'
+                        paddingBottom: showUI ? 'calc(2.5rem + var(--sab))' : 'calc(10px + var(--sab))'
                     }}>
                         {view === 'home' && (
                             <div className="animate-fade-in px-6 pt-2">
