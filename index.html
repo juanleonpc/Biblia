@@ -202,7 +202,7 @@
             { title: "Más de 40 autores", text: "La Biblia fue escrita por más de 40 autores de diferentes profesiones: reyes, pescadores, médicos, granjeros y pastores, a lo largo de 1500 años." },
             { title: "El centro de la Biblia", text: "Muchos consideran el Salmo 118:8 el centro de la Biblia: 'Mejor es confiar en Jehová que confiar en el hombre'." },
             { title: "¿Gatos?", text: "Se mencionan perros 14 veces en la Biblia, leones 55 veces, pero los gatos domésticos no se mencionan ni una sola vez." },
-            { title: "El juez zurdo", text: "Aod fue un juez zurdo que liberó a Israel. La Biblia especifica su mano izquierda porque la usó para esconder su espada y sorprender al rey Eglón." },
+            { title: "El juez zurdo", text: "Aod fue un juez zurdo que lideró a Israel. La Biblia especifica su mano izquierda porque la usó para esconder su espada y sorprender al rey Eglón." },
             { title: "Animales que hablan", text: "Solo hay dos casi de animales hablando en la Biblia: la serpiente en el Edén y la burra del profeta Balaam." },
             { title: "El cabello más pesado", text: "Absalón, hijo de David, tenía un cabello tan denso que se lo cortaba una vez al año y pesaba unos 2 kilos (200 siclos reales)." },
             { title: "Sermón mortal", text: "Un joven llamado Eutico se durmió durante un largo sermón de Pablo, cayó de un tercer piso y murió, pero Pablo bajó y lo resucitó." },
@@ -235,7 +235,7 @@
             { title: "Treinta monedas", text: "Judas traicionó a Jesús por 30 piezas de plata. Curiosamente, ese era el precio legal compensatorio por la muerte de un esclavo en aquella época." },
             { title: "La zarza ardiente", text: "Moisés vio una zarza que ardía pero no se consumía. Allí Dios le reveló Su nombre: 'Yo soy el que soy'." },
             { title: "Gedeón y la lana", text: "Gedeón pidió dos señales a Dios usando un vellón de lana: primero que la lana estuviera mojada y el suelo seco, y luego lo opuesto." },
-            { title: "El gran pez", text: "Jonás pasó tres días en el vientre de una criatura marina. Jesús usó este hecho como señal de Su propia muerte y resurrección tres días después." },
+            { title: "El gran pez", text: "Jonás pasó tres días en el vientre de una criatura marina. Jesús usó este hecho como señal de Su propia muerte y resurrección tres después." },
             { title: "Huesos secos", text: "Ezequiel tuvo una visión de un valle lleno de huesos que cobraban vida cuando él profetizaba. Representaba la restauración espiritual de Israel." },
             { title: "Naufragio en Malta", text: "Tras un naufragio, Pablo fue mordido por una víbora mientras recogía leña. Los habitantes esperaban que muriera, pero no sufrió ningún daño." },
             { title: "Siete iglesias", text: "El Apocalipsis contiene cartas específicas para siete iglesias de Asia. Cada una recibe elogios, advertencias y una promesa única." },
@@ -833,7 +833,7 @@
                     setImportStatus("Copia de seguridad creada correctamente"); 
                     setTimeout(() => setImportStatus(""), 5000);
                 } catch (e) { 
-                    setImportStatus("Error exportando: " + e.message);
+                    setImportStatus("Error de exportación: " + e.message);
                     setTimeout(() => setImportStatus(""), 5000);
                 }
             };
@@ -850,7 +850,7 @@
                     setImportStatus("Biblioteca exportada correctamente"); 
                     setTimeout(() => setImportStatus(""), 5000);
                 } catch (e) { 
-                    setImportStatus("Error exportando: " + e.message);
+                    setImportStatus("Error de exportación: " + e.message);
                     setTimeout(() => setImportStatus(""), 5000);
                 }
             };
@@ -1062,8 +1062,8 @@
                     </header>
 
                     <main ref={mainRef} onScroll={handleScroll} className={`flex-grow overflow-y-auto no-scrollbar relative w-full transition-all duration-300`} style={{ 
-                        paddingTop: showUI ? 'calc(5.5rem + var(--sat))' : 'calc(1.5rem + var(--sat))',
-                        paddingBottom: showUI ? 'calc(2.5rem + var(--sab))' : 'calc(1.5rem + var(--sab))'
+                        paddingTop: showUI ? 'calc(5.5rem + var(--sat))' : 'calc(10px + var(--sat))',
+                        paddingBottom: showUI ? 'calc(3rem + var(--sab))' : 'calc(10px + var(--sab))'
                     }}>
                         {view === 'home' && (
                             <div className="animate-fade-in px-6 pt-2">
@@ -1253,8 +1253,8 @@
                         )}
                     </main>
 
-                    <nav className={`fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-100 z-50 px-4 md:max-w-3xl md:mx-auto transition-transform duration-300 ${showUI ? 'translate-y-0' : 'translate-y-full'}`} style={{ height: `calc(2.5rem + var(--sab))` }}>
-                        <div className="flex items-center justify-between h-full pt-1" style={{ paddingBottom: 'calc(var(--sab) * 0.8)' }}>
+                    <nav className={`fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-100 z-50 px-4 md:max-w-3xl md:mx-auto transition-transform duration-300 ${showUI ? 'translate-y-0' : 'translate-y-full'}`} style={{ height: `calc(3rem + var(--sab))` }}>
+                        <div className="flex items-center justify-between h-full" style={{ paddingBottom: 'var(--sab)' }}>
                             <NavItem v="home" i="fa-house" l="Inicio" /><NavItem v="reading" i="fa-bible" l="Biblia" /><NavItem v="search" i="fa-search" l="Buscar" /><NavItem v="assistant" i="fa-wand-magic-sparkles" l="Asistente" /><NavItem v="plans" i="fa-calendar-check" l="Planes" /><NavItem v="favorites" i="fa-bookmark" l="Favs" /><NavItem v="settings" i="fa-gear" l="Ajustes" />
                         </div>
                     </nav>
