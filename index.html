@@ -235,7 +235,7 @@
             { title: "Treinta monedas", text: "Judas traicionó a Jesús por 30 piezas de plata. Curiosamente, ese era el precio legal compensatorio por la muerte de un esclavo en aquella época." },
             { title: "La zarza ardiente", text: "Moisés vio una zarza que ardía pero no se consumía. Allí Dios le reveló Su nombre: 'Yo soy el que soy'." },
             { title: "Gedeón y la lana", text: "Gedeón pidió dos señales a Dios usando un vellón de lana: primero que la lana estuviera mojada y el suelo seco, y luego lo opuesto." },
-            { title: "El gran pez", text: "Jonás pasó tres días en el vientre de una criatura marina. Jesús usó este hecho como señal de Su propia muerte y resurrección tres después." },
+            { title: "El gran pez", text: "Jonás pasó tres días en el vientre de una criatura marina. Jesús usó este hecho como señal de Su propia muerte y resurcción tres después." },
             { title: "Huesos secos", text: "Ezequiel tuvo una visión de un valle lleno de huesos que cobraban vida cuando él profetizaba. Representaba la restauración espiritual de Israel." },
             { title: "Naufragio en Malta", text: "Tras un naufragio, Pablo fue mordido por una víbora mientras recogía leña. Los habitantes esperaban que muriera, pero no sufrió ningún daño." },
             { title: "Siete iglesias", text: "El Apocalipsis contiene cartas específicas para siete iglesias de Asia. Cada una recibe elogios, advertencias y una promesa única." },
@@ -293,7 +293,7 @@
             }
         }
 
-        const DB_NAME = 'Bible_App_Persistent_V2';
+        const DB_NAME = 'Bible_App_Persistent_V3';
         const db = {
             init: () => new Promise(res => {
                 const req = indexedDB.open(DB_NAME, 1);
@@ -406,6 +406,13 @@
             const [showFullTimeline, setShowFullTimeline] = useState(false);
             const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
+            // --- ESTADOS SECCIÓN ESTUDIO ---
+            const [studyStats, setStudyStats] = useState({}); 
+            const [activeStudyItem, setActiveStudyItem] = useState(null); 
+            const [isStudyLoading, setIsStudyLoading] = useState(false);
+            const [studyAnswer, setStudyAnswer] = useState("");
+            const [studyFeedback, setStudyFeedback] = useState(null);
+
             const booksList = useMemo(() => Object.keys(bibleData), [bibleData]);
 
             const getMonday = (d) => {
@@ -470,6 +477,7 @@
                         setFontSize(saved.fontSize || 20);
                         setFontFamily(saved.fontFamily || 'sans');
                         setUserApiKey(saved.userApiKey || "");
+                        setStudyStats(saved.studyStats || {});
                     }
                     
                     if (bData) {
@@ -507,13 +515,13 @@
                                 annotations, favorites, readStatus, verseReadStatus, 
                                 verseImages, versePrompts, lastPosition, fontSize, 
                                 fontFamily, planProgress, streak, usageStats, 
-                                readingHistory, bookTimeline, userApiKey 
+                                readingHistory, bookTimeline, userApiKey, studyStats
                             });
                         } catch (e) { console.error("Error al guardar config:", e); }
                     };
                     saveConfig();
                 }
-            }, [ready, annotations, favorites, readStatus, verseReadStatus, verseImages, versePrompts, lastPosition, fontSize, fontFamily, planProgress, streak, usageStats, readingHistory, bookTimeline, userApiKey]);
+            }, [ready, annotations, favorites, readStatus, verseReadStatus, verseImages, versePrompts, lastPosition, fontSize, fontFamily, planProgress, streak, usageStats, readingHistory, bookTimeline, userApiKey, studyStats]);
 
             const updateStreak = () => {
                 const today = new Date().toISOString().split('T')[0];
@@ -904,7 +912,7 @@
             const handleExportBackup = async () => {
                 try {
                     setImportStatus("");
-                    const backup = { app: 'Biblia IA', version: '2.5', timestamp: new Date().toISOString(), config: { annotations, favorites, readStatus, verseReadStatus, verseImages, versePrompts, lastPosition, fontSize, fontFamily, planProgress, streak, usageStats, readingHistory, bookTimeline, userApiKey }, bibleData: bibleData };
+                    const backup = { app: 'Biblia IA', version: '2.5', timestamp: new Date().toISOString(), config: { annotations, favorites, readStatus, verseReadStatus, verseImages, versePrompts, lastPosition, fontSize, fontFamily, planProgress, streak, usageStats, readingHistory, bookTimeline, userApiKey, studyStats }, bibleData: bibleData };
                     const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a'); a.href = url; 
@@ -932,6 +940,7 @@
                             setReadingHistory(config.readingHistory || []); setBookTimeline(config.bookTimeline || {});
                             setFontSize(config.fontSize || 20); setFontFamily(config.fontFamily || 'sans'); 
                             if (config.userApiKey) setUserApiKey(config.userApiKey);
+                            setStudyStats(config.studyStats || {});
                         }
                         if (bData) { setBibleData(bData); await db.set('bible_content', bData); const first = Object.keys(bData)[0]; if (first) setCurrentChapter({ book: first, chapter: 1 }); }
                         const count = bData ? Object.keys(bData).length : 0;
@@ -1105,6 +1114,73 @@
                 lastScrollY.current = currentScrollY;
             };
 
+            // --- LÓGICA DE SECCIÓN ESTUDIO (SRS / ACTIVE RECALL) ---
+
+            const handleStartStudy = async () => {
+                const readVerses = Object.keys(verseReadStatus).filter(k => verseReadStatus[k]);
+                if (readVerses.length === 0) {
+                    setApiError("Aún no has marcado ningún versículo como leído para estudiar.");
+                    return;
+                }
+
+                setIsStudyLoading(true);
+                setApiError("");
+                setStudyFeedback(null);
+                setStudyAnswer("");
+
+                const now = Date.now();
+                let candidates = readVerses.map(key => ({ key, ...studyStats[key] }));
+                
+                let due = candidates.filter(c => !c.nextReview || c.nextReview <= now);
+                const selected = due.length > 0 
+                    ? due[Math.floor(Math.random() * due.length)] 
+                    : candidates[Math.floor(Math.random() * candidates.length)];
+                
+                const [book, chapter, verseNum] = selected.key.split('-');
+                const verseText = bibleData[book]?.[chapter]?.[parseInt(verseNum)-1] || "";
+
+                // Optimización de prompt para reducir tokens y sustituir preguntas abiertas por Verdadero/Falso
+                const prompt = `Versículo: "${book} ${chapter}:${verseNum}" -> "${verseText}".
+                Genera una pregunta breve de enseñanza bíblica.
+                Tipos: "opcion_multiple" (4 opciones), "completar" (hueco [___]) o "verdadero_falso".
+                Responde EXCLUSIVAMENTE JSON compacto:
+                {"tipo": "tipo", "pregunta": "texto", "opciones": ["opt1", "..."], "correcta": "texto", "explicacion": "razon"}`;
+
+                const result = await fetchGemini(userApiKey, prompt, 3, true);
+                if (result.data) {
+                    try {
+                        const cleanJson = result.data.replace(/```json|```/gi, "").trim();
+                        const parsed = JSON.parse(cleanJson);
+                        setActiveStudyItem({ ...parsed, key: selected.key, book, chapter, verseNum });
+                    } catch (e) { setApiError("Error interpretando la pregunta de IA."); }
+                } else if (result.error) {
+                    setApiError(result.error);
+                }
+                setIsStudyLoading(false);
+            };
+
+            const submitStudyAnswer = async () => {
+                if (!studyAnswer.trim() || isStudyLoading) return;
+                
+                // Evaluación directa local (Optimización: 0 tokens gastados en evaluación)
+                const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+                const isCorrect = norm(studyAnswer) === norm(activeStudyItem.correcta);
+                const feedbackText = isCorrect ? "¡Excelente comprensión!" : `No es correcto. La respuesta era: ${activeStudyItem.correcta}.`;
+
+                setStudyFeedback({ correct: isCorrect, text: feedbackText, expl: activeStudyItem.explicacion });
+                
+                setStudyStats(prev => {
+                    const cur = prev[activeStudyItem.key] || { level: 0, nextReview: 0 };
+                    const newLevel = isCorrect ? Math.min(5, cur.level + 1) : 0;
+                    const intervals = [1, 3, 7, 14, 30];
+                    const nextDays = isCorrect ? intervals[newLevel] || 30 : 1;
+                    const nextReview = Date.now() + (nextDays * 24 * 60 * 60 * 1000);
+                    return { ...prev, [activeStudyItem.key]: { level: newLevel, nextReview } };
+                });
+
+                updateStreak();
+            };
+
             if (!ready) return null;
 
             return (
@@ -1170,6 +1246,127 @@
                                 )}
                                 {dailyCuriosity && (
                                     <div className="mt-8 mb-8 p-8 rounded-[2rem] bg-amber-50 border border-amber-100 shadow-sm relative overflow-hidden"><div className="absolute -top-6 -right-6 opacity-10 text-amber-600 text-9xl rotate-12"><i className="fa-regular fa-lightbulb"></i></div><div className="relative z-10"><div className="flex items-center gap-3 mb-4"><div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center"><i className="fa-solid fa-lightbulb text-lg"></i></div><span className="text-[10px] font-black uppercase tracking-widest text-amber-600/60">Sabías que...</span></div><h3 className="text-xl font-black text-slate-800 mb-3">{dailyCuriosity.title}</h3><p className="text-slate-600 text-[15px] font-medium leading-relaxed">{dailyCuriosity.text}</p></div></div>
+                                )}
+                            </div>
+                        )}
+
+                        {view === 'study' && (
+                            <div className="animate-fade-in px-6 pt-2 pb-32">
+                                <SectionHeader title="Estudio & Active Recall" onClose={closeToReading} />
+                                
+                                {!activeStudyItem ? (
+                                    <div className="animate-slide-up flex flex-col items-center justify-center min-h-[50vh] text-center">
+                                        <div className="w-24 h-24 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-500 mb-6">
+                                            <i className="fa-solid fa-user-graduate text-4xl"></i>
+                                        </div>
+                                        <h3 className="text-2xl font-black text-slate-800 mb-3">Gimnasio de Estudio</h3>
+                                        <p className="text-slate-500 text-sm max-w-xs mb-10 leading-relaxed">
+                                            Repasa las enseñanzas de tus lecturas recientes mediante retos interactivos generados por IA.
+                                        </p>
+                                        
+                                        <button 
+                                            onClick={handleStartStudy}
+                                            disabled={isStudyLoading}
+                                            className="w-full max-w-xs py-5 bg-emerald-600 text-white rounded-[1.5rem] font-black uppercase text-xs tracking-widest shadow-xl shadow-emerald-500/30 active:scale-95 transition-all flex items-center justify-center gap-3"
+                                        >
+                                            {isStudyLoading ? <i className="fa-solid fa-circle-notch fa-spin"></i> : <i className="fa-solid fa-play"></i>}
+                                            {isStudyLoading ? "Generando reto..." : "Comenzar sesión"}
+                                        </button>
+                                        
+                                        {apiError && <p className="mt-6 text-xs text-rose-500 font-bold italic">{apiError}</p>}
+                                    </div>
+                                ) : (
+                                    <div className="animate-slide-up">
+                                        <div className="mb-8 p-8 rounded-[2.5rem] bg-white border border-slate-100 shadow-xl relative overflow-hidden">
+                                            <div className="absolute top-0 right-0 p-4 opacity-[0.05] text-slate-900 pointer-events-none">
+                                                <i className="fa-solid fa-brain text-6xl"></i>
+                                            </div>
+                                            <div className="flex items-center gap-3 mb-4">
+                                                <span className="text-[10px] font-black uppercase bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full">
+                                                    {activeStudyItem.book} {activeStudyItem.chapter}:{activeStudyItem.verseNum}
+                                                </span>
+                                            </div>
+                                            <h4 className="text-xl font-bold text-slate-800 leading-relaxed mb-6">
+                                                {activeStudyItem.pregunta}
+                                            </h4>
+
+                                            {!studyFeedback ? (
+                                                <div className="space-y-4">
+                                                    {activeStudyItem.tipo === 'opcion_multiple' || activeStudyItem.tipo === 'verdadero_falso' ? (
+                                                        <div className="grid grid-cols-1 gap-3">
+                                                            {(activeStudyItem.tipo === 'verdadero_falso' ? ['Verdadero', 'Falso'] : activeStudyItem.opciones).map((opt, idx) => (
+                                                                <button 
+                                                                    key={idx}
+                                                                    onClick={() => setStudyAnswer(opt)}
+                                                                    className={`w-full p-4 rounded-2xl text-left border-2 transition-all ${studyAnswer === opt ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-slate-50 bg-slate-50 text-slate-600 hover:border-slate-200'}`}
+                                                                >
+                                                                    <div className="flex items-center gap-3">
+                                                                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center text-[10px] font-bold ${studyAnswer === opt ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300'}`}>
+                                                                            {activeStudyItem.tipo === 'verdadero_falso' ? (opt === 'Verdadero' ? 'V' : 'F') : String.fromCharCode(65 + idx)}
+                                                                        </div>
+                                                                        <span className="font-medium">{opt}</span>
+                                                                    </div>
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <textarea 
+                                                            value={studyAnswer}
+                                                            onChange={e => setStudyAnswer(e.target.value)}
+                                                            placeholder="Completa el concepto espiritual..."
+                                                            className="w-full p-6 rounded-[1.5rem] bg-slate-50 border-2 border-slate-50 outline-none focus:border-emerald-500/20 text-lg font-medium transition-all min-h-[100px]"
+                                                        />
+                                                    )}
+                                                    
+                                                    <button 
+                                                        onClick={submitStudyAnswer}
+                                                        disabled={!studyAnswer.trim()}
+                                                        className="w-full py-5 bg-slate-900 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg active:scale-95 transition-all disabled:opacity-30 flex items-center justify-center gap-3 mt-4"
+                                                    >
+                                                        <i className="fa-solid fa-paper-plane"></i>
+                                                        Confirmar respuesta
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="animate-fade-in">
+                                                    <div className={`p-6 rounded-2xl mb-6 ${studyFeedback.correct ? 'bg-emerald-50 border-2 border-emerald-100' : 'bg-rose-50 border-2 border-rose-100'}`}>
+                                                        <div className="flex items-center gap-3 mb-2">
+                                                            <i className={`fa-solid ${studyFeedback.correct ? 'fa-circle-check text-emerald-500' : 'fa-circle-xmark text-rose-500'} text-xl`}></i>
+                                                            <span className={`font-black text-xs uppercase tracking-widest ${studyFeedback.correct ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                                                {studyFeedback.correct ? 'Correcto' : 'Incorrecto'}
+                                                            </span>
+                                                        </div>
+                                                        <p className={`text-base font-bold leading-relaxed ${studyFeedback.correct ? 'text-emerald-800' : 'text-rose-800'}`}>
+                                                            {studyFeedback.text}
+                                                        </p>
+                                                    </div>
+                                                    
+                                                    <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 mb-8">
+                                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Por qué es importante</span>
+                                                        <p className="text-slate-700 italic font-medium leading-relaxed">
+                                                            <LinkifiedText content={activeStudyItem.explicacion} />
+                                                        </p>
+                                                    </div>
+
+                                                    <button 
+                                                        onClick={handleStartStudy}
+                                                        className="w-full py-5 bg-emerald-600 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg active:scale-95 transition-all flex items-center justify-center gap-3"
+                                                    >
+                                                        Siguiente pregunta <i className="fa-solid fa-arrow-right"></i>
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                        
+                                        {!studyFeedback && (
+                                            <button 
+                                                onClick={() => setActiveStudyItem(null)}
+                                                className="w-full py-4 text-slate-400 font-black uppercase text-[10px] tracking-[0.2em]"
+                                            >
+                                                Finalizar sesión
+                                            </button>
+                                        )}
+                                    </div>
                                 )}
                             </div>
                         )}
@@ -1788,9 +1985,16 @@
                         </div>
                     )}
 
-                    <nav className={`fixed bottom-0 left-0 right-0 bg-yvGrey-50/95 backdrop-blur-xl border-t border-slate-100 z-50 px-4 md:max-w-3xl md:mx-auto transition-transform duration-300 ${showUI ? 'translate-y-0' : 'translate-y-full'}`} style={{ height: `calc(3rem + var(--sab))` }}>
+                    <nav className={`fixed bottom-0 left-0 right-0 bg-yvGrey-50/95 backdrop-blur-xl border-t border-slate-100 z-50 px-2 md:max-w-3xl md:mx-auto transition-transform duration-300 ${showUI ? 'translate-y-0' : 'translate-y-full'}`} style={{ height: `calc(3rem + var(--sab))` }}>
                         <div className="flex items-center justify-around h-full w-full" style={{ paddingBottom: 'var(--sab)' }}>
-                            <NavItem v="home" i="fa-house" l="Inicio" /><NavItem v="reading" i="fa-bible" l="Biblia" /><NavItem v="search" i="fa-search" l="Buscar" /><NavItem v="assistant" i="fa-wand-magic-sparkles" l="Asistente" /><NavItem v="plans" i="fa-calendar-check" l="Planes" /><NavItem v="favorites" i="fa-bookmark" l="Favs" /><NavItem v="settings" i="fa-gear" l="Ajustes" />
+                            <NavItem v="home" i="fa-house" l="Inicio" />
+                            <NavItem v="reading" i="fa-bible" l="Biblia" />
+                            <NavItem v="study" i="fa-user-graduate" l="Estudio" />
+                            <NavItem v="search" i="fa-search" l="Buscar" />
+                            <NavItem v="assistant" i="fa-wand-magic-sparkles" l="Asistente" />
+                            <NavItem v="plans" i="fa-calendar-check" l="Planes" />
+                            <NavItem v="favorites" i="fa-bookmark" l="Favs" />
+                            <NavItem v="settings" i="fa-gear" l="Ajustes" />
                         </div>
                     </nav>
                 </div>
