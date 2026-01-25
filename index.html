@@ -416,10 +416,10 @@
             const booksList = useMemo(() => Object.keys(bibleData), [bibleData]);
 
             const getMonday = (d) => {
-                d = new Date(d);
-                const day = d.getDay();
-                const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-                const result = new Date(d.setDate(diff));
+                const dateObj = new Date(d);
+                const day = dateObj.getDay();
+                const diff = dateObj.getDate() - day + (day === 0 ? -6 : 1);
+                const result = new Date(dateObj.setDate(diff));
                 result.setHours(0,0,0,0);
                 return result;
             };
@@ -440,10 +440,10 @@
             useEffect(() => {
                 if (!ready) return;
                 const timer = setInterval(() => {
-                    const today = new Date().toISOString().split('T')[0];
+                    const todayStr = new Date().toISOString().split('T')[0];
                     setUsageStats(prev => {
-                        const dayData = prev[today] || { mins: 0, verses: 0 };
-                        return { ...prev, [today]: { ...dayData, mins: dayData.mins + 1 } };
+                        const dayData = prev[todayStr] || { mins: 0, verses: 0 };
+                        return { ...prev, [todayStr]: { ...dayData, mins: dayData.mins + 1 } };
                     });
                 }, 60000); 
                 return () => clearInterval(timer);
@@ -524,9 +524,9 @@
             }, [ready, annotations, favorites, readStatus, verseReadStatus, verseImages, versePrompts, lastPosition, fontSize, fontFamily, planProgress, streak, usageStats, readingHistory, bookTimeline, userApiKey, studyStats]);
 
             const updateStreak = () => {
-                const today = new Date().toISOString().split('T')[0];
-                if (streak.lastDate === today) return;
-                setStreak(prev => ({ count: prev.count + 1, lastDate: today }));
+                const todayStr = new Date().toISOString().split('T')[0];
+                if (streak.lastDate === todayStr) return;
+                setStreak(prev => ({ count: prev.count + 1, lastDate: todayStr }));
             };
 
             const handleToggleVerse = (vId) => {
@@ -560,12 +560,12 @@
                 const chapNum = parts[1];
                 const chapterKey = `${bookName}-${chapNum}`;
                 const newStatus = !verseReadStatus[vId];
-                const today = new Date().toISOString().split('T')[0];
+                const todayStr = new Date().toISOString().split('T')[0];
 
                 if (newStatus) {
                     setUsageStats(prev => {
-                        const dayData = prev[today] || { mins: 0, verses: 0 };
-                        return { ...prev, [today]: { ...dayData, verses: dayData.verses + 1 } };
+                        const dayData = prev[todayStr] || { mins: 0, verses: 0 };
+                        return { ...prev, [todayStr]: { ...dayData, verses: dayData.verses + 1 } };
                     });
                 }
 
@@ -582,7 +582,7 @@
                     if (newStatus && allVersesRead && !readStatus[chapterKey]) {
                         setReadingHistory(prevHist => [
                             ...prevHist, 
-                            { date: today, book: bookName, chapter: chapNum, timestamp: Date.now() }
+                            { date: todayStr, book: bookName, chapter: chapNum, timestamp: Date.now() }
                         ]);
 
                         setBookTimeline(prevTimeline => {
@@ -1139,9 +1139,8 @@
                 const [book, chapter, verseNum] = selected.key.split('-');
                 const verseText = bibleData[book]?.[chapter]?.[parseInt(verseNum)-1] || "";
 
-                // Optimización de prompt para reducir tokens y sustituir preguntas abiertas por Verdadero/Falso
                 const prompt = `Versículo: "${book} ${chapter}:${verseNum}" -> "${verseText}".
-                Genera una pregunta breve de enseñanza bíblica.
+                Basándote exactamente en este texto y su contexto en la versión bíblica cargada por el usuario, genera una pregunta breve de enseñanza bíblica.
                 Tipos: "opcion_multiple" (4 opciones), "completar" (hueco [___]) o "verdadero_falso".
                 Responde EXCLUSIVAMENTE JSON compacto:
                 {"tipo": "tipo", "pregunta": "texto", "opciones": ["opt1", "..."], "correcta": "texto", "explicacion": "razon"}`;
@@ -1152,6 +1151,8 @@
                         const cleanJson = result.data.replace(/```json|```/gi, "").trim();
                         const parsed = JSON.parse(cleanJson);
                         setActiveStudyItem({ ...parsed, key: selected.key, book, chapter, verseNum });
+                        
+                        if (mainRef.current) mainRef.current.scrollTo({ top: 0, behavior: 'smooth' });
                     } catch (e) { setApiError("Error interpretando la pregunta de IA."); }
                 } else if (result.error) {
                     setApiError(result.error);
@@ -1162,13 +1163,14 @@
             const submitStudyAnswer = async () => {
                 if (!studyAnswer.trim() || isStudyLoading) return;
                 
-                // Evaluación directa local (Optimización: 0 tokens gastados en evaluación)
                 const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
                 const isCorrect = norm(studyAnswer) === norm(activeStudyItem.correcta);
                 const feedbackText = isCorrect ? "¡Excelente comprensión!" : `No es correcto. La respuesta era: ${activeStudyItem.correcta}.`;
 
                 setStudyFeedback({ correct: isCorrect, text: feedbackText, expl: activeStudyItem.explicacion });
                 
+                if (mainRef.current) mainRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+
                 setStudyStats(prev => {
                     const cur = prev[activeStudyItem.key] || { level: 0, nextReview: 0 };
                     const newLevel = isCorrect ? Math.min(5, cur.level + 1) : 0;
@@ -1261,7 +1263,7 @@
                                         </div>
                                         <h3 className="text-2xl font-black text-slate-800 mb-3">Gimnasio de Estudio</h3>
                                         <p className="text-slate-500 text-sm max-w-xs mb-10 leading-relaxed">
-                                            Repasa las enseñanzas de tus lecturas recientes mediante retos interactivos generados por IA.
+                                            Repasa las enseñanzas de tus lecturas recientes mediante retos interactivos basados en tu versión de la Biblia.
                                         </p>
                                         
                                         <button 
@@ -1770,7 +1772,7 @@
                                             <div className="flex gap-2.5 relative z-10">
                                                 <input value={iaEmotion} onChange={e => setIaEmotion(e.target.value)} placeholder="Ej: Busco paz en la tormenta..." className="flex-grow p-4 rounded-xl bg-slate-50 border border-slate-100 outline-none text-base font-bold text-slate-700 placeholder:text-slate-300 focus:bg-white focus:border-emerald-500/30 transition-all" />
                                                 <button onClick={handleGenerateSituationalPlan} disabled={aiLoading} className="bg-emerald-600 text-white w-14 h-14 rounded-xl shadow-lg active:scale-90 transition-all disabled:opacity-50 flex items-center justify-center">
-                                                    <i className={aiLoading ? "fa-solid fa-circle-notch fa-spin" : "fa-solid fa-plus"}></i>
+                                                    <i className={aiLoading ? "fa-solid fa-circle-notch fa-spin text-xl" : "fa-solid fa-plus"}></i>
                                                 </button>
                                             </div>
                                         </div>
@@ -1810,8 +1812,8 @@
                                             const newStatus = !readStatus[chapterKey];
                                             setReadStatus(p => ({ ...p, [chapterKey]: newStatus })); 
                                             if (newStatus) {
-                                                const today = new Date().toISOString().split('T')[0];
-                                                setReadingHistory(prev => [...prev, { date: today, book: currentChapter.book, chapter: currentChapter.chapter, timestamp: Date.now() }]);
+                                                const todayStr = new Date().toISOString().split('T')[0];
+                                                setReadingHistory(prev => [...prev, { date: todayStr, book: currentChapter.book, chapter: currentChapter.chapter, timestamp: Date.now() }]);
                                                 setBookTimeline(prev => {
                                                     const current = prev[currentChapter.book] || {};
                                                     return { ...prev, [currentChapter.book]: { ...current, started: current.started || Date.now() } };
@@ -1946,7 +1948,7 @@
 
                         {view === 'settings' && (
                             <div className="animate-fade-in px-6 pt-2">
-                                <SectionHeader title={getSettingsTitle().toUpperCase()} onClose={closeToReading}>{settingsPart && (<button onClick={() => {setSettingsPart(null); setShowDeleteConfirm(false); setImportStatus("");}} className="text-emerald-600 font-bold text-[10px] uppercase tracking-widest"><i className="fa-solid fa-arrow-left mr-1"></i>Atrás</button>)}</SectionHeader>
+                                <SectionHeader title={getSettingsTitle().toUpperCase()} onClose={closeToReading}>{settingsPart && (<button onClick={() => {setSettingsPart(null); setShowDeleteConfirm(false); setImportStatus("");}} className="text-emerald-600 font-bold text-[10px] uppercase tracking-widest"><i className="fa-solid fa-arrow-left mr-1.5"></i>Atrás</button>)}</SectionHeader>
                                 <div className="space-y-4">
                                     {!settingsPart ? (
                                         <div className="space-y-3.5">{[{id:'apariencia', icon:'fa-wand-magic-sparkles', title:'Apariencia', desc:'Estilos de lectura y fuentes.'},{id:'ia', icon:'fa-robot', title:'Configuración IA', desc:'Control de modelos y API Keys.'},{id:'backup', icon:'fa-cloud-arrow-up', title:'Copia de seguridad', desc:'Sincronización y resguardo de datos.'},{id:'biblioteca', icon:'fa-database', title:'Biblioteca', desc:'Gestión manual de libros y textos.'}].map(item => (<button key={item.id} onClick={() => setSettingsPart(item.id)} className="w-full p-6 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center gap-5 active:scale-[0.98] transition-all text-left group"><div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-emerald-600 group-hover:text-white transition-all"><i className={`fa-solid ${item.icon} text-lg`}></i></div><div className="flex-1"><h3 className="font-bold text-base text-slate-800">{item.title}</h3><p className="text-xs text-slate-400 font-medium">{item.desc}</p></div><i className="fa-solid fa-chevron-right text-xs text-slate-200 group-hover:translate-x-1 transition-transform"></i></button>))}</div>
@@ -1993,7 +1995,7 @@
                             <NavItem v="search" i="fa-search" l="Buscar" />
                             <NavItem v="assistant" i="fa-wand-magic-sparkles" l="Asistente" />
                             <NavItem v="plans" i="fa-calendar-check" l="Planes" />
-                            <NavItem v="favorites" i="fa-bookmark" l="Favs" />
+                            <NavItem v="favorites" i="fa-bookmark" l="Favoritos" />
                             <NavItem v="settings" i="fa-gear" l="Ajustes" />
                         </div>
                     </nav>
