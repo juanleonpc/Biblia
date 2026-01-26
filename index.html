@@ -571,7 +571,7 @@
                 if (newStatus) {
                     setUsageStats(prev => {
                         const dayData = prev[todayStr] || { mins: 0, verses: 0 };
-                        return { ...prev, [todayStr]: { ...dayData, mins: dayData.mins + 1 } };
+                        return { ...prev, [todayStr]: { ...dayData, verses: dayData.verses + 1 } };
                     });
                 }
 
@@ -1057,6 +1057,7 @@
                 const keys = Object.keys(REF_MAP).sort((a, b) => b.length - a.length);
                 const bookPattern = keys.map(b => b.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
                 
+                // Regex mejorada: detecta libro, capítulo y versículo
                 const regex = new RegExp(`(${bookPattern})\\.?\\s*(\\d+)(?:\\s*[:\\.,\\s]\\s*(\\d+(?:(?:\\s*[-\\.]\\s*\\d+)|(?:\\s*[,\\.]\\s*\\d+))*))?`, 'gi');
                 
                 const parts = textContent.split(regex);
@@ -1229,7 +1230,8 @@
                         </div>
                     </header>
 
-                    <main ref={mainRef} onScroll={handleScroll} className={`flex-grow overflow-y-auto no-scrollbar relative w-full transition-all duration-300`} style={{ 
+                    {/* REPARACIÓN: Se elimina transition-all de main para evitar saltos en la detección de scroll */}
+                    <main ref={mainRef} onScroll={handleScroll} className={`flex-grow overflow-y-auto no-scrollbar relative w-full`} style={{ 
                         paddingTop: showUI ? 'calc(5.5rem + var(--sat))' : 'calc(10px + var(--sat))',
                         paddingBottom: showUI ? 'calc(2.5rem + var(--sab))' : 'calc(10px + var(--sab))'
                     }}>
@@ -1548,6 +1550,7 @@
                                                     <i className="fa-solid fa-calendar-day text-emerald-600 text-xs"></i>
                                                     <h4 className="text-[10px] font-black uppercase text-slate-500 tracking-widest">{formattedSelectedDate}</h4>
                                                 </div>
+                                                {dayReadings.length > 0 && <span className="text-[9px] font-black bg-emerald-600 text-white px-2 py-0.5 rounded-full">{dayReadings.length} cap.</span>}
                                                 {dayReadings.length > 0 ? (
                                                     <div className="space-y-2">
                                                         {dayReadings.map((r, i) => (
@@ -1983,7 +1986,7 @@
                                 <SectionHeader title="Favoritos" onClose={closeToReading}><button onClick={() => setFavSearchQ("")} className="w-9 h-9 flex items-center justify-center bg-slate-100 text-slate-400 rounded-full hover:text-rose-500 active:scale-95 transition-all"><i className="fa-solid fa-trash-can text-sm"></i></button><button onClick={() => setShowFavFilters(!showFavFilters)} className={`w-9 h-9 flex items-center justify-center rounded-full border transition-all ${showFavFilters ? 'bg-emerald-600 text-white border-emerald-600' : 'text-slate-400 border-slate-200'}`}><i className="fa-solid fa-sliders text-sm"></i></button></SectionHeader>
                                 <div className="flex gap-3 mb-6"><div className="relative flex-grow"><input value={favSearchQ} onChange={e => setFavSearchQ(e.target.value)} placeholder="Busca en tus marcadores..." className="w-full p-4 pr-12 text-base rounded-2xl bg-white border border-slate-100 outline-none focus:border-emerald-500/50 shadow-sm" /><i className="fa-solid fa-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-slate-300"></i></div><select value={favSortOrder} onChange={e => setFavSortOrder(e.target.value)} className="bg-white text-slate-500 px-3 rounded-2xl text-[11px] font-medium outline-none border border-slate-100 shadow-sm"><option value="reciente">Reciente</option><option value="biblico">Bíblico</option></select></div>
                                 {showFavFilters && (<div className="mb-8 p-8 rounded-[2.5rem] bg-white shadow-xl border space-y-6 animate-slide-up"><div className="grid grid-cols-2 gap-5"><div><p className="text-[10px] font-bold uppercase text-slate-400 mb-2.5">Filtrar Libro</p><select value={favBook} onChange={e => setFavBook(e.target.value)} className="w-full p-3.5 rounded-xl bg-slate-50 border text-sm outline-none"><option value="todos">Cualquier libro</option>{favBooksInList.map(b => <option key={b} value={b}>{b}</option>)}</select></div><div><p className="text-[10px] font-bold uppercase text-slate-400 mb-2.5">Testamento</p><select value={favTestament} onChange={e => setFavTestament(e.target.value)} className="w-full p-3.5 rounded-xl bg-slate-50 border text-sm outline-none"><option value="todos">Toda la Biblia</option><option value="antiguo">Antiguo</option><option value="nuevo">Nuevo</option></select></div></div><div><p className="text-[10px] font-bold uppercase text-slate-400 mb-2.5">Búsqueda por</p><div className="flex bg-slate-50 p-1 rounded-xl border"><button onClick={() => setFavMatchType("frase")} className={`flex-1 py-2.5 text-[10px] font-bold uppercase rounded-lg transition-all ${favMatchType === 'frase' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400'}`}>Frase</button><button onClick={() => setFavMatchType("palabras")} className={`flex-1 py-2.5 text-[10px] font-bold uppercase rounded-lg transition-all ${favMatchType === 'palabras' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400'}`}>Palabras</button></div></div><button onClick={() => setShowFavFilters(false)} className="w-full py-4 bg-emerald-600 text-white rounded-xl font-bold uppercase text-[11px] shadow-lg">Aplicar Filtros</button></div>)}
-                                {filteredFavorites.length === 0 ? <div className="text-center py-20 text-slate-400 italic">No se encontraron favoritos. Guarda versículos mientras lees para verlos aquí.</div> : (<div className="space-y-4">{filteredFavorites.map(f => (<div key={f.id} className="p-6 rounded-3xl bg-white border border-slate-100 shadow-sm active:scale-[0.99] transition-all hover:shadow-md cursor-pointer"><div className="flex justify-between items-center mb-3"><span className="text-[11px] font-black text-emerald-600 cursor-pointer tracking-widest uppercase hover:underline" onClick={() => { pushToStack(); setCurrentChapter({book: f.b, chapter: f.c}); setView('reading'); setTimeout(() => { handleToggleVerse(f.id); }, 400); }}>{f.ref}</span><div className="flex gap-1.5"><button onClick={() => handleShare(f.text, f.ref)} className="p-2 text-slate-300 hover:text-emerald-500 transition-colors"><i className="fa-solid fa-share-nodes text-base"></i></button><button onClick={() => toggleFav(f.id, f.text, f.ref, f.b, f.c)} className="p-2 text-rose-300 hover:text-rose-500 transition-colors"><i className="fa-solid fa-trash-can text-base"></i></button></div></div><p className="text-lg text-slate-700 font-medium leading-relaxed italic">"{f.text}"</p>{annotations[f.id]?.notes?.length > 0 && (<div className="mt-4 pt-4 border-t border-slate-50 space-y-3">{annotations[f.id].notes.map(n => (<div key={n.id} className="text-sm italic text-slate-400 flex gap-3"><i className="fa-solid fa-quote-left text-[10px] mt-1 text-emerald-500/30"></i><span>{n.text}</span></div>))}</div>)}</div>))}</div>)}
+                                {filteredFavorites.length === 0 ? <div className="text-center py-20 text-slate-400 italic">No se encontraron favoritos. Guarda versículos mientras lees para verlos aquí.</div> : (<div className="space-y-4">{filteredFavorites.map(f => (<div key={f.id} className="p-6 rounded-3xl bg-white border border-slate-100 shadow-sm active:scale-[0.99] transition-all hover:shadow-md cursor-pointer"><div className="flex justify-between items-center mb-3"><span className="text-[11px] font-black text-emerald-600 cursor-pointer tracking-widest uppercase hover:underline" onClick={() => { pushToStack(); setCurrentChapter({book: f.b, chapter: f.c}); setView('reading'); setTimeout(() => { handleToggleVerse(f.id); }, 400); }}>{f.ref}</span><div className="flex gap-1.5"><button onClick={() => handleShare(f.text, f.ref)} className="p-2 text-slate-300 hover:text-emerald-500 transition-colors"><i className="fa-solid fa-share-nodes text-base"></i></button><button onClick={() => toggleFav(f.id, f.text, f.ref, b, c)} className="p-2 text-rose-300 hover:text-rose-500 transition-colors"><i className="fa-solid fa-trash-can text-base"></i></button></div></div><p className="text-lg text-slate-700 font-medium leading-relaxed italic">"{f.text}"</p>{annotations[f.id]?.notes?.length > 0 && (<div className="mt-4 pt-4 border-t border-slate-50 space-y-3">{annotations[f.id].notes.map(n => (<div key={n.id} className="text-sm italic text-slate-400 flex gap-3"><i className="fa-solid fa-quote-left text-[10px] mt-1 text-emerald-500/30"></i><span>{n.text}</span></div>))}</div>)}</div>))}</div>)}
                             </div>
                         )}
 
@@ -2019,8 +2022,9 @@
                         )}
                     </main>
 
+                    {/* REPARACIÓN: Se añade lógica de transición y ocultamiento al botón de Volver */}
                     {navStack.length > 0 && view === 'reading' && (
-                        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 animate-slide-up w-auto">
+                        <div className={`fixed bottom-24 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 ${showUI ? 'translate-y-0 opacity-100' : 'translate-y-32 opacity-0 pointer-events-none'} w-auto`}>
                             <button onClick={handleGoBack} className="bg-slate-900/80 backdrop-blur-md text-white py-3 px-8 rounded-full shadow-2xl flex items-center justify-center gap-3 active:scale-95 transition-all border border-white/10">
                                 <i className="fa-solid fa-arrow-left text-xs"></i>
                                 <span className="text-[11px] font-black uppercase tracking-widest">Volver</span>
@@ -2028,7 +2032,7 @@
                         </div>
                     )}
 
-                    <nav className={`fixed bottom-0 left-0 right-0 bg-yvGrey-50/95 backdrop-blur-xl border-t border-slate-100 z-50 px-2 md:max-w-3xl md:mx-auto transition-transform duration-300 ${showUI ? 'translate-y-0' : '-translate-y-full'}`} style={{ height: `calc(3rem + var(--sab))` }}>
+                    <nav className={`fixed bottom-0 left-0 right-0 bg-yvGrey-50/95 backdrop-blur-xl border-t border-slate-100 z-50 px-2 md:max-w-3xl md:mx-auto transition-transform duration-300 ${showUI ? 'translate-y-0' : 'translate-y-full'}`} style={{ height: `calc(3rem + var(--sab))` }}>
                         <div className="flex items-center justify-around h-full w-full" style={{ paddingBottom: 'var(--sab)' }}>
                             <NavItem v="home" i="fa-house" l="Inicio" />
                             <NavItem v="reading" i="fa-bible" l="Biblia" />
