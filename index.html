@@ -571,7 +571,7 @@
                 if (newStatus) {
                     setUsageStats(prev => {
                         const dayData = prev[todayStr] || { mins: 0, verses: 0 };
-                        return { ...prev, [todayStr]: { ...dayData, verses: dayData.verses + 1 } };
+                        return { ...prev, [todayStr]: { ...dayData, mins: dayData.mins + 1 } };
                     });
                 }
 
@@ -1044,8 +1044,8 @@
              * REPARADO: Ahora procesa tanto hilos de texto como listas (Arrays) generados por la IA.
              */
             const LinkifiedText = ({ content }) => {
-                // NORMALIZACIÓN: Si la IA envía una lista de referencias, las unimos con espacio para que el Regex funcione.
-                const textContent = Array.isArray(content) ? content.join(' ') : (content || "");
+                // NORMALIZACIÓN: Si la IA envía una lista de referencias, las unimos para que el Regex las encuentre todas.
+                const textContent = Array.isArray(content) ? content.join('   ') : (content || "");
                 if (typeof textContent !== 'string') return textContent;
                 
                 const REF_MAP = { 
@@ -1407,7 +1407,7 @@
                                     const date = new Date(monday);
                                     date.setDate(monday.getDate() + i);
                                     // Generar dateStr usando mediodía local para evitar desfases en el formato ISO
-                                    const dateStr = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0).toISOString().split('T')[0];
+                                    const dateStr = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0).toLocaleDateString('en-CA');
                                     return {
                                         dateStr,
                                         label: ['L','M','X','J','V','S','D'][i],
@@ -1524,7 +1524,7 @@
                                                     ))}
                                                     {Array.from({ length: daysInMonth }).map((_, i) => {
                                                         const day = i + 1;
-                                                        // FIJADO: Usar las 12:00:00 (mediodía) al crear el objeto de fecha para evitar desfases de zona horaria al generar dateStr
+                                                        // FIJADO: Usar el formato YYYY-MM-DD para evitar desfases de zona horaria al generar dateStr
                                                         const dateStr = new Date(currentYear, currentMonth, day, 12, 0, 0).toLocaleDateString('en-CA');
                                                         const hasActivity = usageStats[dateStr];
                                                         const isToday = new Date().toLocaleDateString('en-CA') === dateStr;
@@ -1544,12 +1544,9 @@
                                             </div>
 
                                             <div className="mb-8 p-5 rounded-2xl bg-emerald-50/50 border border-emerald-100 animate-slide-up">
-                                                <div className="flex justify-between items-center mb-4">
-                                                    <div className="flex items-center gap-2">
-                                                        <i className="fa-solid fa-calendar-day text-emerald-600 text-xs"></i>
-                                                        <h4 className="text-[10px] font-black uppercase text-slate-500 tracking-widest">{formattedSelectedDate}</h4>
-                                                    </div>
-                                                    {dayReadings.length > 0 && <span className="text-[9px] font-black bg-emerald-600 text-white px-2 py-0.5 rounded-full">{dayReadings.length} cap.</span>}
+                                                <div className="flex items-center gap-2 mb-4">
+                                                    <i className="fa-solid fa-calendar-day text-emerald-600 text-xs"></i>
+                                                    <h4 className="text-[10px] font-black uppercase text-slate-500 tracking-widest">{formattedSelectedDate}</h4>
                                                 </div>
                                                 {dayReadings.length > 0 ? (
                                                     <div className="space-y-2">
@@ -1916,7 +1913,36 @@
                         {view === 'assistant' && (
                             <div className="animate-fade-in px-6 pt-2">
                                 <SectionHeader title="Asistente Bíblico" onClose={closeToReading}><button onClick={() => { setAsstQuery(""); setAsstResponses({ 'teólogo': '', 'historiador': '', 'pastor': '' }); }} className="w-9 h-9 flex items-center justify-center bg-slate-100 text-slate-400 rounded-full hover:text-rose-500 active:scale-95 transition-all"><i className="fa-solid fa-trash-can text-sm"></i></button></SectionHeader>
-                                <div className="space-y-8"><div className="flex bg-white p-1.5 rounded-2xl shadow-sm border">{['teólogo','historiador','pastor'].map(r => (<button key={r} onClick={() => setAsstRole(r)} className={`flex-1 py-3.5 rounded-xl font-bold text-[11px] uppercase transition-all tracking-widest ${asstRole === r ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-400'}`}>{r}</button>))}</div><div className="relative group"><textarea value={asstQuery} onChange={e => setAsstQuery(e.target.value)} placeholder={`Escribe tu pregunta para el ${asstRole}...`} className="w-full p-6 rounded-[2rem] outline-none border-2 border-slate-100 bg-white min-h-[160px] text-lg font-medium shadow-sm transition-all focus:border-emerald-500/50" /><button onClick={handleAssistantAsk} className="absolute bottom-6 right-6 w-14 h-14 bg-emerald-600 text-white rounded-2xl shadow-xl shadow-emerald-600/20 active:scale-90 flex items-center justify-center transition-all"><i className={aiLoading ? "fa-solid fa-circle-notch fa-spin text-xl" : "fa-solid fa-wand-magic-sparkles text-xl"}></i></button></div><div className="px-2"><p className="text-xs text-slate-400 italic leading-relaxed"><i className="fa-solid fa-circle-info mr-2 text-emerald-500/50"></i>Pregunta sobre cualquier pasaje o concepto. Recibirás una respuesta personalizada de acuerdo al perfil seleccionado.</p></div>{asstResponses[asstRole] && (<div className="p-8 bg-white rounded-[2.5rem] shadow-xl border text-[17px] leading-relaxed whitespace-pre-wrap animate-slide-up"><div className="flex items-center gap-2 mb-6 text-[10px] font-bold uppercase text-emerald-600/50 tracking-[0.2em]"><i className="fa-solid fa-comment-dots"></i><span>Respuesta de la IA</span></div><div className="font-medium text-slate-700"><LinkifiedText content={asstResponses[asstRole]} /></div></div>)}</div>
+                                <div className="space-y-8">
+                                    <div className="flex bg-white p-1.5 rounded-2xl shadow-sm border">
+                                        {['teólogo','historiador','pastor'].map(r => (<button key={r} onClick={() => setAsstRole(r)} className={`flex-1 py-3.5 rounded-xl font-bold text-[11px] uppercase transition-all tracking-widest ${asstRole === r ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-400'}`}>{r}</button>))}
+                                    </div>
+                                    <div className="animate-slide-up">
+                                        <textarea 
+                                            value={asstQuery} 
+                                            onChange={e => setAsstQuery(e.target.value)} 
+                                            placeholder={`Escribe tu pregunta para el ${asstRole}...`} 
+                                            className="w-full p-6 rounded-[2rem] outline-none border-2 border-slate-100 bg-white min-h-[160px] text-lg font-medium shadow-sm transition-all focus:border-emerald-500/50" 
+                                        />
+                                        <button 
+                                            onClick={handleAssistantAsk} 
+                                            disabled={aiLoading}
+                                            className="w-full py-4 bg-emerald-600 text-white rounded-2xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-3 mt-4"
+                                        >
+                                            <i className={aiLoading ? "fa-solid fa-circle-notch fa-spin text-lg" : "fa-solid fa-wand-magic-sparkles text-lg"}></i>
+                                            <span className="font-bold uppercase text-[11px] tracking-[0.2em]">{aiLoading ? "Consultando..." : "Obtener respuesta"}</span>
+                                        </button>
+                                    </div>
+                                    <div className="px-2">
+                                        <p className="text-xs text-slate-400 italic leading-relaxed"><i className="fa-solid fa-circle-info mr-2 text-emerald-500/50"></i>Pregunta sobre cualquier pasaje o concepto. Recibirás una respuesta personalizada de acuerdo al perfil seleccionado.</p>
+                                    </div>
+                                    {asstResponses[asstRole] && (
+                                        <div className="p-8 bg-white rounded-[2.5rem] shadow-xl border text-[17px] leading-relaxed whitespace-pre-wrap animate-slide-up">
+                                            <div className="flex items-center gap-2 mb-6 text-[10px] font-bold uppercase text-emerald-600/50 tracking-[0.2em]"><i className="fa-solid fa-comment-dots"></i><span>Respuesta de la IA</span></div>
+                                            <div className="font-medium text-slate-700"><LinkifiedText content={asstResponses[asstRole]} /></div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         )}
 
@@ -2002,7 +2028,7 @@
                         </div>
                     )}
 
-                    <nav className={`fixed bottom-0 left-0 right-0 bg-yvGrey-50/95 backdrop-blur-xl border-t border-slate-100 z-50 px-2 md:max-w-3xl md:mx-auto transition-transform duration-300 ${showUI ? 'translate-y-0' : 'translate-y-full'}`} style={{ height: `calc(3rem + var(--sab))` }}>
+                    <nav className={`fixed bottom-0 left-0 right-0 bg-yvGrey-50/95 backdrop-blur-xl border-t border-slate-100 z-50 px-2 md:max-w-3xl md:mx-auto transition-transform duration-300 ${showUI ? 'translate-y-0' : '-translate-y-full'}`} style={{ height: `calc(3rem + var(--sab))` }}>
                         <div className="flex items-center justify-around h-full w-full" style={{ paddingBottom: 'var(--sab)' }}>
                             <NavItem v="home" i="fa-house" l="Inicio" />
                             <NavItem v="reading" i="fa-bible" l="Biblia" />
