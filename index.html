@@ -246,7 +246,7 @@
             { title: "El arcoíris", text: "Fue la señal que Dios puso en las nubes para prometer a Noé que nunca volvería a destruir la tierra con agua." },
             { title: "Idiomas de la Cruz", text: "El cartel sobre la cruz de Jesús estaba escrito en tres idiomas: Hebreo, Latín y Griego." },
             { title: "Piedras de David", text: "David recogió cinco piedras lisas del arroyo, aunque solo necesitó una para derribar a Goliat." },
-            { title: "La mula de Balaam", text: "Es uno de los pocos animales que habla en la Biblia, reprendiendo al profeta por su desobediencia." },
+            { title: "La mula de Balaam", text: "Es uno de los pocos animales que habla en la Biblia, repreniendo al profeta por su desobediencia." },
             { title: "El primer evangelio", text: "Cronológicamente, se cree que el Evangelio de Marcos fue el primero en ser escrito, sirviendo de fuente para Mateo y Lucas." },
             { title: "Pablo el tejedor", text: "El apóstol Pablo trabajaba fabricando tiendas para no ser una carga económica para las iglesias que visitaba." },
             { title: "La mujer de Lot", text: "Se convirtió en una estatua de sal por desobedecer la orden divina de no mirar atrás mientras huían de Sodoma." },
@@ -404,7 +404,7 @@
             const [showReadHist, setShowReadHist] = useState(false);
             const [showBooksHist, setShowBooksHist] = useState(false);
             const [showFullTimeline, setShowFullTimeline] = useState(false);
-            const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+            const [selectedDate, setSelectedDate] = useState(new Date().toLocaleDateString('en-CA'));
 
             // --- ESTADOS SECCIÓN ESTUDIO ---
             const [studyStats, setStudyStats] = useState({}); 
@@ -420,13 +420,13 @@
                 const day = dateObj.getDay();
                 const diff = dateObj.getDate() - day + (day === 0 ? -6 : 1);
                 const result = new Date(dateObj.setDate(diff));
-                result.setHours(0,0,0,0);
+                result.setHours(12,0,0,0); // Evitar desfase horario al generar semana
                 return result;
             };
 
             const handleCalendarDayClick = (dateStr) => {
                 setSelectedDate(dateStr);
-                const targetDate = new Date(dateStr + 'T00:00:00');
+                const targetDate = new Date(dateStr + 'T12:00:00');
                 const today = new Date();
                 
                 const targetMonday = getMonday(targetDate).getTime();
@@ -440,7 +440,7 @@
             useEffect(() => {
                 if (!ready) return;
                 const timer = setInterval(() => {
-                    const todayStr = new Date().toISOString().split('T')[0];
+                    const todayStr = new Date().toLocaleDateString('en-CA');
                     setUsageStats(prev => {
                         const dayData = prev[todayStr] || { mins: 0, verses: 0 };
                         return { ...prev, [todayStr]: { ...dayData, mins: dayData.mins + 1 } };
@@ -530,7 +530,7 @@
             }, [ready, annotations, favorites, readStatus, verseReadStatus, verseImages, versePrompts, lastPosition, fontSize, fontFamily, planProgress, streak, usageStats, readingHistory, bookTimeline, userApiKey, studyStats, aiVersePanel, exegesisList, studyVerseId]);
 
             const updateStreak = () => {
-                const todayStr = new Date().toISOString().split('T')[0];
+                const todayStr = new Date().toLocaleDateString('en-CA');
                 if (streak.lastDate === todayStr) return;
                 setStreak(prev => ({ count: prev.count + 1, lastDate: todayStr }));
             };
@@ -566,7 +566,7 @@
                 const chapNum = parts[1];
                 const chapterKey = `${bookName}-${chapNum}`;
                 const newStatus = !verseReadStatus[vId];
-                const todayStr = new Date().toISOString().split('T')[0];
+                const todayStr = new Date().toLocaleDateString('en-CA');
 
                 if (newStatus) {
                     setUsageStats(prev => {
@@ -1041,10 +1041,12 @@
 
             /**
              * COMPONENTE MEJORADO LinkifiedText
-             * Reconoce más abreviaturas y formatos (ej: Jn 3:16, Lucas 1, 28, 1Cor 13:1-3)
+             * REPARADO: Ahora procesa tanto hilos de texto como listas (Arrays) generados por la IA.
              */
             const LinkifiedText = ({ content }) => {
-                if (typeof content !== 'string') return content;
+                // NORMALIZACIÓN: Si la IA envía una lista de referencias, las unimos con espacio para que el Regex funcione.
+                const textContent = Array.isArray(content) ? content.join(' ') : (content || "");
+                if (typeof textContent !== 'string') return textContent;
                 
                 const REF_MAP = { 
                     "Gn": "Génesis", "Gen": "Génesis", "Gén": "Génesis", "Ex": "Éxodo", "Exo": "Éxodo", "Éx": "Éxodo", "Lv": "Levítico", "Lev": "Levítico", "Nm": "Números", "Num": "Números", "Núm": "Números", "Dt": "Deuteronomio", "Deut": "Deuteronomio", "Jos": "Josué", "Jue": "Jueces", "Rt": "Rut", "1 Sm": "1 Samuel", "1Sm": "1 Samuel", "2 Sm": "2 Samuel", "2Sm": "2 Samuel", "1 Re": "1 Reyes", "1Re": "1 Reyes", "2 Re": "2 Reyes", "2Re": "2 Reyes", "1 Cr": "1 Crónicas", "1Cr": "1 Crónicas", "2 Cr": "2 Crónicas", "2Cr": "2 Crónicas", "Esd": "Esdrás", "Neh": "Nehemías", "Est": "Ester", "Tob": "Tobías", "Jdt": "Judit", "1 Mac": "1 Macabeos", "1Mac": "1 Macabeos", "2 Mac": "2 Macabeos", "2Mac": "2 Macabeos", "Job": "Job", "Sal": "Salmos", "Prov": "Proverbios", "Ecl": "Eclesiastés", "Cant": "Cantar de los cantares", "Cantares": "Cantar de los cantares", "Sab": "Sabiduría", "Eclo": "Eclesiástico", "Sir": "Eclesiástico", "Is": "Isaías", "Jer": "Jeremías", "Lam": "Lamentaciones", "Ez": "Ezequiel", "Dn": "Daniel", "Os": "Oseas", "Jl": "Joel", "Am": "Amós", "Abd": "Abdías", "Jon": "Jonás", "Miq": "Miqueas", "Nah": "Nahún", "Hab": "Habacuc", "Sof": "Sofonías", "Ag": "Ageo", "Zac": "Zacarías", "Mal": "Malaquías", "Mt": "Mateo", "Mc": "Marcos", "Lc": "Lucas", "Jn": "Juan", "Hch": "Hechos", "Rom": "Romanos", "1 Cor": "1 Corintios", "1Cor": "1 Corintios", "2 Cor": "2 Corintios", "2Cor": "2 Corintios", "Gal": "Gálatas", "Gál": "Gálatas", "Ef": "Efesios", "Flp": "Filipenses", "Col": "Colosenses", "1 Tes": "1 Tesalonicenses", "1Tes": "1 Tesalonicenses", "2 Tes": "2 Tesalonicenses", "2Tes": "2 Tesalonicenses", "1 Tim": "1 Timoteo", "1Tim": "1 Timoteo", "2 Tim": "2 Timoteo", "2Tim": "2 Timoteo", "Tit": "Tito", "Flm": "Filemón", "Heb": "Hebreos", "Sant": "Santiago", "1 Pe": "1 Pedro", "1Pe": "1 Pedro", "2 Pe": "2 Pedro", "2Pe": "2 Pedro", "1 Jn": "Juan. Cartas 1-3", "1Jn": "Juan. Cartas 1-3", "2 Jn": "Juan. Cartas 1-3", "2Jn": "Juan. Cartas 1-3", "3 Jn": "Juan. Cartas 1-3", "3Jn": "Juan. Cartas 1-3", "Jds": "Judas", "Ap": "Apocalipsis", "Apoc": "Apocalipsis", "Hech": "Hechos", "Cor": "1 Corintios", "Gál": "Gálatas", "Fil": "Filipenses", "Filipenses": "Filipenses"
@@ -1055,13 +1057,12 @@
                 const keys = Object.keys(REF_MAP).sort((a, b) => b.length - a.length);
                 const bookPattern = keys.map(b => b.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
                 
-                // Regex mejorada: detecta libro, capítulo y versículo (soporta ":" y "," como separadores)
                 const regex = new RegExp(`(${bookPattern})\\.?\\s*(\\d+)(?:\\s*[:\\.,\\s]\\s*(\\d+(?:(?:\\s*[-\\.]\\s*\\d+)|(?:\\s*[,\\.]\\s*\\d+))*))?`, 'gi');
                 
-                const parts = content.split(regex);
+                const parts = textContent.split(regex);
                 const result = [];
                 for (let i = 0; i < parts.length; i += 4) {
-                    result.push(parts[i]);
+                    result.push(parts[i] || "");
                     if (i + 1 < parts.length) {
                         const detected = parts[i + 1]; 
                         const chap = parts[i + 2]; 
@@ -1089,7 +1090,7 @@
                                         setMissingBook(targetBook || canonicalName); 
                                     } 
                                 }} 
-                                className="text-emerald-600 font-semibold underline decoration-emerald-500/20 cursor-pointer hover:decoration-emerald-500 transition-all px-1 inline-block mr-1.5"
+                                className="text-emerald-600 font-semibold underline decoration-emerald-500/20 cursor-pointer hover:decoration-emerald-500 transition-all px-1 inline-block"
                             >
                                 {displayRef}
                             </span>
@@ -1405,7 +1406,8 @@
                                 return Array.from({ length: 7 }).map((_, i) => {
                                     const date = new Date(monday);
                                     date.setDate(monday.getDate() + i);
-                                    const dateStr = date.toISOString().split('T')[0];
+                                    // Generar dateStr usando mediodía local para evitar desfases en el formato ISO
+                                    const dateStr = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0).toISOString().split('T')[0];
                                     return {
                                         dateStr,
                                         label: ['L','M','X','J','V','S','D'][i],
@@ -1420,7 +1422,7 @@
                             const activityHistory = Object.entries(usageStats)
                                 .sort((a, b) => b[0].localeCompare(a[0])) 
                                 .map(([dateStr, data]) => {
-                                    const d = new Date(dateStr + 'T00:00:00');
+                                    const d = new Date(dateStr + 'T12:00:00'); // Usar mediodía para evitar desfases
                                     const formattedDate = new Intl.DateTimeFormat('es-ES', { 
                                         weekday: 'short', day: 'numeric', month: 'short' 
                                     }).format(d);
@@ -1428,7 +1430,7 @@
                                 });
 
                             const dayReadings = readingHistory.filter(h => h.date === selectedDate);
-                            const formattedSelectedDate = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(selectedDate + 'T00:00:00'));
+                            const formattedSelectedDate = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(selectedDate + 'T12:00:00'));
 
                             return (
                                 <div className="animate-fade-in px-6 pt-2 pb-20">
@@ -1491,7 +1493,7 @@
                                                     <div className="absolute -left-[41px] top-1.5 w-4 h-4 rounded-full bg-white border-4 border-emerald-500 shadow-sm group-hover:scale-125 transition-transform"></div>
                                                     <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm group-hover:shadow-md transition-all">
                                                         <div className="flex justify-between items-center mb-1">
-                                                            <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">{new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(entry.date + 'T00:00:00'))}</span>
+                                                            <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">{new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(entry.date + 'T12:00:00'))}</span>
                                                             <span className="text-[9px] font-bold text-slate-300 uppercase">{new Date(entry.timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
                                                         </div>
                                                         <h4 className="font-black text-slate-800 text-base">{entry.book} <span className="text-emerald-500">Cap. {entry.chapter}</span></h4>
@@ -1522,9 +1524,10 @@
                                                     ))}
                                                     {Array.from({ length: daysInMonth }).map((_, i) => {
                                                         const day = i + 1;
-                                                        const dateStr = new Date(currentYear, currentMonth, day).toISOString().split('T')[0];
+                                                        // FIJADO: Usar las 12:00:00 (mediodía) al crear el objeto de fecha para evitar desfases de zona horaria al generar dateStr
+                                                        const dateStr = new Date(currentYear, currentMonth, day, 12, 0, 0).toLocaleDateString('en-CA');
                                                         const hasActivity = usageStats[dateStr];
-                                                        const isToday = todayNow.toISOString().split('T')[0] === dateStr;
+                                                        const isToday = new Date().toLocaleDateString('en-CA') === dateStr;
                                                         const isSelected = selectedDate === dateStr;
                                                         const intensity = hasActivity ? (hasActivity.mins > 10 ? 'bg-emerald-600' : 'bg-emerald-400') : 'bg-slate-100';
                                                         return (
@@ -1823,7 +1826,7 @@
                                             const newStatus = !readStatus[chapterKey];
                                             setReadStatus(p => ({ ...p, [chapterKey]: newStatus })); 
                                             if (newStatus) {
-                                                const todayStr = new Date().toISOString().split('T')[0];
+                                                const todayStr = new Date().toLocaleDateString('en-CA');
                                                 setReadingHistory(prev => [...prev, { date: todayStr, book: currentChapter.book, chapter: currentChapter.chapter, timestamp: Date.now() }]);
                                                 setBookTimeline(prev => {
                                                     const current = prev[currentChapter.book] || {};
